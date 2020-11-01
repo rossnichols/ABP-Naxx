@@ -1,0 +1,17 @@
+## Interface: 11305
+## Title: ABP Naxx Helper
+## Notes: Naxx Helper for <Always Be Pulling>
+## Author: Xanido
+## Version: ${ADDON_VERSION}
+## SavedVariables: ABP_Naxx_DB, ABP_Naxx_WindowManagement
+
+embeds.xml
+bindings.xml
+core.lua
+guild.lua
+comm.lua
+ui.lua
+version.lua
+options.lua
+widgets.lua
+debug.lua

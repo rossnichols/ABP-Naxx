@@ -1,0 +1,5 @@
+<Bindings>
+    <Binding name="ABP_NAXX_OPENMAINWINDOW" category="ADDONS" header="ABP_NAXX">
+        ABP_Naxx:ShowMainWindow();
+    </Binding>
+</Bindings>

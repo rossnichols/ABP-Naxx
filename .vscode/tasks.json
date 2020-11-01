@@ -1,0 +1,16 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "FindGlobals",
+            "type": "shell",
+            "command": ".\\FindGlobals\\luac-wow.exe -p -l '${file}' | .\\FindGlobals\\lua-wow.exe '.\\FindGlobals\\globals.lua' '${file}'",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
