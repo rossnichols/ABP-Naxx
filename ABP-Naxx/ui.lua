@@ -33,10 +33,10 @@ function ABP_Naxx:CreateMainWindow(command)
         minHeight = 200,
         maxHeight = 600
     });
-    self:OpenWindow(window);
+    -- self:OpenWindow(window);
     window:SetCallback("OnClose", function(widget)
         self:EndWindowManagement(widget);
-        self:CloseWindow(widget);
+        -- self:CloseWindow(widget);
         AceGUI:Release(widget);
         activeWindow = nil;
     end);
