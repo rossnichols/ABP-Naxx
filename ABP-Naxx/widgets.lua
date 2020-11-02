@@ -20,16 +20,8 @@ do
             self:SetImage(nil);
         end,
 
-        ["OnRelease"] = function(self)
-            self.frame:StopAnimating();
-        end,
-
         ["SetImage"] = function(self, image)
             self.image:SetTexture(image);
-        end,
-
-        ["Animate"] = function(self)
-            self.animation:Play();
         end,
     }
 
@@ -42,26 +34,12 @@ do
         local image = frame:CreateTexture(nil, "ARTWORK");
         image:SetAllPoints();
 
-        local animation = frame:CreateAnimationGroup();
-        animation:SetScript("OnFinished", function(self) self:Restart(); end);
-        local fadeIn = animation:CreateAnimation("Alpha");
-        fadeIn:SetFromAlpha(0);
-        fadeIn:SetToAlpha(1);
-        fadeIn:SetDuration(0.5);
-        fadeIn:SetOrder(1);
-        local fadeOut = animation:CreateAnimation("Alpha");
-        fadeOut:SetFromAlpha(1);
-        fadeOut:SetToAlpha(0);
-        fadeOut:SetDuration(0.5);
-        fadeOut:SetOrder(2);
-
         -- create widget
         local widget = {
             frame = frame,
             type  = Type,
 
             image = image,
-            animation = animation,
         }
         for method, func in pairs(methods) do
             widget[method] = func
@@ -136,7 +114,6 @@ AceGUI:RegisterLayout("ABPN_Canvas", function (content, children)
 
     for i, child in ipairs(children) do
         local x, y = child:GetUserData("canvas-X") or 0, child:GetUserData("canvas-Y") or 0;
-        -- local width, height = child:GetWidth() or child.width, child:GetHeight() or child.height;
         local frame = child.frame;
         frame:ClearAllPoints();
         frame:SetPoint("CENTER", content, "TOPLEFT", x * totalH / 100 / scale, -y * totalV / 100 / scale);
