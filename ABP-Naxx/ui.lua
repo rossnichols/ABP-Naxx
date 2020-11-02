@@ -2,20 +2,8 @@ local _G = _G;
 local ABP_Naxx = _G.ABP_Naxx;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
-local UnitName = UnitName;
-local UnitExists = UnitExists;
-local IsInGroup = IsInGroup;
-local GetAutoCompleteResults = GetAutoCompleteResults;
-local SecondsToTime = SecondsToTime;
-local AUTOCOMPLETE_FLAG_IN_GUILD = AUTOCOMPLETE_FLAG_IN_GUILD;
-local AUTOCOMPLETE_FLAG_NONE = AUTOCOMPLETE_FLAG_NONE;
-local date = date;
 local table = table;
-local ipairs = ipairs;
 local pairs = pairs;
-local unpack = unpack;
-local select = select;
-local type = type;
 
 local activeWindow;
 
