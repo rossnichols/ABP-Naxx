@@ -81,7 +81,6 @@ local function Refresh()
     local current = activeWindow:GetUserData("current");
     local upcoming = activeWindow:GetUserData("upcoming");
     local image = activeWindow:GetUserData("image");
-    local glow = activeWindow:GetUserData("glow");
     local role = activeWindow:GetUserData("role");
     local tick = activeWindow:GetUserData("tick");
     local tickTrigger = activeWindow:GetUserData("tickTrigger");
@@ -89,7 +88,6 @@ local function Refresh()
 
     current.frame:Hide();
     upcoming.frame:Hide();
-    glow.frame:Hide();
 
     if not role then
         reset:SetDisabled(true);
@@ -104,34 +102,24 @@ local function Refresh()
     tickTrigger:SetText(tick == -1 and "Start" or ("Ticks: %d"):format(tick));
     current.frame:Show();
 
+    local currentPos, nextPos;
     if tick == -1 then
-        current:SetUserData("canvas-X", data.rotation[0][1]);
-        current:SetUserData("canvas-Y", data.rotation[0][2]);
-        image:DoLayout();
-        return;
-    end
-
-    upcoming.frame:Show();
-    glow.frame:Show();
-    glow.frame:SetFrameLevel(10);
-
-    local currentPos, nextPos, nextDiffPos;
-    tick = tick % 12;
-    currentPos = data.rotation[tick];
-    nextPos = data.rotation[tick + 1];
-
-    local nextDiffPos = currentPos;
-    while nextDiffPos == currentPos do
-        tick = (tick + 1) % 12;
-        nextDiffPos = data.rotation[tick];
+        currentPos = data.rotation[0];
+        nextPos = currentPos;
+    else
+        tick = tick % 12;
+        currentPos = data.rotation[tick];
+        nextPos = data.rotation[tick + 1];
     end
 
     current:SetUserData("canvas-X", currentPos[1]);
     current:SetUserData("canvas-Y", currentPos[2]);
-    upcoming:SetUserData("canvas-X", nextDiffPos[1]);
-    upcoming:SetUserData("canvas-Y", nextDiffPos[2]);
-    glow:SetUserData("canvas-X", nextPos[1]);
-    glow:SetUserData("canvas-Y", nextPos[2]);
+
+    if nextPos ~= currentPos then
+        upcoming.frame:Show();
+        upcoming:SetUserData("canvas-X", nextPos[1]);
+        upcoming:SetUserData("canvas-Y", nextPos[2]);
+    end
     image:DoLayout();
 end
 
@@ -142,17 +130,15 @@ function ABP_Naxx:CreateMainWindow()
     window:SetLayout("Flow");
     self:BeginWindowManagement(window, "main", {
         version = 1,
-        defaultWidth = 360,
+        defaultWidth = 400,
         minWidth = 200,
         maxWidth = 600,
-        defaultHeight = 360,
+        defaultHeight = 400,
         minHeight = 200,
         maxHeight = 600
     });
-    -- self:OpenWindow(window);
     window:SetCallback("OnClose", function(widget)
         self:EndWindowManagement(widget);
-        -- self:CloseWindow(widget);
         AceGUI:Release(widget);
         activeWindow = nil;
     end);
@@ -169,7 +155,7 @@ function ABP_Naxx:CreateMainWindow()
     window:AddChild(roleSelector);
 
     local tickTrigger = AceGUI:Create("Button");
-    tickTrigger:SetWidth(80);
+    tickTrigger:SetWidth(100);
     tickTrigger:SetCallback("OnClick", function(widget)
         window:SetUserData("tick", window:GetUserData("tick") + 1);
         Refresh();
@@ -179,7 +165,7 @@ function ABP_Naxx:CreateMainWindow()
 
     local reset = AceGUI:Create("Button");
     reset:SetText("Reset");
-    reset:SetWidth(80);
+    reset:SetWidth(100);
     reset:SetCallback("OnClick", function(widget)
         window:SetUserData("tick", -1);
         Refresh();
@@ -209,14 +195,6 @@ function ABP_Naxx:CreateMainWindow()
     upcoming:SetImage("Interface\\MINIMAP\\Minimap_skull_normal.blp");
     image:AddChild(upcoming);
     window:SetUserData("upcoming", upcoming);
-
-    local glow = AceGUI:Create("ABPN_Icon");
-    glow:SetWidth(60);
-    glow:SetHeight(60);
-    glow:SetImage("Interface\\Challenges\\challenges-metalglow.blp");
-    glow:Animate();
-    image:AddChild(glow);
-    window:SetUserData("glow", glow);
 
     window.frame:Raise();
     return window;
