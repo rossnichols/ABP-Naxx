@@ -1,6 +1,5 @@
 local _G = _G;
 local AceGUI = _G.LibStub("AceGUI-3.0");
-local AceGUI = _G.LibStub("AceGUI-3.0");
 
 local CreateFrame = CreateFrame;
 local pairs = pairs;
