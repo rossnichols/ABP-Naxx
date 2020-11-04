@@ -35,6 +35,9 @@ for i = 1, 5 do
     end
 end
 
+local mode = ABP_Naxx.Modes.manual;
+local tickDuration = 30;
+
 function ABP_Naxx:GetRaiderSlots()
     local slots = {};
     local player = UnitName("player");
@@ -76,6 +79,8 @@ local function Refresh()
     local dropdowns = window:GetUserData("dropdowns");
     local raiders = ABP_Naxx:GetRaiderSlots();
 
+    window:GetUserData("tickDurationElt"):SetDisabled(mode ~= ABP_Naxx.Modes.timer);
+
     for i, dropdown in pairs(dropdowns) do
         local mappedIndex = dropdown:GetUserData("mappedIndex");
         local playerText = raiders[mappedIndex] and ABP_Naxx:ColorizeName(raiders[mappedIndex]) or "|cff808080[Empty]|r";
@@ -108,20 +113,13 @@ local function Refresh()
 end
 
 function ABP_Naxx:CreateStartWindow()
+    local windowWidth = 1000;
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("ABP Naxx Helper"), self:GetVersion()));
     window:SetLayout("Flow");
+    window:SetWidth(windowWidth);
     self:OpenWindow(window);
-    self:BeginWindowManagement(window, "driver", {
-        -- version = 1,
-        defaultWidth = 1000,
-        minWidth = 800,
-        maxWidth = 1200,
-        defaultHeight = 500,
-        minHeight = 300,
-        maxHeight = 700
-    });
     window:SetCallback("OnClose", function(widget)
         self:CloseWindow(widget);
         self:EndWindowManagement(widget);
@@ -129,12 +127,17 @@ function ABP_Naxx:CreateStartWindow()
         activeWindow = nil;
     end);
 
+    local container = AceGUI:Create("SimpleGroup");
+    container:SetFullWidth(true);
+    container:SetLayout("Flow");
+    window:AddChild(container);
+
     local raidRoles = AceGUI:Create("InlineGroup");
     raidRoles:SetTitle("Raid Roles");
     raidRoles:SetFullWidth(true);
     raidRoles:SetLayout("Table");
     raidRoles:SetUserData("table", { columns = { 1.0, 1.0, 1.0, 1.0 }});
-    window:AddChild(raidRoles);
+    container:AddChild(raidRoles);
 
     local dropdowns = {};
     window:SetUserData("dropdowns", dropdowns);
@@ -175,6 +178,69 @@ function ABP_Naxx:CreateStartWindow()
         raidRoles:AddChild(config);
         table.insert(dropdowns, config);
     end
+
+    local options = AceGUI:Create("InlineGroup");
+    options:SetTitle("Options");
+    options:SetFullWidth(true);
+    options:SetLayout("Flow");
+    container:AddChild(options);
+
+    local modeElt = AceGUI:Create("Dropdown");
+    modeElt:SetLabel("Tick Mode");
+    modeElt:SetList(self.ModeNames);
+    modeElt:SetValue(mode);
+    modeElt:SetCallback("OnValueChanged", function(widget, event, value)
+        mode = value;
+        Refresh();
+    end);
+    options:AddChild(modeElt);
+    window:SetUserData("modeElt", modeElt);
+
+    local tickDurationElt = AceGUI:Create("Slider");
+    tickDurationElt:SetSliderValues(10, 60, 5);
+    tickDurationElt:SetValue(tickDuration);
+    tickDurationElt:SetLabel("Tick Duration");
+    tickDurationElt:SetCallback("OnValueChanged", function(widget, event, value)
+        tickDuration = value;
+        Refresh();
+    end);
+    options:AddChild(tickDurationElt);
+    window:SetUserData("tickDurationElt", tickDurationElt);
+
+    local bottom = AceGUI:Create("SimpleGroup");
+    bottom:SetFullWidth(true);
+    bottom:SetLayout("Table");
+    bottom:SetUserData("table", { columns = { 1.0, 0, 0 }});
+    container:AddChild(bottom);
+
+    local spacer = AceGUI:Create("Label");
+    bottom:AddChild(spacer);
+
+    local sync = AceGUI:Create("Button");
+    sync:SetWidth(100);
+    sync:SetText("Sync");
+    sync:SetCallback("OnClick", function(widget, event)
+
+    end);
+    bottom:AddChild(sync);
+
+    local done = AceGUI:Create("Button");
+    done:SetWidth(100);
+    done:SetText("Start");
+    done:SetCallback("OnClick", function(widget, event)
+        window:Hide();
+    end);
+    bottom:AddChild(done);
+
+    container:DoLayout();
+    local height = container.frame:GetHeight() + 57;
+    self:BeginWindowManagement(window, "driver", {
+        version = 1,
+        defaultWidth = windowWidth,
+        minWidth = windowWidth - 200,
+        maxWidth = windowWidth + 200,
+        defaultHeight = height,
+    });
 
     window.frame:Raise();
     return window;

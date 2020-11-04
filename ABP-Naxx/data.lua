@@ -204,6 +204,16 @@ for _, rotation in pairs(rotations) do
     end
 end
 
+local modes = {
+    manual = "manual",
+    timer = "timer",
+};
+
+local modeNames = {
+    [modes.manual] = "Manual",
+    [modes.timer] = "Timer",
+};
+
 ABP_Naxx.Roles = roles;
 ABP_Naxx.RolesSorted = rolesSorted;
 ABP_Naxx.RaidRoles = raidRoles;
@@ -211,3 +221,5 @@ ABP_Naxx.RoleNames = roleNames;
 ABP_Naxx.RoleColors = roleColors;
 ABP_Naxx.MapPositions = pos;
 ABP_Naxx.Rotations = rotations;
+ABP_Naxx.Modes = modes;
+ABP_Naxx.ModeNames = modeNames;
