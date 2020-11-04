@@ -99,7 +99,14 @@ local function Refresh()
 
     local allAssigned = true;
     local readyCount = 0;
-    for _ in pairs(readyPlayers) do readyCount = readyCount + 1; end
+    for index, player in pairs(readyPlayers) do
+        if raiders[index] ~= player then
+            readyPlayers[index] = nil;
+            slotEditTimes[index] = GetTime();
+        else
+            readyCount = readyCount + 1;
+        end
+    end
     window:GetUserData("syncElt"):SetText(readyCount == count and "Ready!" or "Sync");
 
     for i, dropdown in pairs(dropdowns) do
@@ -139,10 +146,14 @@ end
 function ABP_Naxx:DriverOnStateSyncAck(data, distribution, sender, version)
     local _, map = ABP_Naxx:GetRaiderSlots();
     if data.role == self.RaidRoles[assignedRoles[map[sender]]] then
-        readyPlayers[map[sender]] = true;
+        readyPlayers[map[sender]] = sender;
     else
         slotEditTimes[map[sender]] = GetTime();
     end
+    Refresh();
+end
+
+function ABP_Naxx:DriverOnGroupUpdate()
     Refresh();
 end
 

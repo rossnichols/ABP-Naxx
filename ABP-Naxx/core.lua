@@ -79,6 +79,9 @@ function ABP_Naxx:OnEnable()
     self:RegisterEvent("GROUP_JOINED", function(self, event, ...)
         OnGroupJoined(self);
     end, self);
+    self:RegisterEvent("GROUP_ROSTER_UPDATE", function(self, event, ...)
+        self:DriverOnGroupUpdate();
+    end, self);
 
     -- Precreate frames to avoid issues generating them during combat.
     if not UnitAffectingCombat("player") then
