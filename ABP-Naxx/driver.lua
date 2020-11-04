@@ -34,6 +34,8 @@ for i = 1, 5 do
         table.insert(dropdownMap, 20 + i + (j - 1) * 5);
     end
 end
+local dropdownMapReversed = {};
+for i, mapped in pairs(dropdownMap) do dropdownMapReversed[mapped] = i; end
 
 local mode = ABP_Naxx.Modes.manual;
 local tickDuration = 30;
@@ -146,6 +148,17 @@ function ABP_Naxx:CreateStartWindow()
     local dropdowns = {};
     window:SetUserData("dropdowns", dropdowns);
 
+    local function unassignFunc(widget, event, value)
+        local group = widget:GetUserData("group");
+        local dropdowns = window:GetUserData("dropdowns");
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            assignedRoles[i] = false;
+            unassignedRoles[i] = true;
+            dropdowns[dropdownMapReversed[i]]:SetValue(false);
+        end
+        Refresh();
+    end
+
     for i = 1, 4 do
         local label = AceGUI:Create("Label");
         label:SetText("Group " .. i);
@@ -155,13 +168,20 @@ function ABP_Naxx:CreateStartWindow()
     for i = 1, #self.RaidRoles do
         if i == 21 then
             for i = 1, 4 do
+                local unassign = AceGUI:Create("Button");
+                unassign:SetText("Unassign");
+                unassign:SetUserData("group", i);
+                unassign:SetCallback("OnClick", unassignFunc);
+                raidRoles:AddChild(unassign);
+            end
+            for i = 1, 4 do
                 local label = AceGUI:Create("Label");
                 label:SetText(" ");
                 raidRoles:AddChild(label);
             end
-            for i = 5, 8 do
+            for i = 1, 4 do
                 local label = AceGUI:Create("Label");
-                label:SetText("Group " .. i);
+                label:SetText("Group " .. i + 4);
                 raidRoles:AddChild(label);
             end
         end
@@ -181,6 +201,14 @@ function ABP_Naxx:CreateStartWindow()
         end);
         raidRoles:AddChild(config);
         table.insert(dropdowns, config);
+    end
+
+    for i = 1, 4 do
+        local unassign = AceGUI:Create("Button");
+        unassign:SetText("Unassign");
+        unassign:SetUserData("group", i + 4);
+        unassign:SetCallback("OnClick", unassignFunc);
+        raidRoles:AddChild(unassign);
     end
 
     local options = AceGUI:Create("InlineGroup");
