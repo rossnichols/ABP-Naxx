@@ -2,6 +2,7 @@ local _G = _G;
 local ABP_Naxx = _G.ABP_Naxx;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
+local UnitName = UnitName;
 local table = table;
 local pairs = pairs;
 
@@ -154,8 +155,13 @@ function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
         activeWindow:Hide();
     end
 
-    local _, slot = self:GetRaiderSlots();
+    local _, map = self:GetRaiderSlots();
+    local slot = map[UnitName("player")];
     local role = self.RaidRoles[data.roles[slot]];
+
+    self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
+        role = role,
+    }, "WHISPER", sender);
 
     activeWindow = self:CreateMainWindow(role);
     Refresh();

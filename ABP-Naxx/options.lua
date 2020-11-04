@@ -12,7 +12,7 @@ function ABP_Naxx:InitOptions()
             debug = false,
         }
     };
-    self.db = AceDB:New("ABP_Naxx_Naxx_DB", defaults);
+    self.db = AceDB:New("ABP_Naxx_DB", defaults);
 
     local addonText = "ABP Naxx Helper";
     local version = self:GetVersion();

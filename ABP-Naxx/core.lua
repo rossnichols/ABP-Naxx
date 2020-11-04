@@ -65,6 +65,10 @@ function ABP_Naxx:OnEnable()
         self:UIOnStateSync(data, distribution, sender, version);
     end, self);
 
+    self:SetCallback(self.CommTypes.STATE_SYNC_ACK.name, function(self, event, data, distribution, sender, version)
+        self:DriverOnStateSyncAck(data, distribution, sender, version);
+    end, self);
+
     self:RegisterEvent("GUILD_ROSTER_UPDATE", function(self, event, ...)
         self:RebuildGuildInfo();
         self:VersionOnGuildRosterUpdate();
@@ -306,6 +310,39 @@ function ABP_Naxx:HideContextMenu()
     if self:IsContextMenuOpen() then
         ToggleDropDownMenu(nil, nil, contextFrame);
     end
+end
+
+
+--
+-- Util
+--
+
+ABP_Naxx.tCompare = function(lhsTable, rhsTable, depth)
+    depth = depth or 1;
+    for key, value in pairs(lhsTable) do
+        if type(value) == "table" then
+            local rhsValue = rhsTable[key];
+            if type(rhsValue) ~= "table" then
+                return false;
+            end
+            if depth > 1 then
+                if not ABP_Naxx.tCompare(value, rhsValue, depth - 1) then
+                    return false;
+                end
+            end
+        elseif value ~= rhsTable[key] then
+            -- print("mismatched value: " .. key .. ": " .. tostring(value) .. ", " .. tostring(rhsTable[key]));
+            return false;
+        end
+    end
+    -- Check for any keys that are in rhsTable and not lhsTable.
+    for key in pairs(rhsTable) do
+        if lhsTable[key] == nil then
+            -- print("mismatched key: " .. key);
+            return false;
+        end
+    end
+    return true;
 end
 
 
