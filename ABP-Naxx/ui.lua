@@ -53,7 +53,7 @@ local function Refresh()
     image:DoLayout();
 end
 
-function ABP_Naxx:CreateMainWindow()
+function ABP_Naxx:CreateMainWindow(role)
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("ABP Naxx Helper"), self:GetVersion()));
@@ -73,16 +73,25 @@ function ABP_Naxx:CreateMainWindow()
         activeWindow = nil;
     end);
 
-    local roleSelector = AceGUI:Create("Dropdown");
-    roleSelector:SetText("Choose a Role");
-    roleSelector:SetWidth(160);
-    roleSelector:SetList(self.RoleNames, self.RolesSorted);
-    roleSelector:SetCallback("OnValueChanged", function(widget, event, value)
-        window:SetUserData("role", value);
+    if role then
+        window:SetUserData("role", role);
         window:SetUserData("tick", -1);
-        Refresh();
-    end);
-    window:AddChild(roleSelector);
+        local label = AceGUI:Create("Label");
+        label:SetWidth(160);
+        label:SetText(self.RoleNames[role]);
+        window:AddChild(label);
+    else
+        local roleSelector = AceGUI:Create("Dropdown");
+        roleSelector:SetText("Choose a Role");
+        roleSelector:SetWidth(160);
+        roleSelector:SetList(self.RoleNames, self.RolesSorted);
+        roleSelector:SetCallback("OnValueChanged", function(widget, event, value)
+            window:SetUserData("role", value);
+            window:SetUserData("tick", -1);
+            Refresh();
+        end);
+        window:AddChild(roleSelector);
+    end
 
     local tickTrigger = AceGUI:Create("Button");
     tickTrigger:SetWidth(100);
@@ -137,5 +146,17 @@ function ABP_Naxx:ShowMainWindow()
     end
 
     activeWindow = self:CreateMainWindow();
+    Refresh();
+end
+
+function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
+    if activeWindow then
+        activeWindow:Hide();
+    end
+
+    local _, slot = self:GetRaiderSlots();
+    local role = self.RaidRoles[data.roles[slot]];
+
+    activeWindow = self:CreateMainWindow(role);
     Refresh();
 end

@@ -72,6 +72,14 @@ function ABP_Naxx:GetRaiderSlots()
     return slots, playerSlot;
 end
 
+local function SendComm(start)
+    ABP_Naxx:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+        mode = mode,
+        tickDuration = tickDuration,
+        roles = assignedRoles,
+    }, "BROADCAST");
+end
+
 local function Refresh()
     local window = activeWindow;
     if not window then return; end
@@ -89,17 +97,13 @@ local function Refresh()
         local listedRoles = {};
         local currentRole = assignedRoles[mappedIndex];
         if currentRole then
-            roleText = ("|cff%s%s|r"):format(
-                ABP_Naxx.RoleColors[ABP_Naxx.RaidRoles[currentRole]],
-                ABP_Naxx.RoleNames[ABP_Naxx.RaidRoles[currentRole]]);
+            roleText = ABP_Naxx.RoleNames[ABP_Naxx.RaidRoles[currentRole]];
             availableRoles[currentRole] = roleText;
             listedRoles[roleText] = true;
         end
         for role in pairs(unassignedRoles) do
             if role then
-                local text = ("|cff%s%s|r"):format(
-                    ABP_Naxx.RoleColors[ABP_Naxx.RaidRoles[role]],
-                    ABP_Naxx.RoleNames[ABP_Naxx.RaidRoles[role]]);
+                local text = ABP_Naxx.RoleNames[ABP_Naxx.RaidRoles[role]];
                 if not listedRoles[text] then
                     availableRoles[role] = text;
                     listedRoles[text] = true;
@@ -220,7 +224,7 @@ function ABP_Naxx:CreateStartWindow()
     sync:SetWidth(100);
     sync:SetText("Sync");
     sync:SetCallback("OnClick", function(widget, event)
-
+        SendComm(false);
     end);
     bottom:AddChild(sync);
 
@@ -228,6 +232,7 @@ function ABP_Naxx:CreateStartWindow()
     done:SetWidth(100);
     done:SetText("Start");
     done:SetCallback("OnClick", function(widget, event)
+        SendComm(true);
         window:Hide();
     end);
     bottom:AddChild(done);

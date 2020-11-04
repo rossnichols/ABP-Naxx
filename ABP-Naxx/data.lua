@@ -167,6 +167,10 @@ local roleColors = {
     [roles.healer12] = "ffff66",
 };
 
+for role, name in pairs(roleNames) do
+    roleNames[role] = ("|cff%s%s|r"):format(roleColors[role], name);
+end
+
 local rotations = {
     [roles.tankdps1] = { [0] = pos.tankdpsBL, [3] = pos.safe, [6] = pos.tankdpsBR, [9] = pos.safe, [12] = pos.tankdpsBL },
     [roles.tankdps2] = { [0] = pos.tankdpsBR, [3] = pos.safe, [6] = pos.tankdpsBL, [9] = pos.safe, [12] = pos.tankdpsBR },
@@ -218,7 +222,6 @@ ABP_Naxx.Roles = roles;
 ABP_Naxx.RolesSorted = rolesSorted;
 ABP_Naxx.RaidRoles = raidRoles;
 ABP_Naxx.RoleNames = roleNames;
-ABP_Naxx.RoleColors = roleColors;
 ABP_Naxx.MapPositions = pos;
 ABP_Naxx.Rotations = rotations;
 ABP_Naxx.Modes = modes;

@@ -51,8 +51,9 @@ function ABP_Naxx:GetCommPrefix()
     return "ABPN1";
 end
 
--- Highest ID: 0
+-- Highest ID: 1
 ABP_Naxx.CommTypes = {
+    STATE_SYNC = { name = "STATE_SYNC", id = 1, priority = "ALERT", fireLocally = true },
 
     -- NOTE: these aren't versioned and use legacy encoding so they can continue to function across major changes.
     VERSION_REQUEST = { name = "ABPN_VERSION_REQUEST", priority = "BULK", legacy = true },

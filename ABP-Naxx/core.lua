@@ -61,6 +61,10 @@ function ABP_Naxx:OnEnable()
     -- Trigger a guild roster update to refresh priorities.
     GuildRoster();
 
+    self:SetCallback(self.CommTypes.STATE_SYNC.name, function(self, event, data, distribution, sender, version)
+        self:UIOnStateSync(data, distribution, sender, version);
+    end, self);
+
     self:RegisterEvent("GUILD_ROSTER_UPDATE", function(self, event, ...)
         self:RebuildGuildInfo();
         self:VersionOnGuildRosterUpdate();
