@@ -39,6 +39,7 @@ local version = "${ADDON_VERSION}";
 
 _G.BINDING_HEADER_ABP_NAXX = "ABP Naxx Helper";
 _G.BINDING_NAME_ABP_NAXX_OPENMAINWINDOW = "Open the main window";
+_G.BINDING_NAME_ABP_NAXX_OPENSTARTWINDOW = "Open the start window";
 
 local function OnGroupJoined(self)
     self:VersionOnGroupJoined();

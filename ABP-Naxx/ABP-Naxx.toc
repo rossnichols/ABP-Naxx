@@ -8,6 +8,8 @@
 embeds.xml
 bindings.xml
 core.lua
+data.lua
+driver.lua
 guild.lua
 comm.lua
 ui.lua

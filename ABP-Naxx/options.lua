@@ -26,6 +26,12 @@ function ABP_Naxx:InitOptions()
             type = "execute",
             func = function() self:ShowMainWindow(); end
         },
+        start = {
+            name = "Start",
+            desc = "shows the start window",
+            type = "execute",
+            func = function() self:ShowStartWindow(); end
+        },
         options = {
             name = "Options",
             desc = "opens the options window (alias: config/opt)",

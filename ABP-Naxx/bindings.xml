@@ -2,4 +2,7 @@
     <Binding name="ABP_NAXX_OPENMAINWINDOW" category="ADDONS" header="ABP_NAXX">
         ABP_Naxx:ShowMainWindow();
     </Binding>
+    <Binding name="ABP_NAXX_OPENSTARTWINDOW" category="ADDONS">
+        ABP_Naxx:ShowStartWindow();
+    </Binding>
 </Bindings>
