@@ -97,6 +97,7 @@ local function Refresh()
 
     window:GetUserData("tickDurationElt"):SetDisabled(mode ~= ABP_Naxx.Modes.timer);
 
+    local syncElt = window:GetUserData("syncElt");
     local allAssigned = true;
     local readyCount = 0;
     for index, player in pairs(readyPlayers) do
@@ -107,7 +108,8 @@ local function Refresh()
             readyCount = readyCount + 1;
         end
     end
-    window:GetUserData("syncElt"):SetText(readyCount == count and "Ready!" or "Sync");
+    syncElt:SetText(readyCount == count and "Ready!" or "Sync");
+    syncElt:SetUserData("ready", readyCount == count);
 
     for i, dropdown in pairs(dropdowns) do
         local mappedIndex = dropdown:GetUserData("mappedIndex");
@@ -140,7 +142,7 @@ local function Refresh()
         if player and not currentRole then allAssigned = false; end
     end
 
-    window:GetUserData("syncElt"):SetDisabled(not allAssigned);
+    syncElt:SetDisabled(not allAssigned);
 end
 
 function ABP_Naxx:DriverOnStateSyncAck(data, distribution, sender, version)
@@ -266,6 +268,7 @@ function ABP_Naxx:CreateStartWindow()
     modeElt:SetValue(mode);
     modeElt:SetCallback("OnValueChanged", function(widget, event, value)
         mode = value;
+        readyPlayers = {};
         Refresh();
     end);
     options:AddChild(modeElt);
@@ -277,6 +280,7 @@ function ABP_Naxx:CreateStartWindow()
     tickDurationElt:SetLabel("Tick Duration");
     tickDurationElt:SetCallback("OnValueChanged", function(widget, event, value)
         tickDuration = value;
+        readyPlayers = {};
         Refresh();
     end);
     options:AddChild(tickDurationElt);
@@ -295,15 +299,19 @@ function ABP_Naxx:CreateStartWindow()
     sync:SetWidth(100);
     sync:SetText("Sync");
     sync:SetCallback("OnClick", function(widget, event)
-        lastSync = GetTime();
-        readyPlayers = {};
-        Refresh();
+        if widget:GetUserData("ready") then
+            window:Hide();
+        else
+            lastSync = GetTime();
+            readyPlayers = {};
+            Refresh();
 
-        self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
-            mode = mode,
-            tickDuration = tickDuration,
-            roles = assignedRoles,
-        }, "BROADCAST");
+            self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+                mode = mode,
+                tickDuration = tickDuration,
+                roles = assignedRoles,
+            }, "BROADCAST");
+        end
     end);
     bottom:AddChild(sync);
     window:SetUserData("syncElt", sync);
