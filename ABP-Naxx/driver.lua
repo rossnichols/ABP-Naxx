@@ -170,6 +170,7 @@ function ABP_Naxx:CreateStartWindow()
             for i = 1, 4 do
                 local unassign = AceGUI:Create("Button");
                 unassign:SetText("Unassign");
+                unassign:SetFullWidth(true);
                 unassign:SetUserData("group", i);
                 unassign:SetCallback("OnClick", unassignFunc);
                 raidRoles:AddChild(unassign);
@@ -206,6 +207,7 @@ function ABP_Naxx:CreateStartWindow()
     for i = 1, 4 do
         local unassign = AceGUI:Create("Button");
         unassign:SetText("Unassign");
+        unassign:SetFullWidth(true);
         unassign:SetUserData("group", i + 4);
         unassign:SetCallback("OnClick", unassignFunc);
         raidRoles:AddChild(unassign);
