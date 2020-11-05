@@ -21,16 +21,24 @@ local function Refresh()
     upcoming.frame:Hide();
 
     if not role then
-        reset:SetDisabled(true);
-        tickTrigger:SetDisabled(true);
-        tickTrigger:SetText("Ticks");
+        if reset then
+            reset:SetDisabled(true);
+        end
+        if tickTrigger then
+            tickTrigger:SetDisabled(true);
+            tickTrigger:SetText("Ticks");
+        end
         return;
     end
 
     local rotation = ABP_Naxx.Rotations[role];
-    reset:SetDisabled(tick == -1);
-    tickTrigger:SetDisabled(false);
-    tickTrigger:SetText(tick == -1 and "Start" or ("Ticks: %d"):format(tick));
+    if reset then
+        reset:SetDisabled(tick == -1);
+    end
+    if tickTrigger then
+        tickTrigger:SetDisabled(false);
+        tickTrigger:SetText(tick == -1 and "Start" or ("Tick (%d)"):format(tick));
+    end
     current.frame:Show();
 
     local currentPos, nextPos;
@@ -58,24 +66,17 @@ function ABP_Naxx:UIOnGroupJoined()
     self:SendComm(self.CommTypes.STATE_SYNC_REQUEST, {}, "BROADCAST");
 end
 
-function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
-    if activeWindow then
-        activeWindow:Hide();
+function ABP_Naxx:UIOnEncounterUpdate()
+    if activeWindow then activeWindow:Hide(); end
+
+    if self:GetCurrentEncounter() then
+        self:ShowMainWindow();
     end
-
-    local _, map = self:GetRaiderSlots();
-    local slot = map[UnitName("player")];
-    local role = self.RaidRoles[data.roles[slot]];
-
-    self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
-        role = role,
-    }, "WHISPER", sender);
-
-    activeWindow = self:CreateMainWindow(role);
-    Refresh();
 end
 
-function ABP_Naxx:CreateMainWindow(role)
+function ABP_Naxx:CreateMainWindow()
+    local encounter = self:GetCurrentEncounter();
+
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("ABP Naxx Helper"), self:GetVersion()));
@@ -95,17 +96,31 @@ function ABP_Naxx:CreateMainWindow(role)
         activeWindow = nil;
     end);
 
-    if role then
+    if encounter then
+        local role = encounter.role;
         window:SetUserData("role", role);
-        window:SetUserData("tick", -1);
-        local label = AceGUI:Create("Label");
-        label:SetWidth(160);
-        label:SetText(self.RoleNames[role]);
-        window:AddChild(label);
+        window:SetUserData("tick", encounter.started and encounter.ticks or -1);
+
+        local mainLine = AceGUI:Create("SimpleGroup");
+        mainLine:SetFullWidth(true);
+        mainLine:SetLayout("table");
+        mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
+        window:AddChild(mainLine);
+
+        local roleElt = AceGUI:Create("ABPN_Label");
+        roleElt:SetFullWidth(true);
+        roleElt:SetText(self.RoleNames[role]);
+        mainLine:AddChild(roleElt);
+
+        local tickElt = AceGUI:Create("ABPN_Label");
+        tickElt:SetFullWidth(true);
+        tickElt:SetText(encounter.started and ("Ticks: %d"):format(encounter.ticks) or "Not Started");
+        tickElt:SetJustifyH("RIGHT");
+        mainLine:AddChild(tickElt);
     else
         local roleSelector = AceGUI:Create("Dropdown");
         roleSelector:SetText("Choose a Role");
-        roleSelector:SetWidth(160);
+        roleSelector:SetFullWidth(true);
         roleSelector:SetList(self.RoleNames, self.RolesSorted);
         roleSelector:SetCallback("OnValueChanged", function(widget, event, value)
             window:SetUserData("role", value);
@@ -115,24 +130,40 @@ function ABP_Naxx:CreateMainWindow(role)
         window:AddChild(roleSelector);
     end
 
-    local tickTrigger = AceGUI:Create("Button");
-    tickTrigger:SetWidth(100);
-    tickTrigger:SetCallback("OnClick", function(widget)
-        window:SetUserData("tick", window:GetUserData("tick") + 1);
-        Refresh();
-    end);
-    window:AddChild(tickTrigger);
-    window:SetUserData("tickTrigger", tickTrigger);
+    if not encounter or encounter.driving then
+        local mainLine = AceGUI:Create("SimpleGroup");
+        mainLine:SetFullWidth(true);
+        mainLine:SetLayout("table");
+        mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
+        window:AddChild(mainLine);
 
-    local reset = AceGUI:Create("Button");
-    reset:SetText("Reset");
-    reset:SetWidth(100);
-    reset:SetCallback("OnClick", function(widget)
-        window:SetUserData("tick", -1);
-        Refresh();
-    end);
-    window:AddChild(reset);
-    window:SetUserData("reset", reset);
+        local tickTrigger = AceGUI:Create("Button");
+        tickTrigger:SetFullWidth(true);
+        tickTrigger:SetCallback("OnClick", function(widget)
+            if encounter then
+                self:AdvanceEncounter();
+            else
+                window:SetUserData("tick", window:GetUserData("tick") + 1);
+                Refresh();
+            end
+        end);
+        mainLine:AddChild(tickTrigger);
+        window:SetUserData("tickTrigger", tickTrigger);
+
+        local reset = AceGUI:Create("Button");
+        reset:SetText("Stop");
+        reset:SetFullHeight(true);
+        reset:SetCallback("OnClick", function(widget)
+            if encounter then
+                self:StopEncounter();
+            else
+                window:SetUserData("tick", -1);
+                Refresh();
+            end
+        end);
+        mainLine:AddChild(reset);
+        window:SetUserData("reset", reset);
+    end
 
     local image = AceGUI:Create("ABPN_ImageGroup");
     image:SetFullWidth(true);

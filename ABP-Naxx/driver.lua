@@ -46,6 +46,11 @@ local readyPlayers = {};
 local slotEditTimes = {};
 local lastSync = 0;
 
+local currentEncounter;
+local started = false;
+local ticks = 0;
+local timer;
+
 local function GetStatus(player, map)
     local slot = map[player];
     local slotEditTime = slotEditTimes[slot] or 0;
@@ -163,18 +168,101 @@ function ABP_Naxx:DriverOnStateSyncRequest(data, distribution, sender, version)
     if lastSync == 0 then return; end
 
     local _, map = ABP_Naxx:GetRaiderSlots();
+    if not assignedRoles[map[sender]] then return; end
+
     readyPlayers[map[sender]] = nil;
     slotEditTimes[map[sender]] = lastSync - 1;
 
     self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+        active = true,
         mode = mode,
         tickDuration = tickDuration,
         roles = assignedRoles,
+        started = started,
+        ticks = ticks,
     }, "WHISPER", sender);
     Refresh();
 end
 
+function ABP_Naxx:AdvanceEncounter()
+    if started then
+        ticks = ticks + 1;
+    else
+        started = true;
+        ticks = 0;
+    end
+
+    self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+        active = true,
+        mode = mode,
+        tickDuration = tickDuration,
+        roles = assignedRoles,
+        started = started,
+        ticks = ticks,
+    }, "BROADCAST");
+
+    if mode == self.Modes.timer then
+        if timer then self:CancelTimer(timer); end
+        timer = self:ScheduleTimer(self.AdvanceEncounter, tickDuration, self);
+    end
+
+    if activeWindow then activeWindow:Hide(); end
+end
+
+function ABP_Naxx:StopEncounter()
+    lastSync = 0;
+    slotEditTimes = {};
+    readyPlayers = {};
+    started = false;
+    ticks = 0;
+
+    if timer then self:CancelTimer(timer); end
+
+    self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+        active = false,
+    }, "BROADCAST");
+end
+
+function ABP_Naxx:DriverOnStateSync(data, distribution, sender, version)
+    if data.active then
+        local player = UnitName("player");
+        local _, map = self:GetRaiderSlots();
+        local slot = map[player];
+        local role = self.RaidRoles[data.roles[slot]];
+
+        self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
+            role = role,
+        }, "WHISPER", sender);
+
+        currentEncounter = {
+            mode = data.mode,
+            tickDuration = data.tickDuration,
+            role = role,
+            driving = (sender == player),
+            started = data.started,
+            ticks = data.ticks,
+        };
+    else
+        currentEncounter = nil;
+    end
+
+    self:Fire(self.InternalEvents.ENCOUNTER_UPDATE);
+end
+
+function ABP_Naxx:GetCurrentEncounter()
+    return currentEncounter;
+end
+
 function ABP_Naxx:CreateStartWindow()
+    if started then
+        self:Error("An encounter is in progress! Stop it before opening this window.");
+        return;
+    end
+
+    lastSync = 0;
+    slotEditTimes = {};
+    readyPlayers = {};
+
     local windowWidth = 1000;
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
@@ -290,7 +378,7 @@ function ABP_Naxx:CreateStartWindow()
     window:SetUserData("modeElt", modeElt);
 
     local tickDurationElt = AceGUI:Create("Slider");
-    tickDurationElt:SetSliderValues(10, 60, 5);
+    tickDurationElt:SetSliderValues(5, 60, 5);
     tickDurationElt:SetValue(tickDuration);
     tickDurationElt:SetLabel("Tick Duration");
     tickDurationElt:SetCallback("OnValueChanged", function(widget, event, value)
@@ -319,12 +407,17 @@ function ABP_Naxx:CreateStartWindow()
         else
             lastSync = GetTime();
             readyPlayers = {};
+            started = false;
+            ticks = 0;
             Refresh();
 
             self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+                active = true,
                 mode = mode,
                 tickDuration = tickDuration,
                 roles = assignedRoles,
+                started = started,
+                ticks = ticks,
             }, "BROADCAST");
         end
     end);

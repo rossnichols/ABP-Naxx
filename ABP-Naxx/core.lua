@@ -63,13 +63,17 @@ function ABP_Naxx:OnEnable()
     GuildRoster();
 
     self:SetCallback(self.CommTypes.STATE_SYNC.name, function(self, event, data, distribution, sender, version)
-        self:UIOnStateSync(data, distribution, sender, version);
+        self:DriverOnStateSync(data, distribution, sender, version);
     end, self);
     self:SetCallback(self.CommTypes.STATE_SYNC_ACK.name, function(self, event, data, distribution, sender, version)
         self:DriverOnStateSyncAck(data, distribution, sender, version);
     end, self);
     self:SetCallback(self.CommTypes.STATE_SYNC_REQUEST.name, function(self, event, data, distribution, sender, version)
         self:DriverOnStateSyncRequest(data, distribution, sender, version);
+    end, self);
+
+    self:SetCallback(self.InternalEvents.ENCOUNTER_UPDATE, function(self)
+        self:UIOnEncounterUpdate();
     end, self);
 
     self:RegisterEvent("GUILD_ROSTER_UPDATE", function(self, event, ...)

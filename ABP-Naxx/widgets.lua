@@ -2,10 +2,152 @@ local _G = _G;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
 local CreateFrame = CreateFrame;
+local ResetCursor = ResetCursor;
+local IsModifiedClick = IsModifiedClick;
+local GetItemInfo = GetItemInfo;
+local CursorUpdate = CursorUpdate;
+local select = select;
 local pairs = pairs;
 local ipairs = ipairs;
 local geterrorhandler = geterrorhandler;
 local xpcall = xpcall;
+
+local function CreateFontString(frame, y)
+    local fontstr = frame:CreateFontString(nil, "BACKGROUND", "GameFontNormal");
+    fontstr:SetJustifyH("LEFT");
+    if y then
+        fontstr:SetPoint("LEFT", frame, 2, y);
+        fontstr:SetPoint("RIGHT", frame, -2, y);
+    else
+        fontstr:SetPoint("LEFT", frame, 2, 1);
+        fontstr:SetPoint("RIGHT", frame, -2, 1);
+    end
+    fontstr:SetWordWrap(false);
+
+    return fontstr;
+end
+
+do
+    local Type, Version = "ABPN_Label", 1;
+
+    --[[-----------------------------------------------------------------------------
+    Methods
+    -------------------------------------------------------------------------------]]
+    local methods = {
+        ["OnAcquire"] = function(self)
+            self.text:SetText("");
+            self.frame:SetWidth(100);
+            self.frame:SetHeight(16);
+            self.text:SetJustifyH("LEFT");
+            self.text:SetJustifyV("CENTER");
+            self.text:SetPoint("LEFT", self.frame, 2, 1);
+            self.text:SetPoint("RIGHT", self.frame, -2, 1);
+            self.text:SetWordWrap(false);
+            self.highlight:Hide();
+
+            self:SetFont(_G.GameFontHighlight);
+        end,
+
+        ["EnableHighlight"] = function(self, enable)
+            self.highlight[enable and "Show" or "Hide"](self.highlight);
+        end,
+
+        ["SetFont"] = function(self, font)
+            self.text:SetFontObject(font);
+        end,
+
+        ["SetText"] = function(self, text)
+            self.text:SetText(text);
+        end,
+
+        ["SetJustifyH"] = function(self, justify)
+            self.text:SetJustifyH(justify);
+        end,
+
+        ["SetJustifyV"] = function(self, justify)
+            self.text:SetJustifyV(justify);
+        end,
+
+        ["SetPadding"] = function(self, left, right)
+            self.text:SetPoint("LEFT", self.frame, left, 1);
+            self.text:SetPoint("RIGHT", self.frame, right, 1);
+        end,
+
+        ["SetWordWrap"] = function(self, enable)
+            self.text:SetWordWrap(enable);
+        end,
+    }
+
+    --[[-----------------------------------------------------------------------------
+    Constructor
+    -------------------------------------------------------------------------------]]
+    local function Constructor()
+        local frame = CreateFrame("Button", nil, _G.UIParent);
+        frame:SetHeight(16);
+        frame:Hide();
+
+        frame:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+        frame:SetScript("OnClick", function(self, ...)
+            self.obj:Fire("OnClick", ...);
+        end);
+        frame:SetHyperlinksEnabled(true);
+        frame:SetScript("OnHyperlinkEnter", function(self, itemLink)
+            _G.ShowUIPanel(_G.GameTooltip);
+            _G.GameTooltip:SetOwner(self, "ANCHOR_NONE");
+            _G.GameTooltip:ClearAllPoints();
+            _G.GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT");
+            _G.GameTooltip:SetHyperlink(itemLink);
+            _G.GameTooltip:Show();
+            self.hasItem = itemLink;
+            CursorUpdate(self);
+        end);
+        frame:SetScript("OnHyperlinkLeave", function(self)
+            _G.GameTooltip:Hide();
+            self.hasItem = nil;
+            ResetCursor();
+        end);
+        frame:SetScript("OnHyperlinkClick", function(self, itemLink, _, ...)
+            if IsModifiedClick() then
+                _G.HandleModifiedItemClick(select(2, GetItemInfo(itemLink)));
+            else
+                self:GetParent().obj:Fire("OnClick", ...);
+            end
+        end);
+        frame:SetScript("OnUpdate", function(self)
+            if _G.GameTooltip:IsOwned(self) and self.hasItem then
+                _G.GameTooltip:SetOwner(self, "ANCHOR_NONE");
+                _G.GameTooltip:ClearAllPoints();
+                _G.GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT");
+                _G.GameTooltip:SetHyperlink(self.hasItem);
+                CursorUpdate(self);
+            end
+        end);
+
+        local text = CreateFontString(frame);
+
+        local highlight = frame:CreateTexture(nil, "HIGHLIGHT");
+        highlight:SetTexture("Interface\\Buttons\\UI-Listbox-Highlight");
+        highlight:SetAllPoints();
+        highlight:SetBlendMode("ADD");
+        highlight:SetTexCoord(0, 1, 0, 0.578125);
+
+        -- create widget
+        local widget = {
+            text = text,
+            highlight = highlight,
+
+            frame = frame,
+            type  = Type
+        }
+        for method, func in pairs(methods) do
+            widget[method] = func
+        end
+
+        return AceGUI:RegisterAsWidget(widget)
+    end
+
+    AceGUI:RegisterWidgetType(Type, Constructor, Version)
+end
 
 do
     local Type, Version = "ABPN_Icon", 1;

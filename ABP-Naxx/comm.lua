@@ -53,9 +53,9 @@ end
 
 -- Highest ID: 3
 ABP_Naxx.CommTypes = {
-    STATE_SYNC = { name = "STATE_SYNC", id = 1, priority = "INSTANT"--[[ , fireLocally = true ]] },
+    STATE_SYNC = { name = "STATE_SYNC", id = 1, priority = "INSTANT", fireLocally = true },
 
-    STATE_SYNC_ACK = { name = "STATE_SYNC_ACK", id = 2, priority = "INSTANT"--[[ , fireLocally = true ]] },
+    STATE_SYNC_ACK = { name = "STATE_SYNC_ACK", id = 2, priority = "INSTANT", fireLocally = true },
 
     STATE_SYNC_REQUEST = { name = "STATE_SYNC_REQUEST", id = 3, priority = "ALERT" },
 
@@ -72,6 +72,7 @@ for _, typ in pairs(ABP_Naxx.CommTypes) do
 end
 
 ABP_Naxx.InternalEvents = {
+    ENCOUNTER_UPDATE = "ENCOUNTER_UPDATE",
 };
 
 function ABP_Naxx:CommCallback(sent, total, logInCallback)
