@@ -5,6 +5,7 @@ local AceGUI = _G.LibStub("AceGUI-3.0");
 local UnitName = UnitName;
 local table = table;
 local pairs = pairs;
+local math = math;
 
 local activeWindow;
 
@@ -167,13 +168,14 @@ function ABP_Naxx:CreateMainWindow()
         mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
         window:AddChild(mainLine);
 
-        local tickTrigger = AceGUI:Create("Button");
+        local tickTrigger = AceGUI:Create("ABPN_Button");
         tickTrigger:SetFullWidth(true);
-        tickTrigger:SetCallback("OnClick", function(widget)
+        tickTrigger:SetCallback("OnClick", function(widget, event, button)
             if currentEncounter then
-                self:AdvanceEncounter();
+                self:AdvanceEncounter(button == "LeftButton");
             else
-                window:SetUserData("tick", window:GetUserData("tick") + 1);
+                local increment = button == "LeftButton" and 1 or -1;
+                window:SetUserData("tick", math.max(window:GetUserData("tick") + increment, -1));
                 Refresh();
             end
         end);

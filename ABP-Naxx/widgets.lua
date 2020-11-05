@@ -297,6 +297,39 @@ do
     AceGUI:RegisterWidgetType(Type, Constructor, Version)
 end
 
+do
+    local Type, Version = "ABPN_Button", 1;
+
+    --[[-----------------------------------------------------------------------------
+    Methods
+    -------------------------------------------------------------------------------]]
+
+    local methods = {
+        ["OnAcquire"] = function(self)
+            self:ButtonOnAcquire();
+        end,
+    }
+
+    --[[-----------------------------------------------------------------------------
+    Constructor
+    -------------------------------------------------------------------------------]]
+    local function Constructor()
+        local elt = AceGUI:Create("Button");
+
+        elt.frame:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+
+        elt.type = Type;
+        elt.ButtonOnAcquire = elt.OnAcquire;
+        for method, func in pairs(methods) do
+            elt[method] = func;
+        end
+
+        return elt;
+    end
+
+    AceGUI:RegisterWidgetType(Type, Constructor, Version)
+end
+
 local function errorhandler(err)
     return geterrorhandler()(err)
 end

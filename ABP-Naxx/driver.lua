@@ -196,12 +196,20 @@ function ABP_Naxx:DriverOnStateSyncRequest(data, distribution, sender, version)
     Refresh();
 end
 
-function ABP_Naxx:AdvanceEncounter()
-    if started then
-        ticks = ticks + 1;
-    else
-        started = true;
-        ticks = 0;
+function ABP_Naxx:AdvanceEncounter(forward)
+    if forward then
+        if started then
+            ticks = ticks + 1;
+        else
+            started = true;
+            ticks = 0;
+        end
+    elseif started then
+        ticks = ticks - 1;
+        if ticks == -1 then
+            started = false;
+            ticks = 0;
+        end
     end
 
     SendStateComm(true, "BROADCAST");
