@@ -8,6 +8,8 @@ local pairs = pairs;
 
 local activeWindow;
 
+local currentEncounter;
+
 local function Refresh()
     local current = activeWindow:GetUserData("current");
     local upcoming = activeWindow:GetUserData("upcoming");
@@ -66,17 +68,37 @@ function ABP_Naxx:UIOnGroupJoined()
     self:SendComm(self.CommTypes.STATE_SYNC_REQUEST, {}, "BROADCAST");
 end
 
-function ABP_Naxx:UIOnEncounterUpdate()
+function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
+    if data.active then
+        local player = UnitName("player");
+        local _, map = self:GetRaiderSlots();
+        local slot = map[player];
+        local role = self.RaidRoles[data.roles[slot]];
+
+        self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
+            role = role,
+        }, "WHISPER", sender);
+
+        currentEncounter = {
+            mode = data.mode,
+            tickDuration = data.tickDuration,
+            role = role,
+            driving = (sender == player),
+            started = data.started,
+            ticks = data.ticks,
+        };
+    else
+        currentEncounter = nil;
+    end
+
     if activeWindow then activeWindow:Hide(); end
 
-    if self:GetCurrentEncounter() then
+    if currentEncounter then
         self:ShowMainWindow();
     end
 end
 
 function ABP_Naxx:CreateMainWindow()
-    local encounter = self:GetCurrentEncounter();
-
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("ABP Naxx Helper"), self:GetVersion()));
@@ -96,10 +118,10 @@ function ABP_Naxx:CreateMainWindow()
         activeWindow = nil;
     end);
 
-    if encounter then
-        local role = encounter.role;
+    if currentEncounter then
+        local role = currentEncounter.role;
         window:SetUserData("role", role);
-        window:SetUserData("tick", encounter.started and encounter.ticks or -1);
+        window:SetUserData("tick", currentEncounter.started and currentEncounter.ticks or -1);
 
         local mainLine = AceGUI:Create("SimpleGroup");
         mainLine:SetFullWidth(true);
@@ -114,7 +136,7 @@ function ABP_Naxx:CreateMainWindow()
 
         local tickElt = AceGUI:Create("ABPN_Label");
         tickElt:SetFullWidth(true);
-        tickElt:SetText(encounter.started and ("Ticks: %d"):format(encounter.ticks) or "Not Started");
+        tickElt:SetText(currentEncounter.started and ("Ticks: %d"):format(currentEncounter.ticks) or "Not Started");
         tickElt:SetJustifyH("RIGHT");
         mainLine:AddChild(tickElt);
     else
@@ -130,7 +152,7 @@ function ABP_Naxx:CreateMainWindow()
         window:AddChild(roleSelector);
     end
 
-    if not encounter or encounter.driving then
+    if not currentEncounter or currentEncounter.driving then
         local mainLine = AceGUI:Create("SimpleGroup");
         mainLine:SetFullWidth(true);
         mainLine:SetLayout("table");
@@ -140,7 +162,7 @@ function ABP_Naxx:CreateMainWindow()
         local tickTrigger = AceGUI:Create("Button");
         tickTrigger:SetFullWidth(true);
         tickTrigger:SetCallback("OnClick", function(widget)
-            if encounter then
+            if currentEncounter then
                 self:AdvanceEncounter();
             else
                 window:SetUserData("tick", window:GetUserData("tick") + 1);
@@ -154,7 +176,7 @@ function ABP_Naxx:CreateMainWindow()
         reset:SetText("Stop");
         reset:SetFullHeight(true);
         reset:SetCallback("OnClick", function(widget)
-            if encounter then
+            if currentEncounter then
                 self:StopEncounter();
             else
                 window:SetUserData("tick", -1);

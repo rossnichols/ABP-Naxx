@@ -42,24 +42,9 @@ for i, mapped in pairs(dropdownMap) do dropdownMapReversed[mapped] = i; end
 local mode = ABP_Naxx.Modes.manual;
 local tickDuration = 30;
 
-local readyPlayers = {};
-local slotEditTimes = {};
-local lastSync = 0;
-
-local currentEncounter;
 local started = false;
 local ticks = 0;
 local timer;
-
-local function GetStatus(player, map)
-    local slot = map[player];
-    local slotEditTime = slotEditTimes[slot] or 0;
-    if slotEditTime >= lastSync then
-        return "|TInterface\\RAIDFRAME\\ReadyCheck-NotReady.blp:0|t";
-    end
-    if readyPlayers[slot] then return "|TInterface\\RAIDFRAME\\ReadyCheck-Ready.blp:0|t"; end
-    return "|TInterface\\RAIDFRAME\\ReadyCheck-Waiting.blp:0|t";
-end
 
 function ABP_Naxx:GetRaiderSlots()
     local slots = {};
@@ -93,11 +78,40 @@ function ABP_Naxx:GetRaiderSlots()
     return slots, map, count;
 end
 
+local function SendStateComm(active, dist, target)
+    if active then
+        ABP_Naxx:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+            active = true,
+            mode = mode,
+            tickDuration = tickDuration,
+            roles = assignedRoles,
+            started = started,
+            ticks = ticks,
+        }, dist, target);
+    else
+        ABP_Naxx:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+            active = false,
+        }, dist, target);
+    end
+end
+
+local function GetStatus(player, map)
+    local slot = map[player];
+    local slotEditTime = activeWindow:GetUserData("slotEditTimes")[slot] or 0;
+    if slotEditTime >= activeWindow:GetUserData("lastSync") then
+        return "|TInterface\\RAIDFRAME\\ReadyCheck-NotReady.blp:0|t";
+    end
+    if activeWindow:GetUserData("readyPlayers")[slot] then return "|TInterface\\RAIDFRAME\\ReadyCheck-Ready.blp:0|t"; end
+    return "|TInterface\\RAIDFRAME\\ReadyCheck-Waiting.blp:0|t";
+end
+
 local function Refresh()
     local window = activeWindow;
     if not window then return; end
 
     local dropdowns = window:GetUserData("dropdowns");
+    local readyPlayers = window:GetUserData("readyPlayers");
+    local slotEditTimes = window:GetUserData("slotEditTimes");
     local raiders, map, count = ABP_Naxx:GetRaiderSlots();
 
     window:GetUserData("tickDurationElt"):SetDisabled(mode ~= ABP_Naxx.Modes.timer);
@@ -151,11 +165,14 @@ local function Refresh()
 end
 
 function ABP_Naxx:DriverOnStateSyncAck(data, distribution, sender, version)
+    if not activeWindow then return; end
+
     local _, map = ABP_Naxx:GetRaiderSlots();
     if data.role == self.RaidRoles[assignedRoles[map[sender]]] then
-        readyPlayers[map[sender]] = sender;
+        activeWindow:GetUserData("readyPlayers")[map[sender]] = sender;
     else
-        slotEditTimes[map[sender]] = GetTime();
+        activeWindow:GetUserData("readyPlayers")[map[sender]] = nil;
+        activeWindow:GetUserData("slotEditTimes")[map[sender]] = GetTime();
     end
     Refresh();
 end
@@ -165,22 +182,17 @@ function ABP_Naxx:DriverOnGroupUpdate()
 end
 
 function ABP_Naxx:DriverOnStateSyncRequest(data, distribution, sender, version)
-    if lastSync == 0 then return; end
+    if not started and (not activeWindow or activeWindow:GetUserData("lastSync") == 0) then return; end
 
     local _, map = ABP_Naxx:GetRaiderSlots();
     if not assignedRoles[map[sender]] then return; end
 
-    readyPlayers[map[sender]] = nil;
-    slotEditTimes[map[sender]] = lastSync - 1;
+    if activeWindow then
+        activeWindow:GetUserData("readyPlayers")[map[sender]] = nil;
+        activeWindow:GetUserData("slotEditTimes")[map[sender]] = activeWindow:GetUserData("lastSync") - 1;
+    end
 
-    self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
-        active = true,
-        mode = mode,
-        tickDuration = tickDuration,
-        roles = assignedRoles,
-        started = started,
-        ticks = ticks,
-    }, "WHISPER", sender);
+    SendStateComm(true, "WHISPER", sender);
     Refresh();
 end
 
@@ -192,14 +204,7 @@ function ABP_Naxx:AdvanceEncounter()
         ticks = 0;
     end
 
-    self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
-        active = true,
-        mode = mode,
-        tickDuration = tickDuration,
-        roles = assignedRoles,
-        started = started,
-        ticks = ticks,
-    }, "BROADCAST");
+    SendStateComm(true, "BROADCAST");
 
     if mode == self.Modes.timer then
         if timer then self:CancelTimer(timer); end
@@ -210,47 +215,12 @@ function ABP_Naxx:AdvanceEncounter()
 end
 
 function ABP_Naxx:StopEncounter()
-    lastSync = 0;
-    slotEditTimes = {};
-    readyPlayers = {};
     started = false;
     ticks = 0;
 
     if timer then self:CancelTimer(timer); end
 
-    self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
-        active = false,
-    }, "BROADCAST");
-end
-
-function ABP_Naxx:DriverOnStateSync(data, distribution, sender, version)
-    if data.active then
-        local player = UnitName("player");
-        local _, map = self:GetRaiderSlots();
-        local slot = map[player];
-        local role = self.RaidRoles[data.roles[slot]];
-
-        self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
-            role = role,
-        }, "WHISPER", sender);
-
-        currentEncounter = {
-            mode = data.mode,
-            tickDuration = data.tickDuration,
-            role = role,
-            driving = (sender == player),
-            started = data.started,
-            ticks = data.ticks,
-        };
-    else
-        currentEncounter = nil;
-    end
-
-    self:Fire(self.InternalEvents.ENCOUNTER_UPDATE);
-end
-
-function ABP_Naxx:GetCurrentEncounter()
-    return currentEncounter;
+    SendStateComm(false, "BROADCAST");
 end
 
 function ABP_Naxx:CreateStartWindow()
@@ -258,10 +228,6 @@ function ABP_Naxx:CreateStartWindow()
         self:Error("An encounter is in progress! Stop it before opening this window.");
         return;
     end
-
-    lastSync = 0;
-    slotEditTimes = {};
-    readyPlayers = {};
 
     local windowWidth = 1000;
     local window = AceGUI:Create("Window");
@@ -276,6 +242,10 @@ function ABP_Naxx:CreateStartWindow()
         AceGUI:Release(widget);
         activeWindow = nil;
     end);
+
+    window:SetUserData("lastSync", 0);
+    window:SetUserData("slotEditTimes", {});
+    window:SetUserData("readyPlayers", {});
 
     local container = AceGUI:Create("SimpleGroup");
     container:SetFullWidth(true);
@@ -298,6 +268,8 @@ function ABP_Naxx:CreateStartWindow()
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             assignedRoles[i] = false;
             unassignedRoles[i] = true;
+            window:GetUserData("slotEditTimes")[i] = GetTime();
+            window:GetUserData("readyPlayers")[i] = nil;
             dropdowns[dropdownMapReversed[i]]:SetValue(false);
         end
         Refresh();
@@ -342,8 +314,8 @@ function ABP_Naxx:CreateStartWindow()
             assignedRoles[mappedIndex] = value;
             unassignedRoles[value] = nil;
             if oldRole then unassignedRoles[oldRole] = true; end
-            slotEditTimes[mappedIndex] = GetTime();
-            readyPlayers[mappedIndex] = nil;
+            window:GetUserData("slotEditTimes")[mappedIndex] = GetTime();
+            window:GetUserData("readyPlayers")[mappedIndex] = nil;
             Refresh();
         end);
         raidRoles:AddChild(config);
@@ -371,7 +343,8 @@ function ABP_Naxx:CreateStartWindow()
     modeElt:SetValue(mode);
     modeElt:SetCallback("OnValueChanged", function(widget, event, value)
         mode = value;
-        readyPlayers = {};
+        window:SetUserData("readyPlayers", {});
+        window:SetUserData("lastSync", 0);
         Refresh();
     end);
     options:AddChild(modeElt);
@@ -383,7 +356,8 @@ function ABP_Naxx:CreateStartWindow()
     tickDurationElt:SetLabel("Tick Duration");
     tickDurationElt:SetCallback("OnValueChanged", function(widget, event, value)
         tickDuration = value;
-        readyPlayers = {};
+        window:SetUserData("readyPlayers", {});
+        window:SetUserData("lastSync", 0);
         Refresh();
     end);
     options:AddChild(tickDurationElt);
@@ -405,20 +379,11 @@ function ABP_Naxx:CreateStartWindow()
         if widget:GetUserData("ready") then
             window:Hide();
         else
-            lastSync = GetTime();
-            readyPlayers = {};
-            started = false;
-            ticks = 0;
+            window:SetUserData("lastSync", GetTime());
+            window:SetUserData("readyPlayers", {});
             Refresh();
 
-            self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
-                active = true,
-                mode = mode,
-                tickDuration = tickDuration,
-                roles = assignedRoles,
-                started = started,
-                ticks = ticks,
-            }, "BROADCAST");
+            SendStateComm(true, "BROADCAST");
         end
     end);
     bottom:AddChild(sync);

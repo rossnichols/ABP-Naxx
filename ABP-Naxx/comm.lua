@@ -72,7 +72,6 @@ for _, typ in pairs(ABP_Naxx.CommTypes) do
 end
 
 ABP_Naxx.InternalEvents = {
-    ENCOUNTER_UPDATE = "ENCOUNTER_UPDATE",
 };
 
 function ABP_Naxx:CommCallback(sent, total, logInCallback)
