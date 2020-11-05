@@ -139,6 +139,14 @@ function ABP_Naxx:CreateMainWindow()
         tickElt:SetText(currentEncounter.started and ("Ticks: %d"):format(currentEncounter.ticks) or "Not Started");
         tickElt:SetJustifyH("RIGHT");
         mainLine:AddChild(tickElt);
+
+        if currentEncounter.started and currentEncounter.mode == self.Modes.timer then
+            local statusbar = AceGUI:Create("ABPN_StatusBar");
+            statusbar:SetFullWidth(true);
+            statusbar:SetHeight(5);
+            statusbar:SetDuration(currentEncounter.tickDuration);
+            window:AddChild(statusbar);
+        end
     else
         local roleSelector = AceGUI:Create("Dropdown");
         roleSelector:SetText("Choose a Role");

@@ -170,7 +170,7 @@ do
     Constructor
     -------------------------------------------------------------------------------]]
     local function Constructor()
-        local frame = CreateFrame("Frame");
+        local frame = CreateFrame("Frame", nil, _G.UIParent);
 
         local image = frame:CreateTexture(nil, "ARTWORK");
         image:SetAllPoints();
@@ -229,6 +229,69 @@ do
         elt.image = image;
 
         return elt;
+    end
+
+    AceGUI:RegisterWidgetType(Type, Constructor, Version)
+end
+
+do
+    local Type, Version = "ABPN_StatusBar", 1;
+
+    local function Frame_OnUpdate(frame, elapsed)
+        local self = frame.obj;
+        self.elapsed = self.elapsed + elapsed;
+
+        frame:SetValue(self.duration - self.elapsed);
+        if self.elapsed >= self.duration then
+            frame:SetScript("OnUpdate", nil);
+        end
+    end
+
+    --[[-----------------------------------------------------------------------------
+    Methods
+    -------------------------------------------------------------------------------]]
+
+    local methods = {
+        ["OnAcquire"] = function(self)
+            self:SetDuration(0);
+        end,
+
+        ["OnRelease"] = function(self)
+            self:SetDuration(0);
+        end,
+
+        ["SetDuration"] = function(self, duration)
+            local onUpdate;
+            if duration > 0 then
+                self.duration = duration;
+                self.elapsed = 0;
+                self.frame:SetMinMaxValues(0, duration);
+                self.frame:SetValue(duration);
+                onUpdate = Frame_OnUpdate;
+            end
+
+            self.frame:SetScript("OnUpdate", onUpdate);
+        end,
+    }
+
+    --[[-----------------------------------------------------------------------------
+    Constructor
+    -------------------------------------------------------------------------------]]
+    local function Constructor()
+        local frame = CreateFrame("StatusBar", nil, _G.UIParent);
+        frame:SetStatusBarTexture("Interface\\RaidFrame\\Raid-Bar-Resource-Fill", "ARTWORK");
+        frame:SetStatusBarColor(1, 1, 1);
+
+        -- create widget
+        local widget = {
+            frame = frame,
+            type  = Type,
+        }
+        for method, func in pairs(methods) do
+            widget[method] = func
+        end
+
+        return AceGUI:RegisterAsWidget(widget)
     end
 
     AceGUI:RegisterWidgetType(Type, Constructor, Version)
