@@ -159,6 +159,21 @@ function ABP_Naxx:DriverOnGroupUpdate()
     Refresh();
 end
 
+function ABP_Naxx:DriverOnStateSyncRequest(data, distribution, sender, version)
+    if lastSync == 0 then return; end
+
+    local _, map = ABP_Naxx:GetRaiderSlots();
+    readyPlayers[map[sender]] = nil;
+    slotEditTimes[map[sender]] = lastSync - 1;
+
+    self:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+        mode = mode,
+        tickDuration = tickDuration,
+        roles = assignedRoles,
+    }, "WHISPER", sender);
+    Refresh();
+end
+
 function ABP_Naxx:CreateStartWindow()
     local windowWidth = 1000;
     local window = AceGUI:Create("Window");

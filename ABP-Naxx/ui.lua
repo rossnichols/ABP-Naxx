@@ -54,6 +54,27 @@ local function Refresh()
     image:DoLayout();
 end
 
+function ABP_Naxx:UIOnGroupJoined()
+    self:SendComm(self.CommTypes.STATE_SYNC_REQUEST, {}, "BROADCAST");
+end
+
+function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
+    if activeWindow then
+        activeWindow:Hide();
+    end
+
+    local _, map = self:GetRaiderSlots();
+    local slot = map[UnitName("player")];
+    local role = self.RaidRoles[data.roles[slot]];
+
+    self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
+        role = role,
+    }, "WHISPER", sender);
+
+    activeWindow = self:CreateMainWindow(role);
+    Refresh();
+end
+
 function ABP_Naxx:CreateMainWindow(role)
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
@@ -147,22 +168,5 @@ function ABP_Naxx:ShowMainWindow()
     end
 
     activeWindow = self:CreateMainWindow();
-    Refresh();
-end
-
-function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
-    if activeWindow then
-        activeWindow:Hide();
-    end
-
-    local _, map = self:GetRaiderSlots();
-    local slot = map[UnitName("player")];
-    local role = self.RaidRoles[data.roles[slot]];
-
-    self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
-        role = role,
-    }, "WHISPER", sender);
-
-    activeWindow = self:CreateMainWindow(role);
     Refresh();
 end

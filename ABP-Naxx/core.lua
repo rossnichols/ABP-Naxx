@@ -43,6 +43,7 @@ _G.BINDING_NAME_ABP_NAXX_OPENSTARTWINDOW = "Open the start window";
 
 local function OnGroupJoined(self)
     self:VersionOnGroupJoined();
+    self:UIOnGroupJoined();
 end
 
 function ABP_Naxx:OnEnable()
@@ -64,9 +65,11 @@ function ABP_Naxx:OnEnable()
     self:SetCallback(self.CommTypes.STATE_SYNC.name, function(self, event, data, distribution, sender, version)
         self:UIOnStateSync(data, distribution, sender, version);
     end, self);
-
     self:SetCallback(self.CommTypes.STATE_SYNC_ACK.name, function(self, event, data, distribution, sender, version)
         self:DriverOnStateSyncAck(data, distribution, sender, version);
+    end, self);
+    self:SetCallback(self.CommTypes.STATE_SYNC_REQUEST.name, function(self, event, data, distribution, sender, version)
+        self:DriverOnStateSyncRequest(data, distribution, sender, version);
     end, self);
 
     self:RegisterEvent("GUILD_ROSTER_UPDATE", function(self, event, ...)
