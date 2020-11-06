@@ -88,6 +88,9 @@ function ABP_Naxx:OnEnable()
     self:RegisterEvent("GROUP_ROSTER_UPDATE", function(self, event, ...)
         self:DriverOnGroupUpdate();
     end, self);
+    self:RegisterEvent("PLAYER_LOGOUT", function(self, event, ...)
+        self:DriverOnLogout();
+    end, self);
 
     -- Precreate frames to avoid issues generating them during combat.
     if not UnitAffectingCombat("player") then

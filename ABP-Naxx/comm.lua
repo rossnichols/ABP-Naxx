@@ -53,7 +53,7 @@ end
 
 -- Highest ID: 3
 ABP_Naxx.CommTypes = {
-    STATE_SYNC = { name = "STATE_SYNC", id = 1, priority = "INSTANT", fireLocally = true },
+    STATE_SYNC = { name = "STATE_SYNC", id = 1, priority = "ALERT", fireLocally = true },
 
     STATE_SYNC_ACK = { name = "STATE_SYNC_ACK", id = 2, priority = "INSTANT", fireLocally = true },
 

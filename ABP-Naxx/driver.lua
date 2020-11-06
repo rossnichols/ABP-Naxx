@@ -122,7 +122,9 @@ local function Refresh()
     for index, player in pairs(readyPlayers) do
         if raiders[index] ~= player then
             readyPlayers[index] = nil;
-            slotEditTimes[index] = GetTime();
+            if map[player] then
+                slotEditTimes[map[player]] = GetTime();
+            end
         else
             readyCount = readyCount + 1;
         end
@@ -194,6 +196,12 @@ function ABP_Naxx:DriverOnStateSyncRequest(data, distribution, sender, version)
 
     SendStateComm(true, "WHISPER", sender);
     Refresh();
+end
+
+function ABP_Naxx:DriverOnLogout()
+    if started then
+        self:StopEncounter();
+    end
 end
 
 function ABP_Naxx:OnTimer()

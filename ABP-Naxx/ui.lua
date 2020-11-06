@@ -17,33 +17,27 @@ local function Refresh()
     local image = activeWindow:GetUserData("image");
     local role = activeWindow:GetUserData("role");
     local tick = activeWindow:GetUserData("tick");
-    local tickTrigger = activeWindow:GetUserData("tickTrigger");
-    local reset = activeWindow:GetUserData("reset");
 
-    current.frame:Hide();
-    upcoming.frame:Hide();
+    current:SetVisible(false);
+    upcoming:SetVisible(false);
 
-    if not role then
-        if reset then
+    if not currentEncounter or currentEncounter.driving then
+        local tickTrigger = activeWindow:GetUserData("tickTrigger");
+        local reset = activeWindow:GetUserData("reset");
+
+        if not role then
             reset:SetDisabled(true);
-        end
-        if tickTrigger then
             tickTrigger:SetDisabled(true);
             tickTrigger:SetText("Ticks");
+            return;
         end
-        return;
-    end
 
-    local rotation = ABP_Naxx.Rotations[role];
-    if reset then
         reset:SetDisabled(tick == -1);
-    end
-    if tickTrigger then
         tickTrigger:SetDisabled(false);
         tickTrigger:SetText(tick == -1 and "Start" or ("Tick (%d)"):format(tick));
     end
-    current.frame:Show();
 
+    local rotation = ABP_Naxx.Rotations[role];
     local currentPos, nextPos;
     if tick == -1 then
         currentPos = rotation[0];
@@ -54,11 +48,12 @@ local function Refresh()
         nextPos = rotation[tick + 1];
     end
 
+    current:SetVisible(true);
     current:SetUserData("canvas-X", currentPos[1]);
     current:SetUserData("canvas-Y", currentPos[2]);
 
     if nextPos ~= currentPos then
-        upcoming.frame:Show();
+        upcoming:SetVisible(true);
         upcoming:SetUserData("canvas-X", nextPos[1]);
         upcoming:SetUserData("canvas-Y", nextPos[2]);
     end

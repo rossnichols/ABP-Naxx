@@ -164,6 +164,14 @@ do
         ["SetImage"] = function(self, image)
             self.image:SetTexture(image);
         end,
+
+        ["SetVisible"] = function(self, visible)
+            if visible then
+                self.frame:Show();
+            else
+                self.frame:Hide();
+            end
+        end,
     }
 
     --[[-----------------------------------------------------------------------------
