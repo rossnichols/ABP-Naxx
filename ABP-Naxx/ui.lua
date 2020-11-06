@@ -69,6 +69,11 @@ function ABP_Naxx:UIOnGroupJoined()
     self:SendComm(self.CommTypes.STATE_SYNC_REQUEST, {}, "BROADCAST");
 end
 
+function ABP_Naxx:OnGroupJoined()
+    currentEncounter = nil;
+    if activeWindow then activeWindow:Hide(); end
+end
+
 function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
     if data.active then
         local player = UnitName("player");

@@ -82,6 +82,9 @@ function ABP_Naxx:OnEnable()
     self:RegisterEvent("GROUP_JOINED", function(self, event, ...)
         OnGroupJoined(self);
     end, self);
+    self:RegisterEvent("GROUP_LEFT", function(self, event, ...)
+        self:UIOnGroupLeft();
+    end, self);
     self:RegisterEvent("GROUP_ROSTER_UPDATE", function(self, event, ...)
         self:DriverOnGroupUpdate();
     end, self);
