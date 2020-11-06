@@ -196,6 +196,10 @@ function ABP_Naxx:DriverOnStateSyncRequest(data, distribution, sender, version)
     Refresh();
 end
 
+function ABP_Naxx:OnTimer()
+    self:AdvanceEncounter(true);
+end
+
 function ABP_Naxx:AdvanceEncounter(forward)
     if forward then
         if started then
@@ -216,7 +220,7 @@ function ABP_Naxx:AdvanceEncounter(forward)
 
     if mode == self.Modes.timer then
         if timer then self:CancelTimer(timer); end
-        timer = self:ScheduleTimer(self.AdvanceEncounter, tickDuration, self);
+        timer = self:ScheduleTimer(self.OnTimer, tickDuration, self);
     end
 
     if activeWindow then activeWindow:Hide(); end
