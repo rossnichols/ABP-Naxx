@@ -3,6 +3,7 @@
 ## Notes: Naxx Helper for <Always Be Pulling>
 ## Author: Xanido
 ## Version: ${ADDON_VERSION}
+## OptionalDeps: DBM-Core
 ## SavedVariables: ABP_Naxx_DB, ABP_Naxx_WindowManagement
 
 embeds.xml

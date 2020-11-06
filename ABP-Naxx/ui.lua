@@ -2,6 +2,13 @@ local _G = _G;
 local ABP_Naxx = _G.ABP_Naxx;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
+local dbmAlert;
+if _G.DBM then
+    local mod = _G.DBM:NewMod("ABP Naxx Helper");
+    _G.DBM:GetModLocalization("ABP Naxx Helper"):SetGeneralLocalization{ name = "ABP Naxx Helper" }
+    dbmAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1, 2);
+end
+
 local UnitName = UnitName;
 local table = table;
 local pairs = pairs;
@@ -64,6 +71,10 @@ local function Refresh()
         upcoming:SetVisible(true);
         upcoming:SetUserData("canvas-X", nextPos[1]);
         upcoming:SetUserData("canvas-Y", nextPos[2]);
+
+        if dbmAlert then
+            dbmAlert:Show("Move after next mark!");
+        end
     end
     image:DoLayout();
 end
