@@ -122,16 +122,25 @@ local function BuildTargets(raiders)
 end
 
 local function FormatRoleText(role, currentTargets, currentFilledTargets)
-    local targetText = function(current, target)
-        return (current == target and "%d/%d" or "|cffff0000%d/%d|r"):format(current, target);
+    local current = currentTargets[role];
+    local filled = currentFilledTargets[role];
+    local empty = current - filled;
+    local target = roleTargets[role];
+
+    local targetText = function()
+        local formatStr = "%d/%d";
+        if current == target and empty == 0 then
+            formatStr = "|cff00ff00%d/%d|r";
+        elseif current ~= target then
+            formatStr = "|cffff0000%d/%d|r";
+        end
+        return formatStr:format(current, target);
     end
 
-    if currentFilledTargets[role] == currentTargets[role] then
-        return ("%s: %s"):format(
-            ABP_Naxx.RoleNames[role], targetText(currentTargets[role], roleTargets[role]));
+    if empty == 0 then
+        return ("%s: %s"):format(ABP_Naxx.RoleNames[role], targetText());
     else
-        return ("%s: %s |cffff0000(%d empty)|r"):format(
-            ABP_Naxx.RoleNames[role], targetText(currentTargets[role], roleTargets[role]), currentTargets[role] - currentFilledTargets[role]);
+        return ("%s: %s |cffff0000(%d empty)|r"):format(ABP_Naxx.RoleNames[role], targetText(), empty);
     end
 end
 
