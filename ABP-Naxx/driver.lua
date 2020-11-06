@@ -14,12 +14,11 @@ local next = next;
 
 local activeWindow;
 
--- The assigned role is an index into ABP_Naxx.RaidRoles.
--- Initialize by lining the indices up - e.g., the raider
--- in slot 1 will have the role in RaidRoles[1].
-local assignedRoles = {};
-local unassignedRoles = {};
-for i = 1, #ABP_Naxx.RaidRoles do assignedRoles[i] = i; end
+local assignedRoles = ABP_Naxx.tCopy(ABP_Naxx.RaidRoles);
+local roleTargets = {};
+for _, role in pairs(ABP_Naxx.RaidRoles) do
+    roleTargets[role] = (roleTargets[role] or 0) + 1;
+end
 
 -- Since the dropdown elements are added row-by-row,
 -- we need to map the index of the dropdown to the index
@@ -105,6 +104,67 @@ local function GetStatus(player, map)
     return "|TInterface\\RAIDFRAME\\ReadyCheck-Waiting.blp:0|t";
 end
 
+local function BuildTargets(raiders)
+    local currentTargets = {};
+    local currentFilledTargets = {};
+    for i, role in pairs(assignedRoles) do
+        currentTargets[role] = (currentTargets[role] or 0) + 1;
+        if raiders[i] then
+            currentFilledTargets[role] = (currentFilledTargets[role] or 0) + 1;
+        end
+    end
+    for role in pairs(roleTargets) do
+        currentTargets[role] = currentTargets[role] or 0;
+        currentFilledTargets[role] = currentFilledTargets[role] or 0;
+    end
+
+    return currentTargets, currentFilledTargets;
+end
+
+local function FormatRoleText(role, currentTargets, currentFilledTargets)
+    local targetText = function(current, target)
+        return (current == target and "%d/%d" or "|cffff0000%d/%d|r"):format(current, target);
+    end
+
+    if currentFilledTargets[role] == currentTargets[role] then
+        return ("%s: %s"):format(
+            ABP_Naxx.RoleNames[role], targetText(currentTargets[role], roleTargets[role]));
+    else
+        return ("%s: %s |cffff0000(%d empty)|r"):format(
+            ABP_Naxx.RoleNames[role], targetText(currentTargets[role], roleTargets[role]), currentTargets[role] - currentFilledTargets[role]);
+    end
+end
+
+local function BuildDropdown(currentRole, raiders, restricted)
+    local list = { [false] = "|cffff0000Unassign|r" };
+    local currentTargets, currentFilledTargets = BuildTargets(raiders);
+
+    if currentRole then
+        list[currentRole] = FormatRoleText(currentRole, currentTargets, currentFilledTargets);
+    end
+
+    for role, target in pairs(roleTargets) do
+        if role ~= currentRole then
+            local add = true;
+            if restricted then
+                add = (currentTargets[role] < target);
+            end
+
+            if add then
+                list[role] = FormatRoleText(role, currentTargets, currentFilledTargets);
+            end
+        end
+    end
+
+    local sorted = {};
+    for _, role in ipairs(ABP_Naxx.RolesSorted) do
+        if list[role] then table.insert(sorted, role); end
+    end
+    table.insert(sorted, false);
+
+    return list, sorted;
+end
+
 local function Refresh()
     local window = activeWindow;
     if not window then return; end
@@ -138,29 +198,19 @@ local function Refresh()
         local playerText = raiders[mappedIndex]
             and ("%s%s"):format(GetStatus(player, map), ABP_Naxx:ColorizeName(player))
             or "|cff808080[Empty]|r";
-        local roleText = "|cffff0000[Unassigned]|r";
-        local availableRoles = {};
-        local listedRoles = {};
-        local currentRole = assignedRoles[mappedIndex];
-        if currentRole then
-            roleText = ABP_Naxx.RoleNames[ABP_Naxx.RaidRoles[currentRole]];
-            availableRoles[currentRole] = roleText;
-            listedRoles[roleText] = true;
-        end
-        for role in pairs(unassignedRoles) do
-            if role then
-                local text = ABP_Naxx.RoleNames[ABP_Naxx.RaidRoles[role]];
-                if not listedRoles[text] then
-                    availableRoles[role] = text;
-                    listedRoles[text] = true;
-                end
-            end
-        end
-        availableRoles[false] = "|cffff0000Unassign|r";
-        dropdown:SetList(availableRoles);
+
+        local role = assignedRoles[mappedIndex];
+        local roleText = role and ABP_Naxx.RoleNames[role] or "|cffff0000[Unassigned]|r";
+        dropdown:SetList(BuildDropdown(role, raiders, window:GetUserData("restrictedAssignments")));
         dropdown:SetText(("%s     %s"):format(playerText, roleText));
 
-        if player and not currentRole then allAssigned = false; end
+        if player and not role then allAssigned = false; end
+    end
+
+    local currentTargets, currentFilledTargets = BuildTargets(raiders);
+    local roleStatusElts = window:GetUserData("roleStatusElts");
+    for role, elt in pairs(roleStatusElts) do
+        elt:SetText(FormatRoleText(role, currentTargets, currentFilledTargets));
     end
 
     syncElt:SetDisabled(not allAssigned);
@@ -170,7 +220,7 @@ function ABP_Naxx:DriverOnStateSyncAck(data, distribution, sender, version)
     if not activeWindow then return; end
 
     local _, map = ABP_Naxx:GetRaiderSlots();
-    if data.role == self.RaidRoles[assignedRoles[map[sender]]] then
+    if data.role == assignedRoles[map[sender]] then
         activeWindow:GetUserData("readyPlayers")[map[sender]] = sender;
     else
         activeWindow:GetUserData("readyPlayers")[map[sender]] = nil;
@@ -249,7 +299,7 @@ function ABP_Naxx:CreateStartWindow()
         return;
     end
 
-    local windowWidth = 1000;
+    local windowWidth = 1100;
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("ABP Naxx Helper"), self:GetVersion()));
@@ -287,7 +337,6 @@ function ABP_Naxx:CreateStartWindow()
         local dropdowns = window:GetUserData("dropdowns");
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             assignedRoles[i] = false;
-            unassignedRoles[i] = true;
             window:GetUserData("slotEditTimes")[i] = GetTime();
             window:GetUserData("readyPlayers")[i] = nil;
             dropdowns[dropdownMapReversed[i]]:SetValue(false);
@@ -330,10 +379,7 @@ function ABP_Naxx:CreateStartWindow()
         config:SetFullWidth(true);
         config:SetCallback("OnValueChanged", function(widget, event, value)
             local mappedIndex = widget:GetUserData("mappedIndex");
-            local oldRole = assignedRoles[mappedIndex];
             assignedRoles[mappedIndex] = value;
-            unassignedRoles[value] = nil;
-            if oldRole then unassignedRoles[oldRole] = true; end
             window:GetUserData("slotEditTimes")[mappedIndex] = GetTime();
             window:GetUserData("readyPlayers")[mappedIndex] = nil;
             Refresh();
@@ -349,6 +395,24 @@ function ABP_Naxx:CreateStartWindow()
         unassign:SetUserData("group", i + 4);
         unassign:SetCallback("OnClick", unassignFunc);
         raidRoles:AddChild(unassign);
+    end
+
+    local roleStatusElts = {};
+    window:SetUserData("roleStatusElts", roleStatusElts);
+
+    local roleStatus = AceGUI:Create("InlineGroup");
+    roleStatus:SetTitle("Role Status");
+    roleStatus:SetFullWidth(true);
+    roleStatus:SetLayout("Table");
+    roleStatus:SetUserData("table", { columns = { 1.0, 1.0, 1.0, 1.0 }});
+    container:AddChild(roleStatus);
+
+    for _, role in ipairs(self.RolesSortedStatus) do
+        local roleElt = AceGUI:Create("ABPN_Label");
+        roleElt:SetFullWidth(true);
+        roleElt:SetText(self.RoleNames[role]);
+        roleStatus:AddChild(roleElt);
+        roleStatusElts[role] = roleElt;
     end
 
     local options = AceGUI:Create("InlineGroup");
@@ -382,6 +446,17 @@ function ABP_Naxx:CreateStartWindow()
     end);
     options:AddChild(tickDurationElt);
     window:SetUserData("tickDurationElt", tickDurationElt);
+
+    local restricted = AceGUI:Create("CheckBox");
+    restricted:SetWidth(180);
+    restricted:SetLabel("Capped Assignments");
+    restricted:SetValue(true);
+    window:SetUserData("restrictedAssignments", true);
+    restricted:SetCallback("OnValueChanged", function(widget, event, value)
+        window:SetUserData("restrictedAssignments", value);
+        Refresh();
+    end);
+    options:AddChild(restricted);
 
     local bottom = AceGUI:Create("SimpleGroup");
     bottom:SetFullWidth(true);

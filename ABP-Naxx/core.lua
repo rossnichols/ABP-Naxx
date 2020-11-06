@@ -357,6 +357,27 @@ ABP_Naxx.tCompare = function(lhsTable, rhsTable, depth)
     return true;
 end
 
+ABP_Naxx.tCopy = function(t)
+    local copy = {};
+    for k, v in pairs(t) do
+        if type(v) == "table" then
+            copy[k] = ABP_Naxx.tCopy(v)
+        else
+            copy[k] = v;
+        end
+    end
+    return copy;
+end
+
+ABP_Naxx.reverse = function(arr)
+    local i, j = 1, #arr;
+    while i < j do
+        arr[i], arr[j] = arr[j], arr[i];
+        i = i + 1;
+        j = j - 1;
+    end
+end
+
 
 --
 -- Static dialog templates

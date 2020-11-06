@@ -73,8 +73,7 @@ function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
     if data.active then
         local player = UnitName("player");
         local _, map = self:GetRaiderSlots();
-        local slot = map[player];
-        local role = self.RaidRoles[data.roles[slot]];
+        local role = data.roles[map[player]];
 
         self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
             role = role,

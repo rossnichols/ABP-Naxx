@@ -63,6 +63,29 @@ local rolesSorted = {
     roles.healer12,
 };
 
+local rolesSortedStatus = {
+    roles.tankdps1,
+    roles.tankdps2,
+    roles.tankdps3,
+    roles.tankdps4,
+    roles.ot1,
+    roles.ot2,
+    roles.ot3,
+    roles.ot4,
+    roles.healer1,
+    roles.healer4,
+    roles.healer7,
+    roles.healer10,
+    roles.healer2,
+    roles.healer5,
+    roles.healer8,
+    roles.healer11,
+    roles.healer3,
+    roles.healer6,
+    roles.healer9,
+    roles.healer12,
+};
+
 local raidRoles = {
     -- Group 1
     roles.tankdps1,
@@ -122,26 +145,26 @@ local raidRoles = {
 };
 
 local roleNames = {
-    [roles.tankdps1] = "Tank/DPS BL 1",
-    [roles.tankdps2] = "Tank/DPS BL 2",
-    [roles.tankdps3] = "Tank/DPS BR 1",
-    [roles.tankdps4] = "Tank/DPS BR 2",
-    [roles.ot1] = "Off Tank TL 1",
-    [roles.ot2] = "Off Tank TL 2",
-    [roles.ot3] = "Off Tank TR 1",
-    [roles.ot4] = "Off Tank TR 2",
+    [roles.tankdps1] = "Tank/DPS BL Start",
+    [roles.tankdps2] = "Tank/DPS BL Safe",
+    [roles.tankdps3] = "Tank/DPS BR Start",
+    [roles.tankdps4] = "Tank/DPS BR Safe",
+    [roles.ot1] = "Off Tank TL Safe",
+    [roles.ot2] = "Off Tank TL Start",
+    [roles.ot3] = "Off Tank TR Safe",
+    [roles.ot4] = "Off Tank TR Start",
     [roles.healer1] = "Healer BL 1",
     [roles.healer2] = "Healer BL 2",
     [roles.healer3] = "Healer BL 3",
     [roles.healer4] = "Healer TL 1",
     [roles.healer5] = "Healer TL 2",
     [roles.healer6] = "Healer TL 3",
-    [roles.healer7] = "Healer TR 1",
-    [roles.healer8] = "Healer TR 2",
-    [roles.healer9] = "Healer TR 3",
-    [roles.healer10] = "Healer BR 1",
-    [roles.healer11] = "Healer BR 2",
-    [roles.healer12] = "Healer BR 3",
+    [roles.healer7] = "Healer BR 1",
+    [roles.healer8] = "Healer BR 2",
+    [roles.healer9] = "Healer BR 3",
+    [roles.healer10] = "Healer TR 1",
+    [roles.healer11] = "Healer TR 2",
+    [roles.healer12] = "Healer TR 3",
 };
 
 local roleColors = {
@@ -177,10 +200,10 @@ local rotations = {
     [roles.tankdps3] = { [0] = pos.tankdpsBR, [3] = pos.safe, [6] = pos.tankdpsBL, [9] = pos.safe, [12] = pos.tankdpsBR },
     [roles.tankdps4] = { [0] = pos.safe, [3] = pos.tankdpsBR, [6] = pos.safe, [9] = pos.tankdpsBL, [12] = pos.safe },
 
-    [roles.ot1] = { [0] = pos.tankdpsTL, [3] = pos.safe, [6] = pos.tankdpsTR, [9] = pos.safe, [12] = pos.tankdpsTL },
-    [roles.ot2] = { [0] = pos.safe, [3] = pos.tankdpsTL, [6] = pos.safe, [9] = pos.tankdpsTR, [12] = pos.safe },
-    [roles.ot3] = { [0] = pos.tankdpsTR, [3] = pos.safe, [6] = pos.tankdpsTL, [9] = pos.safe, [12] = pos.tankdpsTR },
-    [roles.ot4] = { [0] = pos.safe, [3] = pos.tankdpsTR, [6] = pos.safe, [9] = pos.tankdpsTL, [12] = pos.safe },
+    [roles.ot1] = { [0] = pos.safe, [3] = pos.tankdpsTL, [6] = pos.safe, [9] = pos.tankdpsTR, [12] = pos.safe },
+    [roles.ot2] = { [0] = pos.tankdpsTL, [3] = pos.safe, [6] = pos.tankdpsTR, [9] = pos.safe, [12] = pos.tankdpsTL },
+    [roles.ot3] = { [0] = pos.safe, [3] = pos.tankdpsTR, [6] = pos.safe, [9] = pos.tankdpsTL, [12] = pos.safe },
+    [roles.ot4] = { [0] = pos.tankdpsTR, [3] = pos.safe, [6] = pos.tankdpsTL, [9] = pos.safe, [12] = pos.tankdpsTR },
 
     [roles.healer1] = { [0] = pos.healerBL, [1] = pos.healerTL, [4] = pos.healerTR, [7] = pos.healerBR, [10] = pos.healerBL },
     [roles.healer2] = { [0] = pos.healerBL, [2] = pos.healerTL, [5] = pos.healerTR, [8] = pos.healerBR, [11] = pos.healerBL },
@@ -190,13 +213,13 @@ local rotations = {
     [roles.healer5] = { [0] = pos.healerTL, [2] = pos.healerTR, [5] = pos.healerBR, [8] = pos.healerBL, [11] = pos.healerTL },
     [roles.healer6] = { [0] = pos.healerTL, [3] = pos.healerTR, [6] = pos.healerBR, [9] = pos.healerBL, [12] = pos.healerTL },
 
-    [roles.healer7] = { [0] = pos.healerTR, [1] = pos.healerBR, [4] = pos.healerBL, [7] = pos.healerTL, [10] = pos.healerTR },
-    [roles.healer8] = { [0] = pos.healerTR, [2] = pos.healerBR, [5] = pos.healerBL, [8] = pos.healerTL, [11] = pos.healerTR },
-    [roles.healer9] = { [0] = pos.healerTR, [3] = pos.healerBR, [6] = pos.healerBL, [9] = pos.healerTL, [12] = pos.healerTR },
+    [roles.healer7] = { [0] = pos.healerBR, [1] = pos.healerBL, [4] = pos.healerTL, [7] = pos.healerTR, [10] = pos.healerBR },
+    [roles.healer8] = { [0] = pos.healerBR, [2] = pos.healerBL, [5] = pos.healerTL, [8] = pos.healerTR, [11] = pos.healerBR },
+    [roles.healer9] = { [0] = pos.healerBR, [3] = pos.healerBL, [6] = pos.healerTL, [9] = pos.healerTR, [12] = pos.healerBR },
 
-    [roles.healer10] = { [0] = pos.healerBR, [1] = pos.healerBL, [4] = pos.healerTL, [7] = pos.healerTR, [10] = pos.healerBR },
-    [roles.healer11] = { [0] = pos.healerBR, [2] = pos.healerBL, [5] = pos.healerTL, [8] = pos.healerTR, [11] = pos.healerBR },
-    [roles.healer12] = { [0] = pos.healerBR, [3] = pos.healerBL, [6] = pos.healerTL, [9] = pos.healerTR, [12] = pos.healerBR },
+    [roles.healer10] = { [0] = pos.healerTR, [1] = pos.healerBR, [4] = pos.healerBL, [7] = pos.healerTL, [10] = pos.healerTR },
+    [roles.healer11] = { [0] = pos.healerTR, [2] = pos.healerBR, [5] = pos.healerBL, [8] = pos.healerTL, [11] = pos.healerTR },
+    [roles.healer12] = { [0] = pos.healerTR, [3] = pos.healerBR, [6] = pos.healerBL, [9] = pos.healerTL, [12] = pos.healerTR },
 };
 for _, rotation in pairs(rotations) do
     local pos = rotation[0];
@@ -220,6 +243,7 @@ local modeNames = {
 
 ABP_Naxx.Roles = roles;
 ABP_Naxx.RolesSorted = rolesSorted;
+ABP_Naxx.RolesSortedStatus = rolesSortedStatus;
 ABP_Naxx.RaidRoles = raidRoles;
 ABP_Naxx.RoleNames = roleNames;
 ABP_Naxx.MapPositions = pos;
