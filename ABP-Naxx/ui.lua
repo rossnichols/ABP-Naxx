@@ -26,15 +26,23 @@ local function Refresh()
         local reset = activeWindow:GetUserData("reset");
 
         if not role then
-            reset:SetDisabled(true);
-            tickTrigger:SetDisabled(true);
-            tickTrigger:SetText("Ticks");
+            if reset then
+                reset:SetDisabled(true);
+            end
+            if tickTrigger then
+                tickTrigger:SetDisabled(true);
+                tickTrigger:SetText("Ticks");
+            end
             return;
         end
 
-        reset:SetDisabled(tick == -1);
-        tickTrigger:SetDisabled(false);
-        tickTrigger:SetText(tick == -1 and "Start" or ("Tick (%d)"):format(tick));
+        if reset then
+            reset:SetDisabled(tick == -1);
+        end
+        if tickTrigger then
+            tickTrigger:SetDisabled(false);
+            tickTrigger:SetText(tick == -1 and "Start" or ("Tick (%d)"):format(tick));
+        end
     end
 
     local rotation = ABP_Naxx.Rotations[role];
@@ -75,9 +83,11 @@ function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
         local _, map = self:GetRaiderSlots();
         local role = data.roles[map[player]];
 
-        self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
-            role = role,
-        }, "WHISPER", sender);
+        if not data.started then
+            self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
+                role = role,
+            }, "WHISPER", sender);
+        end
 
         currentEncounter = {
             mode = data.mode,
@@ -95,6 +105,21 @@ function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
 
     if currentEncounter then
         self:ShowMainWindow();
+    end
+end
+
+function ABP_Naxx:GetCurrentEncounter()
+    return currentEncounter;
+end
+
+function ABP_Naxx:RefreshCurrentEncounter()
+    if activeWindow then
+        activeWindow:Hide();
+        if currentEncounter and currentEncounter.started then
+            self:ShowMainWindow();
+        else
+            currentEncounter = nil;
+        end
     end
 end
 
@@ -136,11 +161,17 @@ function ABP_Naxx:CreateMainWindow()
 
         local tickElt = AceGUI:Create("ABPN_Label");
         tickElt:SetFullWidth(true);
-        tickElt:SetText(currentEncounter.started and ("Ticks: %d"):format(currentEncounter.ticks) or "Not Started");
+        local tickText = currentEncounter.started and ("Ticks: %d"):format(currentEncounter.ticks) or "Not Started";
+        if currentEncounter and currentEncounter.mode == ABP_Naxx.Modes.live and
+           currentEncounter.ticks == 0 and currentEncounter.tickDuration == 0 then
+            tickText = "Waiting";
+        end
+        tickElt:SetText(tickText);
         tickElt:SetJustifyH("RIGHT");
         mainLine:AddChild(tickElt);
 
-        if currentEncounter.started and currentEncounter.mode == self.Modes.timer then
+        if currentEncounter.started and currentEncounter.tickDuration > 0 and
+           (currentEncounter.mode == self.Modes.timer or currentEncounter.mode == self.Modes.live) then
             local statusbar = AceGUI:Create("ABPN_StatusBar");
             statusbar:SetFullWidth(true);
             statusbar:SetHeight(5);
@@ -167,33 +198,37 @@ function ABP_Naxx:CreateMainWindow()
         mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
         window:AddChild(mainLine);
 
-        local tickTrigger = AceGUI:Create("ABPN_Button");
-        tickTrigger:SetFullWidth(true);
-        tickTrigger:SetCallback("OnClick", function(widget, event, button)
-            if currentEncounter then
-                self:AdvanceEncounter(button == "LeftButton");
-            else
-                local increment = button == "LeftButton" and 1 or -1;
-                window:SetUserData("tick", math.max(window:GetUserData("tick") + increment, -1));
-                Refresh();
-            end
-        end);
-        mainLine:AddChild(tickTrigger);
-        window:SetUserData("tickTrigger", tickTrigger);
+        if not currentEncounter or (currentEncounter.mode ~= self.Modes.live or not currentEncounter.started) then
+            local tickTrigger = AceGUI:Create("ABPN_Button");
+            tickTrigger:SetFullWidth(true);
+            tickTrigger:SetCallback("OnClick", function(widget, event, button)
+                if currentEncounter then
+                    self:AdvanceEncounter(button == "LeftButton");
+                else
+                    local increment = button == "LeftButton" and 1 or -1;
+                    window:SetUserData("tick", math.max(window:GetUserData("tick") + increment, -1));
+                    Refresh();
+                end
+            end);
+            mainLine:AddChild(tickTrigger);
+            window:SetUserData("tickTrigger", tickTrigger);
+        end
 
-        local reset = AceGUI:Create("Button");
-        reset:SetText("Stop");
-        reset:SetFullHeight(true);
-        reset:SetCallback("OnClick", function(widget)
-            if currentEncounter then
-                self:StopEncounter();
-            else
-                window:SetUserData("tick", -1);
-                Refresh();
-            end
-        end);
-        mainLine:AddChild(reset);
-        window:SetUserData("reset", reset);
+        if not currentEncounter or (currentEncounter.mode ~= self.Modes.live or currentEncounter.tickDuration == 0) then
+            local reset = AceGUI:Create("Button");
+            reset:SetText("Stop");
+            reset:SetFullHeight(true);
+            reset:SetCallback("OnClick", function(widget)
+                if currentEncounter then
+                    self:StopEncounter();
+                else
+                    window:SetUserData("tick", -1);
+                    Refresh();
+                end
+            end);
+            mainLine:AddChild(reset);
+            window:SetUserData("reset", reset);
+        end
     end
 
     local image = AceGUI:Create("ABPN_ImageGroup");

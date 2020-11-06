@@ -91,6 +91,15 @@ function ABP_Naxx:OnEnable()
     self:RegisterEvent("PLAYER_LOGOUT", function(self, event, ...)
         self:DriverOnLogout();
     end, self);
+    self:RegisterEvent("ENCOUNTER_START", function(self, event, ...)
+        self:DriverOnEncounterStart(...);
+    end, self);
+    self:RegisterEvent("ENCOUNTER_END", function(self, event, ...)
+        self:DriverOnEncounterEnd(...);
+    end, self);
+    self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", function(self, event, ...)
+        self:DriverOnSpellCast(...);
+    end, self);
 
     -- Precreate frames to avoid issues generating them during combat.
     if not UnitAffectingCombat("player") then

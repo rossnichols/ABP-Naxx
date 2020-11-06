@@ -234,9 +234,11 @@ end
 local modes = {
     manual = "manual",
     timer = "timer",
+    live = "live",
 };
 
 local modeNames = {
+    [modes.live] = "Live",
     [modes.manual] = "Manual",
     [modes.timer] = "Timer",
 };

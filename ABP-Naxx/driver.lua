@@ -38,8 +38,8 @@ end
 local dropdownMapReversed = {};
 for i, mapped in pairs(dropdownMap) do dropdownMapReversed[mapped] = i; end
 
-local mode = ABP_Naxx.Modes.manual;
-local tickDuration = 30;
+local mode = ABP_Naxx.Modes.live;
+local tickDuration = 12;
 
 local started = false;
 local ticks = 0;
@@ -263,6 +263,60 @@ function ABP_Naxx:DriverOnLogout()
     end
 end
 
+function ABP_Naxx:DriverOnEncounterStart(bossId)
+    if bossId ~= 1121 then return; end
+
+    local currentEncounter = self:GetCurrentEncounter();
+    if currentEncounter and currentEncounter.started and currentEncounter.mode == self.Modes.live then
+        currentEncounter.ticks = 0;
+        currentEncounter.tickDuration = 21;
+        self:RefreshCurrentEncounter();
+    end
+
+    if started and mode == self.Modes.live then
+        ticks = 0;
+        tickDuration = 21;
+    end
+end
+
+function ABP_Naxx:DriverOnEncounterEnd(bossId)
+    if bossId ~= 1121 then return; end
+
+    local currentEncounter = self:GetCurrentEncounter();
+    if currentEncounter and currentEncounter.started and currentEncounter.mode == self.Modes.live then
+        currentEncounter.started = false;
+        currentEncounter.ticks = 0;
+        self:RefreshCurrentEncounter();
+    end
+
+    if started and mode == self.Modes.live then
+        started = false;
+        ticks = 0;
+    end
+end
+
+local lastMarkTime = 0;
+local markSpellIds = { [28832] = true, [28833] = true, [28834] = true, [28835] = true };
+
+function ABP_Naxx:DriverOnSpellCast(unit, castGUID, spellID)
+    if not markSpellIds[spellID] then return; end
+    local now = GetTime();
+    if now - lastMarkTime < 5 then return; end
+    lastMarkTime = now;
+
+    local currentEncounter = self:GetCurrentEncounter();
+    if currentEncounter and currentEncounter.started and currentEncounter.mode == self.Modes.live then
+        currentEncounter.ticks = currentEncounter.ticks + 1;
+        currentEncounter.tickDuration = 12;
+        self:RefreshCurrentEncounter();
+    end
+
+    if started and mode == self.Modes.live then
+        ticks = ticks + 1;
+        tickDuration = 12;
+    end
+end
+
 function ABP_Naxx:OnTimer()
     self:AdvanceEncounter(true);
 end
@@ -274,6 +328,9 @@ function ABP_Naxx:AdvanceEncounter(forward)
         else
             started = true;
             ticks = 0;
+            if mode == self.Modes.live then
+                tickDuration = 0;
+            end
         end
     elseif started then
         ticks = ticks - 1;
@@ -444,7 +501,7 @@ function ABP_Naxx:CreateStartWindow()
     window:SetUserData("modeElt", modeElt);
 
     local tickDurationElt = AceGUI:Create("Slider");
-    tickDurationElt:SetSliderValues(5, 60, 5);
+    tickDurationElt:SetSliderValues(3, 60, 3);
     tickDurationElt:SetValue(tickDuration);
     tickDurationElt:SetLabel("Tick Duration");
     tickDurationElt:SetCallback("OnValueChanged", function(widget, event, value)
