@@ -61,7 +61,7 @@ function ABP_Naxx:InitOptions()
     AceConfig:RegisterOptionsTable(self:ColorizeText(addonText), {
         type = "group",
         args = options,
-    }, { "4h" });
+    }, { "fourh" });
 
     local guiOptions = {
         general = {

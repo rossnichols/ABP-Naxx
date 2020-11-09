@@ -14,7 +14,7 @@ local showedNagPopup = false;
 local checkedGuild = false;
 
 function ABP_Naxx:GetVersion()
-    local version = GetAddOnMetadata("4H Assist", "Version");
+    local version = GetAddOnMetadata("4H-Assist", "Version");
     if version == "${ADDON_VERSION}" then
         return self.VersionOverride;
     end
@@ -22,7 +22,7 @@ function ABP_Naxx:GetVersion()
 end
 
 function ABP_Naxx:GetCompareVersion()
-    local version = GetAddOnMetadata("4H Assist", "Version");
+    local version = GetAddOnMetadata("4H-Assist", "Version");
     if version == "${ADDON_VERSION}" then
         return self.VersionCmpOverride;
     end

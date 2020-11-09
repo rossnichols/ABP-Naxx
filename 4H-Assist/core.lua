@@ -47,7 +47,7 @@ local function OnGroupJoined(self)
 end
 
 function ABP_Naxx:OnEnable()
-    if GetAddOnMetadata("4H Assist", "Version") ~= version then
+    if GetAddOnMetadata("4H-Assist", "Version") ~= version then
         self:NotifyVersionMismatch();
         self:RegisterChatCommand("ABP_Naxx", function()
             self:Error("Please restart your game client!");

@@ -1,6 +1,6 @@
 ## Interface: 11305
 ## Title: 4H Assist
-## Notes: Assistant for WoW Classic Four Horsemen encounter. Access ingame via '/4h'.
+## Notes: Assistant for Naxxramas's Four Horsemen encounter. Access ingame via '/fourh'.
 ## Author: Xanido <Always Be Pulling>
 ## Version: ${ADDON_VERSION}
 ## OptionalDeps: DBM-Core
