@@ -72,7 +72,7 @@ local function Refresh()
         upcoming:SetUserData("canvas-X", nextPos[1]);
         upcoming:SetUserData("canvas-Y", nextPos[2]);
 
-        if dbmAlert then
+        if currentEncounter and dbmAlert then
             dbmAlert:Show("Move after next mark!");
         end
     end
