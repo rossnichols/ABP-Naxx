@@ -1,5 +1,5 @@
 local _G = _G;
-local ABP_Naxx = _G.ABP_Naxx;
+local ABP_4H = _G.ABP_4H;
 
 local GetNumGuildMembers = GetNumGuildMembers;
 local GetGuildRosterInfo = GetGuildRosterInfo;
@@ -9,7 +9,7 @@ local table = table;
 
 local guildInfo = {};
 
-function ABP_Naxx:RebuildGuildInfo()
+function ABP_4H:RebuildGuildInfo()
     table.wipe(guildInfo);
     for i = 1, GetNumGuildMembers() do
         local data = { GetGuildRosterInfo(i) };
@@ -25,7 +25,7 @@ function ABP_Naxx:RebuildGuildInfo()
     end
 end
 
-function ABP_Naxx:GetGuildInfo(player)
+function ABP_4H:GetGuildInfo(player)
     if player then return guildInfo[player]; end
     return guildInfo;
 end

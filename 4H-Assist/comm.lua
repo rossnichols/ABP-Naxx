@@ -1,5 +1,5 @@
 local _G = _G;
-local ABP_Naxx = _G.ABP_Naxx;
+local ABP_4H = _G.ABP_4H;
 local LibSerialize = _G.LibStub("LibSerialize");
 local AceSerializer = _G.LibStub("AceSerializer-3.0");
 local LibDeflate = _G.LibStub("LibDeflate");
@@ -23,7 +23,7 @@ local mod = mod;
 local synchronousCheck = false;
 local events = {};
 
-function ABP_Naxx:GetBroadcastChannel()
+function ABP_4H:GetBroadcastChannel()
     if self:GetDebugOpt("PrivateComms") then return "WHISPER", UnitName("player"); end
 
     if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
@@ -37,22 +37,22 @@ function ABP_Naxx:GetBroadcastChannel()
     end
 end
 
-function ABP_Naxx:SetCallback(name, fn)
+function ABP_4H:SetCallback(name, fn)
     events[name] = fn;
 end
 
-function ABP_Naxx:Fire(name, ...)
+function ABP_4H:Fire(name, ...)
     local fn = events[name];
     if fn then fn(self, name, ...); end
 end
 
 -- The prefix can be revved to create a backwards-incompatible version.
-function ABP_Naxx:GetCommPrefix()
+function ABP_4H:GetCommPrefix()
     return "ABPN1";
 end
 
 -- Highest ID: 3
-ABP_Naxx.CommTypes = {
+ABP_4H.CommTypes = {
     STATE_SYNC = { name = "STATE_SYNC", id = 1, priority = "ALERT", fireLocally = true },
 
     STATE_SYNC_ACK = { name = "STATE_SYNC_ACK", id = 2, priority = "INSTANT", fireLocally = true },
@@ -62,19 +62,19 @@ ABP_Naxx.CommTypes = {
     -- NOTE: these aren't versioned and use legacy encoding so they can continue to function across major changes.
     VERSION_REQUEST = { name = "ABPN_VERSION_REQUEST", priority = "BULK", legacy = true },
     -- reset: bool or nil
-    -- version: from ABP_Naxx:GetVersion()
+    -- version: from ABP_4H:GetVersion()
     VERSION_RESPONSE = { name = "ABPN_VERSION_RESPONSE", priority = "BULK", legacy = true },
-    -- version: from ABP_Naxx:GetVersion()
+    -- version: from ABP_4H:GetVersion()
 };
 local commIdMap = {};
-for _, typ in pairs(ABP_Naxx.CommTypes) do
+for _, typ in pairs(ABP_4H.CommTypes) do
     if typ.id then commIdMap[typ.id] = typ.name; end
 end
 
-ABP_Naxx.InternalEvents = {
+ABP_4H.InternalEvents = {
 };
 
-function ABP_Naxx:CommCallback(sent, total, logInCallback)
+function ABP_4H:CommCallback(sent, total, logInCallback)
     if logInCallback and self:GetDebugOpt("DebugComms") then
         self:LogDebug("COMM-CB: sent=%d total=%d", sent, total);
     end
@@ -83,7 +83,7 @@ function ABP_Naxx:CommCallback(sent, total, logInCallback)
     end
 end
 
-function ABP_Naxx:Serialize(typ, data, legacy)
+function ABP_4H:Serialize(typ, data, legacy)
     if legacy then
         data.type = typ.name;
         _G.assert(data.version);
@@ -113,7 +113,7 @@ function ABP_Naxx:Serialize(typ, data, legacy)
     end
 end
 
-function ABP_Naxx:Deserialize(payload, legacy)
+function ABP_4H:Deserialize(payload, legacy)
     if legacy then
         local compressed = AddonEncodeTable:Decode(payload);
         if not compressed then return false; end
@@ -144,7 +144,7 @@ function ABP_Naxx:Deserialize(payload, legacy)
     end
 end
 
-function ABP_Naxx:SendComm(typ, data, distribution, target)
+function ABP_4H:SendComm(typ, data, distribution, target)
     local priority = typ.priority;
     local payload, prefix = self:Serialize(typ, data, typ.legacy);
 
@@ -202,7 +202,7 @@ function ABP_Naxx:SendComm(typ, data, distribution, target)
     return synchronousCheck;
 end
 
-function ABP_Naxx:OnCommReceived(prefix, payload, distribution, sender)
+function ABP_4H:OnCommReceived(prefix, payload, distribution, sender)
     local legacy = (prefix == "ABPN");
     local success, typ, version, data = self:Deserialize(payload, legacy);
     if not success or type(data) ~= "table" then

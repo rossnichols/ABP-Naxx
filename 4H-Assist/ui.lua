@@ -1,5 +1,5 @@
 local _G = _G;
-local ABP_Naxx = _G.ABP_Naxx;
+local ABP_4H = _G.ABP_4H;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
 local dbmAlert;
@@ -52,7 +52,7 @@ local function Refresh()
         end
     end
 
-    local rotation = ABP_Naxx.Rotations[role];
+    local rotation = ABP_4H.Rotations[role];
     local currentPos, nextPos;
     if tick == -1 then
         currentPos = rotation[0];
@@ -72,23 +72,23 @@ local function Refresh()
         upcoming:SetUserData("canvas-X", nextPos[1]);
         upcoming:SetUserData("canvas-Y", nextPos[2]);
 
-        if currentEncounter and dbmAlert then
+        if currentEncounter and dbmAlert and ABP_4H:Get("showAlert") then
             dbmAlert:Show("Move after next mark!");
         end
     end
     image:DoLayout();
 end
 
-function ABP_Naxx:UIOnGroupJoined()
+function ABP_4H:UIOnGroupJoined()
     self:SendComm(self.CommTypes.STATE_SYNC_REQUEST, {}, "BROADCAST");
 end
 
-function ABP_Naxx:OnGroupJoined()
+function ABP_4H:OnGroupJoined()
     currentEncounter = nil;
     if activeWindow then activeWindow:Hide(); end
 end
 
-function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
+function ABP_4H:UIOnStateSync(data, distribution, sender, version)
     if data.active then
         local player = UnitName("player");
         local _, map = self:GetRaiderSlots();
@@ -119,11 +119,11 @@ function ABP_Naxx:UIOnStateSync(data, distribution, sender, version)
     end
 end
 
-function ABP_Naxx:GetCurrentEncounter()
+function ABP_4H:GetCurrentEncounter()
     return currentEncounter;
 end
 
-function ABP_Naxx:RefreshCurrentEncounter()
+function ABP_4H:RefreshCurrentEncounter()
     if activeWindow then
         activeWindow:Hide();
         if currentEncounter and currentEncounter.started then
@@ -134,7 +134,7 @@ function ABP_Naxx:RefreshCurrentEncounter()
     end
 end
 
-function ABP_Naxx:CreateMainWindow()
+function ABP_4H:CreateMainWindow()
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
@@ -173,7 +173,7 @@ function ABP_Naxx:CreateMainWindow()
         local tickElt = AceGUI:Create("ABPN_Label");
         tickElt:SetFullWidth(true);
         local tickText = currentEncounter.started and ("Ticks: %d"):format(currentEncounter.ticks) or "Not Started";
-        if currentEncounter and currentEncounter.mode == ABP_Naxx.Modes.live and
+        if currentEncounter and currentEncounter.mode == ABP_4H.Modes.live and
            currentEncounter.ticks == 0 and currentEncounter.tickDuration == 0 then
             tickText = "Waiting";
         end
@@ -223,6 +223,7 @@ function ABP_Naxx:CreateMainWindow()
             end);
             mainLine:AddChild(tickTrigger);
             window:SetUserData("tickTrigger", tickTrigger);
+            self:AddWidgetTooltip(tickTrigger, "Once started, left-click to add a tick and right-click to remove one.");
         end
 
         if not currentEncounter or (currentEncounter.mode ~= self.Modes.live or currentEncounter.tickDuration == 0) then
@@ -269,7 +270,7 @@ function ABP_Naxx:CreateMainWindow()
     return window;
 end
 
-function ABP_Naxx:ShowMainWindow()
+function ABP_4H:ShowMainWindow()
     if activeWindow then
         activeWindow:Hide();
         return;

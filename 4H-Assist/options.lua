@@ -1,18 +1,19 @@
 local _G = _G;
-local ABP_Naxx = _G.ABP_Naxx;
+local ABP_4H = _G.ABP_4H;
 local AceConfig = _G.LibStub("AceConfig-3.0");
 local AceConfigDialog = _G.LibStub("AceConfigDialog-3.0");
 local AceDB = _G.LibStub("AceDB-3.0");
 
 local pairs = pairs;
 
-function ABP_Naxx:InitOptions()
+function ABP_4H:InitOptions()
     local defaults = {
         char = {
             debug = false,
+            showAlert = true,
         }
     };
-    self.db = AceDB:New("ABP_Naxx_DB", defaults);
+    self.db = AceDB:New("ABP_4H_DB", defaults);
 
     local addonText = "4H Assist";
     local version = self:GetVersion();
@@ -81,61 +82,83 @@ function ABP_Naxx:InitOptions()
                     inline = true,
                     order = 2,
                     args = {
+                        show = {
+                            name = "Show Map",
+                            order = 1,
+                            desc = "Show the map window to browse the roles and their positions.",
+                            type = "execute",
+                            func = function() _G.InterfaceOptionsFrame:Hide(); self:ShowMainWindow(); end
+                        },
+                        start = {
+                            name = "Start Encounter",
+                            order = 2,
+                            desc = "Show the window to start a synchronized encounter.",
+                            type = "execute",
+                            func = function() _G.InterfaceOptionsFrame:Hide(); self:ShowStartWindow(); end
+                        },
+                        alerts = {
+                            name = "DBM alerts",
+                            order = 3,
+                            desc = "Show a DBM alert when you're supposed to move after the next mark.",
+                            type = "toggle",
+                            get = function(info) return self.db.char.showAlert; end,
+                            set = function(info, v) self.db.char.showAlert = v; end,
+                        },
                     },
                 },
             },
         },
-        officer = {
-            name = "",
-            type = "group",
-            inline = true,
-            order = 5,
-            hidden = function() return not self:CanEditOfficerNotes(); end,
-            args = {
-                header = {
-                    order = 1,
-                    type = "header",
-                    name = "Officer",
-                },
-                desc = {
-                    order = 2,
-                    type = "description",
-                    name = "Special settings for officers.",
-                },
-                settings = {
-                    name = " ",
-                    type = "group",
-                    inline = true,
-                    order = 3,
-                    args = {
-                    },
-                },
-            },
-        },
+        -- officer = {
+        --     name = "",
+        --     type = "group",
+        --     inline = true,
+        --     order = 5,
+        --     hidden = function() return not self:CanEditOfficerNotes(); end,
+        --     args = {
+        --         header = {
+        --             order = 1,
+        --             type = "header",
+        --             name = "Officer",
+        --         },
+        --         desc = {
+        --             order = 2,
+        --             type = "description",
+        --             name = "Special settings for officers.",
+        --         },
+        --         settings = {
+        --             name = " ",
+        --             type = "group",
+        --             inline = true,
+        --             order = 3,
+        --             args = {
+        --             },
+        --         },
+        --     },
+        -- },
     };
-    AceConfig:RegisterOptionsTable("ABP_Naxx", {
+    AceConfig:RegisterOptionsTable("ABP_4H", {
         name = self:ColorizeText(addonText) .. " Options",
         type = "group",
         args = guiOptions,
     });
-    self.OptionsFrame = AceConfigDialog:AddToBlizOptions("ABP_Naxx");
+    self.OptionsFrame = AceConfigDialog:AddToBlizOptions("ABP_4H");
 end
 
-function ABP_Naxx:ShowOptionsWindow()
+function ABP_4H:ShowOptionsWindow()
     _G.InterfaceOptionsFrame_Show();
     _G.InterfaceOptionsFrame_OpenToCategory(self.OptionsFrame);
 end
 
-function ABP_Naxx:Get(k)
+function ABP_4H:Get(k)
     return self.db.char[k];
 end
 
-function ABP_Naxx:Set(k, v)
+function ABP_4H:Set(k, v)
     self.db.char[k] = v;
 end
 
-function ABP_Naxx:RefreshOptionsWindow()
+function ABP_4H:RefreshOptionsWindow()
     if self.OptionsFrame:IsVisible() then
-        AceConfigDialog:Open("ABP_Naxx", self.OptionsFrame.obj);
+        AceConfigDialog:Open("ABP_4H", self.OptionsFrame.obj);
     end
 end

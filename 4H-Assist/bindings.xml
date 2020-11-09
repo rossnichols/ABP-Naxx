@@ -1,8 +1,8 @@
 <Bindings>
-    <Binding name="ABP_NAXX_OPENMAINWINDOW" category="ADDONS" header="ABP_NAXX">
-        ABP_Naxx:ShowMainWindow();
+    <Binding name="ABP_4H_OPENMAINWINDOW" category="ADDONS" header="ABP_4H">
+        ABP_4H:ShowMainWindow();
     </Binding>
-    <Binding name="ABP_NAXX_OPENSTARTWINDOW" category="ADDONS">
-        ABP_Naxx:ShowStartWindow();
+    <Binding name="ABP_4H_OPENSTARTWINDOW" category="ADDONS">
+        ABP_4H:ShowStartWindow();
     </Binding>
 </Bindings>

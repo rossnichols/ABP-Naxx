@@ -1,5 +1,5 @@
 local _G = _G;
-local ABP_Naxx = _G.ABP_Naxx;
+local ABP_4H = _G.ABP_4H;
 
 local debugOpts = {
     -- If set, extra debug messages will be printed.
@@ -12,13 +12,13 @@ local debugOpts = {
     -- DebugComms = true,
 };
 
-function ABP_Naxx:GetDebugOpt(key)
+function ABP_4H:GetDebugOpt(key)
     return self:Get("debug") and (not key or debugOpts[key]);
 end
 
-function ABP_Naxx:SetDebug(enable)
+function ABP_4H:SetDebug(enable)
     self:Set("debug", enable);
 end
 
-ABP_Naxx.VersionOverride = "0.1.0";
-ABP_Naxx.VersionCmpOverride = "0.1.0";
+ABP_4H.VersionOverride = "0.1.0";
+ABP_4H.VersionCmpOverride = "0.1.0";

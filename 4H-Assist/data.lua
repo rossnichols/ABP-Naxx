@@ -1,5 +1,5 @@
 local _G = _G;
-local ABP_Naxx = _G.ABP_Naxx;
+local ABP_4H = _G.ABP_4H;
 
 local pos = {
     healerTL = { 40, 25 },
@@ -240,15 +240,15 @@ local modes = {
 local modeNames = {
     [modes.live] = "Live",
     [modes.manual] = "Manual",
-    [modes.timer] = "Timer",
+    [modes.timer] = "Timed",
 };
 
-ABP_Naxx.Roles = roles;
-ABP_Naxx.RolesSorted = rolesSorted;
-ABP_Naxx.RolesSortedStatus = rolesSortedStatus;
-ABP_Naxx.RaidRoles = raidRoles;
-ABP_Naxx.RoleNames = roleNames;
-ABP_Naxx.MapPositions = pos;
-ABP_Naxx.Rotations = rotations;
-ABP_Naxx.Modes = modes;
-ABP_Naxx.ModeNames = modeNames;
+ABP_4H.Roles = roles;
+ABP_4H.RolesSorted = rolesSorted;
+ABP_4H.RolesSortedStatus = rolesSortedStatus;
+ABP_4H.RaidRoles = raidRoles;
+ABP_4H.RoleNames = roleNames;
+ABP_4H.MapPositions = pos;
+ABP_4H.Rotations = rotations;
+ABP_4H.Modes = modes;
+ABP_4H.ModeNames = modeNames;

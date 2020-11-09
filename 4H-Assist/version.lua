@@ -1,5 +1,5 @@
 local _G = _G;
-local ABP_Naxx = _G.ABP_Naxx;
+local ABP_4H = _G.ABP_4H;
 
 local IsInGroup = IsInGroup;
 local GetNumGroupMembers = GetNumGroupMembers;
@@ -13,7 +13,7 @@ local versionCheckData;
 local showedNagPopup = false;
 local checkedGuild = false;
 
-function ABP_Naxx:GetVersion()
+function ABP_4H:GetVersion()
     local version = GetAddOnMetadata("4H-Assist", "Version");
     if version == "${ADDON_VERSION}" then
         return self.VersionOverride;
@@ -21,7 +21,7 @@ function ABP_Naxx:GetVersion()
     return version;
 end
 
-function ABP_Naxx:GetCompareVersion()
+function ABP_4H:GetCompareVersion()
     local version = GetAddOnMetadata("4H-Assist", "Version");
     if version == "${ADDON_VERSION}" then
         return self.VersionCmpOverride;
@@ -29,7 +29,7 @@ function ABP_Naxx:GetCompareVersion()
     return version;
 end
 
-function ABP_Naxx:ParseVersion(version)
+function ABP_4H:ParseVersion(version)
     local major, minor, patch, prerelType, prerelVersion = version:match("^(%d+)%.(%d+)%.(%d+)%-?(%a*)(%d*)$");
     if not (major and minor and patch) then return; end
     if prerelType == "" then prerelType = nil; end
@@ -38,7 +38,7 @@ function ABP_Naxx:ParseVersion(version)
     return tonumber(major), tonumber(minor), tonumber(patch), prerelType, tonumber(prerelVersion);
 end
 
-function ABP_Naxx:VersionIsNewer(versionCmp, version, allowPrerelease)
+function ABP_4H:VersionIsNewer(versionCmp, version, allowPrerelease)
     if versionCmp == version then return false; end
 
     local major, minor, patch, prerelType, prerelVersion = self:ParseVersion(version);
@@ -73,27 +73,27 @@ local function CompareVersion(versionCmp, sender)
     if showedNagPopup then return; end
 
     -- See if we're already running this version
-    local version = ABP_Naxx:GetCompareVersion();
+    local version = ABP_4H:GetCompareVersion();
     if versionCmp == version then return; end
 
     -- Make sure the version strings are valid
-    if not (ABP_Naxx:ParseVersion(version) and ABP_Naxx:ParseVersion(versionCmp)) then return; end
+    if not (ABP_4H:ParseVersion(version) and ABP_4H:ParseVersion(versionCmp)) then return; end
 
-    if ABP_Naxx:VersionIsNewer(versionCmp, version) then
-        _G.StaticPopup_Show("ABP_NAXX_OUTDATED_VERSION",
+    if ABP_4H:VersionIsNewer(versionCmp, version) then
+        _G.StaticPopup_Show("ABP_4H_OUTDATED_VERSION",
             ("You're running an outdated version of %s! Newer version %s discovered from %s, yours is %s. Please upgrade!"):format(
-            ABP_Naxx:ColorizeText("4H Assist"), ABP_Naxx:ColorizeText(versionCmp), ABP_Naxx:ColorizeName(sender), ABP_Naxx:ColorizeText(version)));
+            ABP_4H:ColorizeText("4H Assist"), ABP_4H:ColorizeText(versionCmp), ABP_4H:ColorizeName(sender), ABP_4H:ColorizeText(version)));
         showedNagPopup = true;
     end
 end
 
-function ABP_Naxx:NotifyVersionMismatch()
-    _G.StaticPopup_Show("ABP_NAXX_OUTDATED_VERSION",
+function ABP_4H:NotifyVersionMismatch()
+    _G.StaticPopup_Show("ABP_4H_OUTDATED_VERSION",
         ("You've installed a new version of %s! All functionality is disabled until you restart your game client."):format(
         self:ColorizeText("4H Assist")));
 end
 
-function ABP_Naxx:OnVersionRequest(data, distribution, sender)
+function ABP_4H:OnVersionRequest(data, distribution, sender)
     if data.reset then
         -- Reset the announced version if the sender requested so that the message will print again.
         showedNagPopup = false;
@@ -109,7 +109,7 @@ function ABP_Naxx:OnVersionRequest(data, distribution, sender)
     CompareVersion(data.version, sender);
 end
 
-function ABP_Naxx:OnVersionResponse(data, distribution, sender)
+function ABP_4H:OnVersionResponse(data, distribution, sender)
     if versionCheckData and not versionCheckData.players[sender] then
         versionCheckData.players[sender] = data.version;
         versionCheckData.received = versionCheckData.received + 1;
@@ -142,7 +142,7 @@ local function GetNumOnlineGroupMembers()
     return count;
 end
 
-function ABP_Naxx:PerformVersionCheck()
+function ABP_4H:PerformVersionCheck()
     if versionCheckData then
         self:Error("Already performing version check!");
         return;
@@ -178,7 +178,7 @@ function ABP_Naxx:PerformVersionCheck()
     versionCheckData.timer = self:ScheduleTimer("VersionCheckCallback", 5);
 end
 
-function ABP_Naxx:VersionCheckCallback()
+function ABP_4H:VersionCheckCallback()
     if not versionCheckData then return; end
     local version = self:GetCompareVersion();
 
@@ -197,7 +197,7 @@ function ABP_Naxx:VersionCheckCallback()
                 local versionCmp = versionCheckData.players[player];
                 if versionCmp then
                     if self:VersionIsNewer(version, versionCmp, true) then
-                        self:Notify("%s running an outdated version (%s)!", self:ColorizeName(player), ABP_Naxx:ColorizeText(versionCmp));
+                        self:Notify("%s running an outdated version (%s)!", self:ColorizeName(player), ABP_4H:ColorizeText(versionCmp));
                         _G.SendChatMessage(
                             ("You don't have the latest 4H Assist version installed! Please update it from Curse/Twitch. The latest version is %s, you have %s."):format(version, versionCmp),
                             "WHISPER", nil, player);
@@ -224,18 +224,18 @@ function ABP_Naxx:VersionCheckCallback()
     versionCheckData = nil;
 end
 
-function ABP_Naxx:VersionOnGroupJoined()
+function ABP_4H:VersionOnGroupJoined()
     self:SendComm(self.CommTypes.VERSION_REQUEST, {
         version = self:GetVersion()
     }, "BROADCAST");
 end
 
-function ABP_Naxx:VersionOnEnteringWorld(isInitialLogin)
+function ABP_4H:VersionOnEnteringWorld(isInitialLogin)
     -- Only check version on the initial login.
     if not isInitialLogin then checkedGuild = true; end
 end
 
-function ABP_Naxx:VersionOnGuildRosterUpdate()
+function ABP_4H:VersionOnGuildRosterUpdate()
     if not checkedGuild then
         checkedGuild = true;
         self:ScheduleTimer(function(self)
@@ -246,7 +246,7 @@ function ABP_Naxx:VersionOnGuildRosterUpdate()
     end
 end
 
-StaticPopupDialogs["ABP_NAXX_OUTDATED_VERSION"] = ABP_Naxx:StaticDialogTemplate(ABP_Naxx.StaticDialogTemplates.JUST_BUTTONS, {
+StaticPopupDialogs["ABP_4H_OUTDATED_VERSION"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
     text = "%s",
     button1 = "Ok",
     showAlert = true,

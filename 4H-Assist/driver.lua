@@ -1,5 +1,5 @@
 local _G = _G;
-local ABP_Naxx = _G.ABP_Naxx;
+local ABP_4H = _G.ABP_4H;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
 local GetNumGroupMembers = GetNumGroupMembers;
@@ -14,9 +14,9 @@ local next = next;
 
 local activeWindow;
 
-local assignedRoles = ABP_Naxx.tCopy(ABP_Naxx.RaidRoles);
+local assignedRoles = ABP_4H.tCopy(ABP_4H.RaidRoles);
 local roleTargets = {};
-for _, role in pairs(ABP_Naxx.RaidRoles) do
+for _, role in pairs(ABP_4H.RaidRoles) do
     roleTargets[role] = (roleTargets[role] or 0) + 1;
 end
 
@@ -38,14 +38,14 @@ end
 local dropdownMapReversed = {};
 for i, mapped in pairs(dropdownMap) do dropdownMapReversed[mapped] = i; end
 
-local mode = ABP_Naxx.Modes.live;
+local mode = ABP_4H.Modes.live;
 local tickDuration = 12;
 
 local started = false;
 local ticks = 0;
 local timer;
 
-function ABP_Naxx:GetRaiderSlots()
+function ABP_4H:GetRaiderSlots()
     local slots = {};
     local map = {};
     local player = UnitName("player");
@@ -79,7 +79,7 @@ end
 
 local function SendStateComm(active, dist, target)
     if active then
-        ABP_Naxx:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+        ABP_4H:SendComm(ABP_4H.CommTypes.STATE_SYNC, {
             active = true,
             mode = mode,
             tickDuration = tickDuration,
@@ -88,7 +88,7 @@ local function SendStateComm(active, dist, target)
             ticks = ticks,
         }, dist, target);
     else
-        ABP_Naxx:SendComm(ABP_Naxx.CommTypes.STATE_SYNC, {
+        ABP_4H:SendComm(ABP_4H.CommTypes.STATE_SYNC, {
             active = false,
         }, dist, target);
     end
@@ -138,9 +138,9 @@ local function FormatRoleText(role, currentTargets, currentFilledTargets)
     end
 
     if empty == 0 then
-        return ("%s: %s"):format(ABP_Naxx.RoleNames[role], targetText());
+        return ("%s: %s"):format(ABP_4H.RoleNames[role], targetText());
     else
-        return ("%s: %s |cffff0000(%d empty)|r"):format(ABP_Naxx.RoleNames[role], targetText(), empty);
+        return ("%s: %s |cffff0000(%d empty)|r"):format(ABP_4H.RoleNames[role], targetText(), empty);
     end
 end
 
@@ -166,7 +166,7 @@ local function BuildDropdown(currentRole, raiders, restricted)
     end
 
     local sorted = {};
-    for _, role in ipairs(ABP_Naxx.RolesSorted) do
+    for _, role in ipairs(ABP_4H.RolesSorted) do
         if list[role] then table.insert(sorted, role); end
     end
     table.insert(sorted, false);
@@ -181,9 +181,9 @@ local function Refresh()
     local dropdowns = window:GetUserData("dropdowns");
     local readyPlayers = window:GetUserData("readyPlayers");
     local slotEditTimes = window:GetUserData("slotEditTimes");
-    local raiders, map, count = ABP_Naxx:GetRaiderSlots();
+    local raiders, map, count = ABP_4H:GetRaiderSlots();
 
-    window:GetUserData("tickDurationElt"):SetDisabled(mode ~= ABP_Naxx.Modes.timer);
+    window:GetUserData("tickDurationElt"):SetDisabled(mode ~= ABP_4H.Modes.timer);
 
     local syncElt = window:GetUserData("syncElt");
     local allAssigned = true;
@@ -205,11 +205,11 @@ local function Refresh()
         local mappedIndex = dropdown:GetUserData("mappedIndex");
         local player = raiders[mappedIndex];
         local playerText = raiders[mappedIndex]
-            and ("%s%s"):format(GetStatus(player, map), ABP_Naxx:ColorizeName(player))
+            and ("%s%s"):format(GetStatus(player, map), ABP_4H:ColorizeName(player))
             or "|cff808080[Empty]|r";
 
         local role = assignedRoles[mappedIndex];
-        local roleText = role and ABP_Naxx.RoleNames[role] or "|cffff0000[Unassigned]|r";
+        local roleText = role and ABP_4H.RoleNames[role] or "|cffff0000[Unassigned]|r";
         dropdown:SetList(BuildDropdown(role, raiders, window:GetUserData("restrictedAssignments")));
         dropdown:SetText(("%s     %s"):format(playerText, roleText));
 
@@ -225,10 +225,10 @@ local function Refresh()
     syncElt:SetDisabled(not allAssigned);
 end
 
-function ABP_Naxx:DriverOnStateSyncAck(data, distribution, sender, version)
+function ABP_4H:DriverOnStateSyncAck(data, distribution, sender, version)
     if not activeWindow then return; end
 
-    local _, map = ABP_Naxx:GetRaiderSlots();
+    local _, map = ABP_4H:GetRaiderSlots();
     if data.role == assignedRoles[map[sender]] then
         activeWindow:GetUserData("readyPlayers")[map[sender]] = sender;
     else
@@ -238,14 +238,14 @@ function ABP_Naxx:DriverOnStateSyncAck(data, distribution, sender, version)
     Refresh();
 end
 
-function ABP_Naxx:DriverOnGroupUpdate()
+function ABP_4H:DriverOnGroupUpdate()
     Refresh();
 end
 
-function ABP_Naxx:DriverOnStateSyncRequest(data, distribution, sender, version)
+function ABP_4H:DriverOnStateSyncRequest(data, distribution, sender, version)
     if not started and (not activeWindow or activeWindow:GetUserData("lastSync") == 0) then return; end
 
-    local _, map = ABP_Naxx:GetRaiderSlots();
+    local _, map = ABP_4H:GetRaiderSlots();
     if not assignedRoles[map[sender]] then return; end
 
     if activeWindow then
@@ -257,13 +257,13 @@ function ABP_Naxx:DriverOnStateSyncRequest(data, distribution, sender, version)
     Refresh();
 end
 
-function ABP_Naxx:DriverOnLogout()
+function ABP_4H:DriverOnLogout()
     if started then
         self:StopEncounter();
     end
 end
 
-function ABP_Naxx:DriverOnEncounterStart(bossId)
+function ABP_4H:DriverOnEncounterStart(bossId)
     if bossId ~= 1121 then return; end
 
     local currentEncounter = self:GetCurrentEncounter();
@@ -279,7 +279,7 @@ function ABP_Naxx:DriverOnEncounterStart(bossId)
     end
 end
 
-function ABP_Naxx:DriverOnEncounterEnd(bossId)
+function ABP_4H:DriverOnEncounterEnd(bossId)
     if bossId ~= 1121 then return; end
 
     local currentEncounter = self:GetCurrentEncounter();
@@ -298,7 +298,7 @@ end
 local lastMarkTime = 0;
 local markSpellIds = { [28832] = true, [28833] = true, [28834] = true, [28835] = true };
 
-function ABP_Naxx:DriverOnSpellCast(unit, castGUID, spellID)
+function ABP_4H:DriverOnSpellCast(unit, castGUID, spellID)
     if not markSpellIds[spellID] then return; end
     local now = GetTime();
     if now - lastMarkTime < 5 then return; end
@@ -317,11 +317,11 @@ function ABP_Naxx:DriverOnSpellCast(unit, castGUID, spellID)
     end
 end
 
-function ABP_Naxx:OnTimer()
+function ABP_4H:OnTimer()
     self:AdvanceEncounter(true);
 end
 
-function ABP_Naxx:AdvanceEncounter(forward)
+function ABP_4H:AdvanceEncounter(forward)
     if forward then
         if started then
             ticks = ticks + 1;
@@ -350,7 +350,7 @@ function ABP_Naxx:AdvanceEncounter(forward)
     if activeWindow then activeWindow:Hide(); end
 end
 
-function ABP_Naxx:StopEncounter()
+function ABP_4H:StopEncounter()
     started = false;
     ticks = 0;
 
@@ -359,7 +359,7 @@ function ABP_Naxx:StopEncounter()
     SendStateComm(false, "BROADCAST");
 end
 
-function ABP_Naxx:CreateStartWindow()
+function ABP_4H:CreateStartWindow()
     if started then
         self:Error("An encounter is in progress! Stop it before opening this window.");
         return;
@@ -499,6 +499,9 @@ function ABP_Naxx:CreateStartWindow()
     end);
     options:AddChild(modeElt);
     window:SetUserData("modeElt", modeElt);
+    self:AddWidgetTooltip(modeElt, "The mode determines how ticks are advanced: " ..
+        "live (based on fighting the bosses), manual (by you clicking a button), or " ..
+        "timed (based on the adjancent slider).");
 
     local tickDurationElt = AceGUI:Create("Slider");
     tickDurationElt:SetSliderValues(3, 60, 3);
@@ -512,6 +515,7 @@ function ABP_Naxx:CreateStartWindow()
     end);
     options:AddChild(tickDurationElt);
     window:SetUserData("tickDurationElt", tickDurationElt);
+    self:AddWidgetTooltip(tickDurationElt, "In timed mode, add a new tick this often. You can still adjust ticks manually (the timer will reset).");
 
     local restricted = AceGUI:Create("CheckBox");
     restricted:SetWidth(180);
@@ -523,6 +527,7 @@ function ABP_Naxx:CreateStartWindow()
         Refresh();
     end);
     options:AddChild(restricted);
+    self:AddWidgetTooltip(restricted, "If assignments are capped, you cannot assign a role to more slots than it was originally allocated in the base configuration.");
 
     local bottom = AceGUI:Create("SimpleGroup");
     bottom:SetFullWidth(true);
@@ -564,7 +569,7 @@ function ABP_Naxx:CreateStartWindow()
     return window;
 end
 
-function ABP_Naxx:ShowStartWindow()
+function ABP_4H:ShowStartWindow()
     if activeWindow then
         activeWindow:Hide();
         return;

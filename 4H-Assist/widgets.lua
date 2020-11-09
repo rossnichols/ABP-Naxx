@@ -12,6 +12,16 @@ local ipairs = ipairs;
 local geterrorhandler = geterrorhandler;
 local xpcall = xpcall;
 
+function ABP_4H:AddWidgetTooltip(widget, text)
+    widget:SetCallback("OnEnter", function(widget)
+        _G.GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT");
+        _G.GameTooltip:SetText(text, nil, nil, nil, nil, true);
+    end);
+    widget:SetCallback("OnLeave", function(widget)
+        _G.GameTooltip:Hide();
+    end);
+end
+
 local function CreateFontString(frame, y)
     local fontstr = frame:CreateFontString(nil, "BACKGROUND", "GameFontNormal");
     fontstr:SetJustifyH("LEFT");

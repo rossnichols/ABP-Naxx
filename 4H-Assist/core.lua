@@ -1,6 +1,6 @@
 local _G = _G;
-_G.ABP_Naxx = _G.LibStub("AceAddon-3.0"):NewAddon("ABP_Naxx", "AceConsole-3.0", "AceComm-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0");
-local ABP_Naxx = _G.ABP_Naxx;
+_G.ABP_4H = _G.LibStub("AceAddon-3.0"):NewAddon("ABP_4H", "AceConsole-3.0", "AceComm-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0");
+local ABP_4H = _G.ABP_4H;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
 local UnitExists = UnitExists;
@@ -37,19 +37,19 @@ local type = type;
 
 local version = "${ADDON_VERSION}";
 
-_G.BINDING_HEADER_ABP_NAXX = "4H Assist";
-_G.BINDING_NAME_ABP_NAXX_OPENMAINWINDOW = "Open the main window";
-_G.BINDING_NAME_ABP_NAXX_OPENSTARTWINDOW = "Open the start window";
+_G.BINDING_HEADER_ABP_4H = "4H Assist";
+_G.BINDING_NAME_ABP_4H_OPENMAINWINDOW = "Open the main window";
+_G.BINDING_NAME_ABP_4H_OPENSTARTWINDOW = "Open the start window";
 
 local function OnGroupJoined(self)
     self:VersionOnGroupJoined();
     self:UIOnGroupJoined();
 end
 
-function ABP_Naxx:OnEnable()
+function ABP_4H:OnEnable()
     if GetAddOnMetadata("4H-Assist", "Version") ~= version then
         self:NotifyVersionMismatch();
-        self:RegisterChatCommand("ABP_Naxx", function()
+        self:RegisterChatCommand("ABP_4H", function()
             self:Error("Please restart your game client!");
         end);
         return;
@@ -132,40 +132,40 @@ local function GetSystemFrame()
     return _G.DEFAULT_CHAT_FRAME;
 end
 
-ABP_Naxx.Color = "|cFF94E4FF";
-ABP_Naxx.ColorTable = { 0.58, 0.89, 1, r = 0.58, g = 0.89, b = 1 };
-function ABP_Naxx:Notify(str, ...)
+ABP_4H.Color = "|cFF94E4FF";
+ABP_4H.ColorTable = { 0.58, 0.89, 1, r = 0.58, g = 0.89, b = 1 };
+function ABP_4H:Notify(str, ...)
     local msg = ("%s: %s"):format(self:ColorizeText("4H Assist"), tostring(str):format(...));
     GetSystemFrame():AddMessage(msg, 1, 1, 1);
 end
 
-function ABP_Naxx:LogDebug(str, ...)
+function ABP_4H:LogDebug(str, ...)
     if self:GetDebugOpt() then
         self:Notify(str, ...);
     end
 end
 
-function ABP_Naxx:LogVerbose(str, ...)
+function ABP_4H:LogVerbose(str, ...)
     if self:GetDebugOpt("Verbose") then
         self:Notify(str, ...);
     end
 end
 
-function ABP_Naxx:Error(str, ...)
+function ABP_4H:Error(str, ...)
     self:Notify("|cffff0000ERROR:|r " .. str, ...);
 end
 
-function ABP_Naxx:Alert(str, ...)
+function ABP_4H:Alert(str, ...)
     local msg = ("%s: %s"):format(self:ColorizeText("4H Assist"), tostring(str):format(...));
     _G.RaidNotice_AddMessage(_G.RaidWarningFrame, msg, { r = 1, g = 1, b = 1 });
     self:Notify(str, ...);
 end
 
-function ABP_Naxx:ColorizeText(text)
-    return ("%s%s|r"):format(ABP_Naxx.Color, text);
+function ABP_4H:ColorizeText(text)
+    return ("%s%s|r"):format(ABP_4H.Color, text);
 end
 
-function ABP_Naxx:ColorizeName(name, class)
+function ABP_4H:ColorizeName(name, class)
     if not class then
         if UnitExists(name) then
             local _, className = UnitClass(name);
@@ -188,17 +188,17 @@ end
 -- Helpers for privilege checks
 --
 
-function ABP_Naxx:IsPrivileged()
+function ABP_4H:IsPrivileged()
     -- Check officer status by looking for the privilege to speak in officer chat.
     local isOfficer = C_GuildInfo.GuildControlGetRankFlags(C_GuildInfo.GetGuildRankOrder(UnitGUID("player")))[4];
     return isOfficer or self:GetDebugOpt();
 end
 
-function ABP_Naxx:CanEditPublicNotes()
+function ABP_4H:CanEditPublicNotes()
     return C_GuildInfo.GuildControlGetRankFlags(C_GuildInfo.GetGuildRankOrder(UnitGUID("player")))[10];
 end
 
-function ABP_Naxx:CanEditOfficerNotes(player)
+function ABP_4H:CanEditOfficerNotes(player)
     local guid = UnitGUID("player");
     if player then
         local guildInfo = self:GetGuildInfo(player);
@@ -215,7 +215,7 @@ end
 
 local openWindows = {};
 local openPopups = {};
-local function CloseABP_NaxxWindows(t)
+local function CloseABP_4HWindows(t)
     local found = false;
     for window in pairs(t) do
         found = true;
@@ -224,31 +224,31 @@ local function CloseABP_NaxxWindows(t)
     return found;
 end
 
-function ABP_Naxx:CloseSpecialWindows()
+function ABP_4H:CloseSpecialWindows()
     local found = self.hooks.CloseSpecialWindows();
-    return CloseABP_NaxxWindows(openWindows) or found;
+    return CloseABP_4HWindows(openWindows) or found;
 end
-ABP_Naxx:RawHook("CloseSpecialWindows", true);
+ABP_4H:RawHook("CloseSpecialWindows", true);
 
-function ABP_Naxx:StaticPopup_EscapePressed()
+function ABP_4H:StaticPopup_EscapePressed()
     local found = self.hooks.StaticPopup_EscapePressed();
-    return CloseABP_NaxxWindows(openPopups) or found;
+    return CloseABP_4HWindows(openPopups) or found;
 end
-ABP_Naxx:RawHook("StaticPopup_EscapePressed", true);
+ABP_4H:RawHook("StaticPopup_EscapePressed", true);
 
-function ABP_Naxx:OpenWindow(window)
+function ABP_4H:OpenWindow(window)
     openWindows[window] = true;
 end
 
-function ABP_Naxx:CloseWindow(window)
+function ABP_4H:CloseWindow(window)
     openWindows[window] = nil;
 end
 
-function ABP_Naxx:OpenPopup(window)
+function ABP_4H:OpenPopup(window)
     openPopups[window] = true;
 end
 
-function ABP_Naxx:ClosePopup(window)
+function ABP_4H:ClosePopup(window)
     openPopups[window] = nil;
 end
 
@@ -257,11 +257,11 @@ end
 -- Support for maintaining window positions/sizes across reloads/relogs
 --
 
-_G.ABP_Naxx_WindowManagement = {};
+_G.ABP_4H_WindowManagement = {};
 
-function ABP_Naxx:BeginWindowManagement(window, name, defaults)
-    _G.ABP_Naxx_WindowManagement[name] = _G.ABP_Naxx_WindowManagement[name] or {};
-    local saved = _G.ABP_Naxx_WindowManagement[name];
+function ABP_4H:BeginWindowManagement(window, name, defaults)
+    _G.ABP_4H_WindowManagement[name] = _G.ABP_4H_WindowManagement[name] or {};
+    local saved = _G.ABP_4H_WindowManagement[name];
     if not defaults.version or saved.version ~= defaults.version then
         table.wipe(saved);
         saved.version = defaults.version;
@@ -290,11 +290,11 @@ function ABP_Naxx:BeginWindowManagement(window, name, defaults)
     end
 end
 
-function ABP_Naxx:EndWindowManagement(window)
+function ABP_4H:EndWindowManagement(window)
     local management = window:GetUserData("windowManagement");
     local name = management.name;
-    _G.ABP_Naxx_WindowManagement[name] = _G.ABP_Naxx_WindowManagement[name] or {};
-    local saved = _G.ABP_Naxx_WindowManagement[name];
+    _G.ABP_4H_WindowManagement[name] = _G.ABP_4H_WindowManagement[name] or {};
+    local saved = _G.ABP_4H_WindowManagement[name];
 
     saved.left = window.frame:GetLeft();
     saved.top = window.frame:GetTop();
@@ -313,9 +313,9 @@ end
 -- Context Menu support (https://wow.gamepedia.com/UI_Object_UIDropDownMenu)
 --
 
-local contextFrame = CreateFrame("Frame", "ABP_NaxxContextMenu", _G.UIParent, "UIDropDownMenuTemplate");
+local contextFrame = CreateFrame("Frame", "ABP_4HContextMenu", _G.UIParent, "UIDropDownMenuTemplate");
 contextFrame.relativePoint = "BOTTOMRIGHT";
-function ABP_Naxx:ShowContextMenu(context, frame)
+function ABP_4H:ShowContextMenu(context, frame)
     if self:IsContextMenuOpen() then
         self:HideContextMenu();
     else
@@ -323,11 +323,11 @@ function ABP_Naxx:ShowContextMenu(context, frame)
     end
 end
 
-function ABP_Naxx:IsContextMenuOpen()
+function ABP_4H:IsContextMenuOpen()
     return (_G.UIDROPDOWNMENU_OPEN_MENU == contextFrame);
 end
 
-function ABP_Naxx:HideContextMenu()
+function ABP_4H:HideContextMenu()
     if self:IsContextMenuOpen() then
         ToggleDropDownMenu(nil, nil, contextFrame);
     end
@@ -338,7 +338,7 @@ end
 -- Util
 --
 
-ABP_Naxx.tCompare = function(lhsTable, rhsTable, depth)
+ABP_4H.tCompare = function(lhsTable, rhsTable, depth)
     depth = depth or 1;
     for key, value in pairs(lhsTable) do
         if type(value) == "table" then
@@ -347,7 +347,7 @@ ABP_Naxx.tCompare = function(lhsTable, rhsTable, depth)
                 return false;
             end
             if depth > 1 then
-                if not ABP_Naxx.tCompare(value, rhsValue, depth - 1) then
+                if not ABP_4H.tCompare(value, rhsValue, depth - 1) then
                     return false;
                 end
             end
@@ -366,11 +366,11 @@ ABP_Naxx.tCompare = function(lhsTable, rhsTable, depth)
     return true;
 end
 
-ABP_Naxx.tCopy = function(t)
+ABP_4H.tCopy = function(t)
     local copy = {};
     for k, v in pairs(t) do
         if type(v) == "table" then
-            copy[k] = ABP_Naxx.tCopy(v)
+            copy[k] = ABP_4H.tCopy(v)
         else
             copy[k] = v;
         end
@@ -378,7 +378,7 @@ ABP_Naxx.tCopy = function(t)
     return copy;
 end
 
-ABP_Naxx.reverse = function(arr)
+ABP_4H.reverse = function(arr)
     local i, j = 1, #arr;
     while i < j do
         arr[i], arr[j] = arr[j], arr[i];
@@ -392,12 +392,12 @@ end
 -- Static dialog templates
 --
 
-ABP_Naxx.StaticDialogTemplates = {
+ABP_4H.StaticDialogTemplates = {
     JUST_BUTTONS = "JUST_BUTTONS",
     EDIT_BOX = "EDIT_BOX",
 };
 
-function ABP_Naxx:StaticDialogTemplate(template, t)
+function ABP_4H:StaticDialogTemplate(template, t)
     t.timeout = 0;
     t.whileDead = true;
     t.hideOnEscape = true;
@@ -414,9 +414,9 @@ function ABP_Naxx:StaticDialogTemplate(template, t)
         _G.GameTooltip:Hide();
     end;
 
-    if template == ABP_Naxx.StaticDialogTemplates.JUST_BUTTONS then
+    if template == ABP_4H.StaticDialogTemplates.JUST_BUTTONS then
         return t;
-    elseif template == ABP_Naxx.StaticDialogTemplates.EDIT_BOX then
+    elseif template == ABP_4H.StaticDialogTemplates.EDIT_BOX then
         t.hasEditBox = true;
         t.countInvisibleLetters = true;
         t.OnAccept = function(self, data)
@@ -460,7 +460,7 @@ function ABP_Naxx:StaticDialogTemplate(template, t)
                     parent.button1:Click();
                 else
                     local _, errorText = t.Validate(text, data);
-                    if errorText then ABP_Naxx:Error("Invalid input! %s.", errorText); end
+                    if errorText then ABP_4H:Error("Invalid input! %s.", errorText); end
                 end
             else
                 parent.button1:Click();
@@ -476,7 +476,7 @@ function ABP_Naxx:StaticDialogTemplate(template, t)
     end
 end
 
-StaticPopupDialogs["ABP_NAXX_PROMPT_RELOAD"] = ABP_Naxx:StaticDialogTemplate(ABP_Naxx.StaticDialogTemplates.JUST_BUTTONS, {
+StaticPopupDialogs["ABP_4H_PROMPT_RELOAD"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
     text = "%s",
     button1 = "Reload",
     button2 = "Close",

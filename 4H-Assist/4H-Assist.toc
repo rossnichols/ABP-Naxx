@@ -4,7 +4,7 @@
 ## Author: Xanido <Always Be Pulling>
 ## Version: ${ADDON_VERSION}
 ## OptionalDeps: DBM-Core
-## SavedVariables: ABP_Naxx_DB, ABP_Naxx_WindowManagement
+## SavedVariables: ABP_4H_DB, ABP_4H_WindowManagement
 
 embeds.xml
 bindings.xml
