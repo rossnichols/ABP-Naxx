@@ -368,7 +368,7 @@ function ABP_Naxx:CreateStartWindow()
     local windowWidth = 1100;
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
-    window:SetTitle(("%s v%s"):format(self:ColorizeText("ABP Naxx Helper"), self:GetVersion()));
+    window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
     window:SetLayout("Flow");
     window:SetWidth(windowWidth);
     self:OpenWindow(window);

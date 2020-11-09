@@ -14,7 +14,7 @@ local showedNagPopup = false;
 local checkedGuild = false;
 
 function ABP_Naxx:GetVersion()
-    local version = GetAddOnMetadata("ABP-Naxx", "Version");
+    local version = GetAddOnMetadata("4H Assist", "Version");
     if version == "${ADDON_VERSION}" then
         return self.VersionOverride;
     end
@@ -22,7 +22,7 @@ function ABP_Naxx:GetVersion()
 end
 
 function ABP_Naxx:GetCompareVersion()
-    local version = GetAddOnMetadata("ABP-Naxx", "Version");
+    local version = GetAddOnMetadata("4H Assist", "Version");
     if version == "${ADDON_VERSION}" then
         return self.VersionCmpOverride;
     end
@@ -82,7 +82,7 @@ local function CompareVersion(versionCmp, sender)
     if ABP_Naxx:VersionIsNewer(versionCmp, version) then
         _G.StaticPopup_Show("ABP_NAXX_OUTDATED_VERSION",
             ("You're running an outdated version of %s! Newer version %s discovered from %s, yours is %s. Please upgrade!"):format(
-            ABP_Naxx:ColorizeText("ABP Naxx Helper"), ABP_Naxx:ColorizeText(versionCmp), ABP_Naxx:ColorizeName(sender), ABP_Naxx:ColorizeText(version)));
+            ABP_Naxx:ColorizeText("4H Assist"), ABP_Naxx:ColorizeText(versionCmp), ABP_Naxx:ColorizeName(sender), ABP_Naxx:ColorizeText(version)));
         showedNagPopup = true;
     end
 end
@@ -90,7 +90,7 @@ end
 function ABP_Naxx:NotifyVersionMismatch()
     _G.StaticPopup_Show("ABP_NAXX_OUTDATED_VERSION",
         ("You've installed a new version of %s! All functionality is disabled until you restart your game client."):format(
-        self:ColorizeText("ABP Naxx Helper")));
+        self:ColorizeText("4H Assist")));
 end
 
 function ABP_Naxx:OnVersionRequest(data, distribution, sender)
@@ -199,14 +199,14 @@ function ABP_Naxx:VersionCheckCallback()
                     if self:VersionIsNewer(version, versionCmp, true) then
                         self:Notify("%s running an outdated version (%s)!", self:ColorizeName(player), ABP_Naxx:ColorizeText(versionCmp));
                         _G.SendChatMessage(
-                            ("You don't have the latest ABP Naxx Helper version installed! Please update it from Curse/Twitch. The latest version is %s, you have %s."):format(version, versionCmp),
+                            ("You don't have the latest 4H Assist version installed! Please update it from Curse/Twitch. The latest version is %s, you have %s."):format(version, versionCmp),
                             "WHISPER", nil, player);
                         allUpToDate = false;
                     end
                 else
                     self:Notify("%s is missing the addon!", self:ColorizeName(player));
                     _G.SendChatMessage(
-                        "You don't have the ABP Naxx Helper addon installed! Please install it from Curse/Twitch.",
+                        "You don't have the 4H Assist addon installed! Please install it from Curse/Twitch.",
                         "WHISPER", nil, player);
                     allUpToDate = false;
                 end

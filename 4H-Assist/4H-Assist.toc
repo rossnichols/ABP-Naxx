@@ -1,7 +1,7 @@
 ## Interface: 11305
-## Title: ABP Naxx Helper
-## Notes: Naxx Helper for <Always Be Pulling>
-## Author: Xanido
+## Title: 4H Assist
+## Notes: Assistant for WoW Classic Four Horsemen encounter. Access ingame via '/4h'.
+## Author: Xanido <Always Be Pulling>
 ## Version: ${ADDON_VERSION}
 ## OptionalDeps: DBM-Core
 ## SavedVariables: ABP_Naxx_DB, ABP_Naxx_WindowManagement

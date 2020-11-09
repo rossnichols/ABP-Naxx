@@ -14,10 +14,10 @@ function ABP_Naxx:InitOptions()
     };
     self.db = AceDB:New("ABP_Naxx_DB", defaults);
 
-    local addonText = "ABP Naxx Helper";
+    local addonText = "4H Assist";
     local version = self:GetVersion();
     if self:ParseVersion(version) then
-        addonText = "ABP Naxx Helper v" .. version;
+        addonText = "4H Assist v" .. version;
     end
     local options = {
         show = {
@@ -61,7 +61,7 @@ function ABP_Naxx:InitOptions()
     AceConfig:RegisterOptionsTable(self:ColorizeText(addonText), {
         type = "group",
         args = options,
-    }, { "abpn" });
+    }, { "4h" });
 
     local guiOptions = {
         general = {

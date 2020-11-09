@@ -4,8 +4,8 @@ local AceGUI = _G.LibStub("AceGUI-3.0");
 
 local dbmAlert;
 if _G.DBM then
-    local mod = _G.DBM:NewMod("ABP Naxx Helper");
-    _G.DBM:GetModLocalization("ABP Naxx Helper"):SetGeneralLocalization{ name = "ABP Naxx Helper" }
+    local mod = _G.DBM:NewMod("4H Assist");
+    _G.DBM:GetModLocalization("4H Assist"):SetGeneralLocalization{ name = "4H Assist" }
     dbmAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1, 2);
 end
 
@@ -137,7 +137,7 @@ end
 function ABP_Naxx:CreateMainWindow()
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
-    window:SetTitle(("%s v%s"):format(self:ColorizeText("ABP Naxx Helper"), self:GetVersion()));
+    window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
     window:SetLayout("Flow");
     self:BeginWindowManagement(window, "main", {
         version = 1,
@@ -247,7 +247,7 @@ function ABP_Naxx:CreateMainWindow()
     image:SetFullHeight(true);
     image:SetLayout("ABPN_Canvas");
     image:SetUserData("canvas-baseline", 225)
-    image:SetImage("Interface\\AddOns\\ABP-Naxx\\Assets\\map.tga");
+    image:SetImage("Interface\\AddOns\\4H-Assist\\Assets\\map.tga");
     window:AddChild(image);
     window:SetUserData("image", image);
 

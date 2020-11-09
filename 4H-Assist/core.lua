@@ -37,7 +37,7 @@ local type = type;
 
 local version = "${ADDON_VERSION}";
 
-_G.BINDING_HEADER_ABP_NAXX = "ABP Naxx Helper";
+_G.BINDING_HEADER_ABP_NAXX = "4H Assist";
 _G.BINDING_NAME_ABP_NAXX_OPENMAINWINDOW = "Open the main window";
 _G.BINDING_NAME_ABP_NAXX_OPENSTARTWINDOW = "Open the start window";
 
@@ -47,7 +47,7 @@ local function OnGroupJoined(self)
 end
 
 function ABP_Naxx:OnEnable()
-    if GetAddOnMetadata("ABP-Naxx", "Version") ~= version then
+    if GetAddOnMetadata("4H Assist", "Version") ~= version then
         self:NotifyVersionMismatch();
         self:RegisterChatCommand("ABP_Naxx", function()
             self:Error("Please restart your game client!");
@@ -135,7 +135,7 @@ end
 ABP_Naxx.Color = "|cFF94E4FF";
 ABP_Naxx.ColorTable = { 0.58, 0.89, 1, r = 0.58, g = 0.89, b = 1 };
 function ABP_Naxx:Notify(str, ...)
-    local msg = ("%s: %s"):format(self:ColorizeText("ABP-Naxx"), tostring(str):format(...));
+    local msg = ("%s: %s"):format(self:ColorizeText("4H Assist"), tostring(str):format(...));
     GetSystemFrame():AddMessage(msg, 1, 1, 1);
 end
 
@@ -156,7 +156,7 @@ function ABP_Naxx:Error(str, ...)
 end
 
 function ABP_Naxx:Alert(str, ...)
-    local msg = ("%s: %s"):format(self:ColorizeText("ABP-Naxx"), tostring(str):format(...));
+    local msg = ("%s: %s"):format(self:ColorizeText("4H Assist"), tostring(str):format(...));
     _G.RaidNotice_AddMessage(_G.RaidWarningFrame, msg, { r = 1, g = 1, b = 1 });
     self:Notify(str, ...);
 end

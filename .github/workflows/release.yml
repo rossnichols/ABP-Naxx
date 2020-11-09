@@ -15,25 +15,25 @@ jobs:
       run: |
         echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
         echo ::set-output name=ADDON_VERSION::${GITHUB_REF/refs\/tags\/v/}
-      
+
     - name: Update TOC version
       uses: cschleiden/replace-tokens@v1.0
       with:
         tokenPrefix: '${'
         tokenSuffix: '}'
-        files: '["ABP-Naxx/ABP-Naxx.toc", "ABP-Naxx/core.lua"]'
+        files: '["4H-Assist/4H-Assist.toc", "4H-Assist/core.lua"]'
       env:
         ADDON_VERSION: ${{ steps.get_version.outputs.ADDON_VERSION }}
-      
+
     - name: Create a zip for the release
       uses: TheDoctor0/zip-release@v0.2.1
       with:
-        filename: ABP-Naxx-${{ steps.get_version.outputs.VERSION }}.zip
+        filename: 4H-Assist-${{ steps.get_version.outputs.VERSION }}.zip
         exclusions: '*.git*'
-        path: ABP-Naxx
+        path: 4H-Assist
 
     - name: Upload to release
       uses: fnkr/github-action-ghr@v1
       env:
-        GHR_PATH: ABP-Naxx-${{ steps.get_version.outputs.VERSION }}.zip
+        GHR_PATH: 4H-Assist-${{ steps.get_version.outputs.VERSION }}.zip
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
