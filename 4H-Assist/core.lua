@@ -59,8 +59,10 @@ function ABP_4H:OnEnable()
     self:RegisterComm(self:GetCommPrefix());
     self:InitOptions();
 
-    -- Trigger a guild roster update to refresh priorities.
-    GuildRoster();
+    if self:IsClassic() then
+        -- Trigger a guild roster update to refresh priorities.
+        GuildRoster();
+    end
 
     self:SetCallback(self.CommTypes.STATE_SYNC.name, function(self, event, data, distribution, sender, version)
         self:UIOnStateSync(data, distribution, sender, version);
@@ -72,10 +74,12 @@ function ABP_4H:OnEnable()
         self:DriverOnStateSyncRequest(data, distribution, sender, version);
     end, self);
 
-    self:RegisterEvent("GUILD_ROSTER_UPDATE", function(self, event, ...)
-        self:RebuildGuildInfo();
-        self:VersionOnGuildRosterUpdate();
-    end, self);
+    if self:IsClassic() then
+        self:RegisterEvent("GUILD_ROSTER_UPDATE", function(self, event, ...)
+            self:RebuildGuildInfo();
+            self:VersionOnGuildRosterUpdate();
+        end, self);
+    end
     self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self, event, ...)
         self:VersionOnEnteringWorld(...);
     end, self);
@@ -385,6 +389,10 @@ ABP_4H.reverse = function(arr)
         i = i + 1;
         j = j - 1;
     end
+end
+
+function ABP_4H:IsClassic()
+  return _G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC;
 end
 
 
