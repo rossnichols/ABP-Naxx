@@ -2,11 +2,12 @@ local _G = _G;
 local ABP_4H = _G.ABP_4H;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
-local dbmAlert;
+local dbmMoveAlert, dbmTickAlert;
 if _G.DBM then
     local mod = _G.DBM:NewMod("4H Assist");
     _G.DBM:GetModLocalization("4H Assist"):SetGeneralLocalization{ name = "4H Assist" }
-    dbmAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1, 2);
+    dbmMoveAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1, 2);
+    dbmTickAlert = mod:NewAnnounce("%s", 1, "136172");
 end
 
 local UnitName = UnitName;
@@ -17,6 +18,21 @@ local math = math;
 local activeWindow;
 
 local currentEncounter;
+
+local function GetPositions(role, tick)
+    local rotation = ABP_4H.Rotations[role];
+    local currentPos, nextPos;
+    if tick == -1 then
+        currentPos = rotation[0];
+        nextPos = currentPos;
+    else
+        tick = tick % 12;
+        currentPos = rotation[tick];
+        nextPos = rotation[tick + 1];
+    end
+
+    return currentPos, nextPos;
+end
 
 local function Refresh()
     local current = activeWindow:GetUserData("current");
@@ -53,15 +69,7 @@ local function Refresh()
     end
 
     local rotation = ABP_4H.Rotations[role];
-    local currentPos, nextPos;
-    if tick == -1 then
-        currentPos = rotation[0];
-        nextPos = currentPos;
-    else
-        tick = tick % 12;
-        currentPos = rotation[tick];
-        nextPos = rotation[tick + 1];
-    end
+    local currentPos, nextPos = GetPositions(role, tick);
 
     current:SetVisible(true);
     current:SetUserData("canvas-X", currentPos[1]);
@@ -72,8 +80,8 @@ local function Refresh()
         upcoming:SetUserData("canvas-X", nextPos[1]);
         upcoming:SetUserData("canvas-Y", nextPos[2]);
 
-        if currentEncounter and dbmAlert and ABP_4H:Get("showAlert") then
-            dbmAlert:Show("Move after next mark!");
+        if currentEncounter and dbmMoveAlert and ABP_4H:Get("showAlert") then
+            dbmMoveAlert:Show("Move after next mark!");
         end
     end
     image:DoLayout();
@@ -94,7 +102,16 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
         local _, map = self:GetRaiderSlots();
         local role = data.roles[map[player]];
 
-        if not data.started then
+        if data.started then
+            if data.mode ~= ABP_4H.Modes.live and dbmTickAlert then
+                local extra = "";
+                -- local currentPos, nextPos = GetPositions(role, data.ticks - 1);
+                -- if currentPos ~= nextPos then
+                --     extra = " - NEW POSITION!"
+                -- end
+                dbmTickAlert:Show(("Mark %d%s"):format(data.ticks, extra));
+            end
+        else
             self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
                 role = role,
             }, "WHISPER", sender);
@@ -173,17 +190,19 @@ function ABP_4H:CreateMainWindow()
         local roleElt = AceGUI:Create("ABPN_Label");
         roleElt:SetFullWidth(true);
         roleElt:SetText(self.RoleNames[role]);
+        roleElt:SetFont("GameFontHighlightOutline");
         mainLine:AddChild(roleElt);
 
         local tickElt = AceGUI:Create("ABPN_Label");
         tickElt:SetFullWidth(true);
-        local tickText = currentEncounter.started and ("Ticks: %d"):format(currentEncounter.ticks) or "Not Started";
+        local tickText = currentEncounter.started and ("Marks: %d"):format(currentEncounter.ticks) or "Not Started";
         if currentEncounter and currentEncounter.mode == ABP_4H.Modes.live and
            currentEncounter.ticks == 0 and currentEncounter.tickDuration == 0 then
             tickText = "Waiting";
         end
         tickElt:SetText(tickText);
         tickElt:SetJustifyH("RIGHT");
+        tickElt:SetFont("GameFontHighlightOutline");
         mainLine:AddChild(tickElt);
 
         if currentEncounter.started and currentEncounter.tickDuration > 0 and

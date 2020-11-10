@@ -7,6 +7,7 @@ local GetRaidRosterInfo = GetRaidRosterInfo;
 local IsInRaid = IsInRaid;
 local UnitName = UnitName;
 local GetTime = GetTime;
+local GetInstanceInfo = GetInstanceInfo;
 local table = table;
 local pairs = pairs;
 local ipairs = ipairs;
@@ -364,6 +365,8 @@ function ABP_4H:CreateStartWindow()
         self:Error("An encounter is in progress! Stop it before opening this window.");
         return;
     end
+
+    mode = (GetInstanceInfo() == 533) and self.Modes.live or self.Modes.manual;
 
     local windowWidth = 1100;
     local window = AceGUI:Create("Window");
