@@ -62,7 +62,7 @@ function ABP_4H:InitOptions()
     AceConfig:RegisterOptionsTable(self:ColorizeText(addonText), {
         type = "group",
         args = options,
-    }, { "fourh" });
+    }, { "fh", "fourh" });
 
     local guiOptions = {
         general = {
