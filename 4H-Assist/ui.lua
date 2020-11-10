@@ -3,12 +3,6 @@ local ABP_4H = _G.ABP_4H;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
 local dbmMoveAlert, dbmTickAlert;
-if _G.DBM then
-    local mod = _G.DBM:NewMod("4H Assist");
-    _G.DBM:GetModLocalization("4H Assist"):SetGeneralLocalization{ name = "4H Assist" }
-    dbmMoveAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1, 2);
-    dbmTickAlert = mod:NewAnnounce("%s", 1, "136172");
-end
 
 local UnitName = UnitName;
 local table = table;
@@ -157,6 +151,13 @@ function ABP_4H:RefreshMainWindow()
 end
 
 function ABP_4H:CreateMainWindow()
+    if not dbmMoveAlert and _G.DBM and _G.DBM.NewMod then
+        local mod = _G.DBM:NewMod("4H Assist");
+        _G.DBM:GetModLocalization("4H Assist"):SetGeneralLocalization{ name = "4H Assist" }
+        dbmMoveAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1, 2);
+        dbmTickAlert = mod:NewAnnounce("%s", 1, "136172");
+    end
+
     local window = AceGUI:Create("ABPN_TransparentWindow");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));

@@ -111,11 +111,6 @@ function ABP_4H:OnEnable()
         self:DriverOnSpellCast(...);
     end, self);
 
-    -- Precreate frames to avoid issues generating them during combat.
-    if not UnitAffectingCombat("player") then
-        AceGUI:Release(self:CreateMainWindow());
-    end
-
     if IsInGroup() then
         OnGroupJoined(self);
     end
