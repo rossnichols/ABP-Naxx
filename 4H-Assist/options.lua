@@ -11,7 +11,7 @@ function ABP_4H:InitOptions()
         char = {
             debug = false,
             showAlert = true,
-            alpha = 0.8,
+            alpha = 0.9,
         }
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);
