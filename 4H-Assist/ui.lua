@@ -83,7 +83,7 @@ function ABP_4H:UIOnGroupJoined()
     self:SendComm(self.CommTypes.STATE_SYNC_REQUEST, {}, "BROADCAST");
 end
 
-function ABP_4H:OnGroupJoined()
+function ABP_4H:UIOnGroupLeft()
     currentEncounter = nil;
     if activeWindow then activeWindow:Hide(); end
 end

@@ -73,6 +73,12 @@ function ABP_4H:OnEnable()
     self:SetCallback(self.CommTypes.STATE_SYNC_REQUEST.name, function(self, event, data, distribution, sender, version)
         self:DriverOnStateSyncRequest(data, distribution, sender, version);
     end, self);
+    self:SetCallback(self.CommTypes.VERSION_REQUEST.name, function(self, event, data, distribution, sender, version)
+        self:OnVersionRequest(data, distribution, sender, version);
+    end, self);
+    self:SetCallback(self.CommTypes.VERSION_RESPONSE.name, function(self, event, data, distribution, sender, version)
+        self:OnVersionResponse(data, distribution, sender, version);
+    end, self);
 
     if self:IsClassic() then
         self:RegisterEvent("GUILD_ROSTER_UPDATE", function(self, event, ...)
@@ -87,7 +93,7 @@ function ABP_4H:OnEnable()
         OnGroupJoined(self);
     end, self);
     self:RegisterEvent("GROUP_LEFT", function(self, event, ...)
-        self:DriverOnGroupLeft();
+        self:UIOnGroupLeft();
     end, self);
     self:RegisterEvent("GROUP_ROSTER_UPDATE", function(self, event, ...)
         self:DriverOnGroupUpdate();
