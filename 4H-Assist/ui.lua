@@ -257,7 +257,7 @@ function ABP_4H:CreateMainWindow()
         if not currentEncounter or (currentEncounter.mode ~= self.Modes.live or currentEncounter.tickDuration == 0) then
             local reset = AceGUI:Create("Button");
             reset:SetText("Stop");
-            reset:SetFullHeight(true);
+            reset:SetFullWidth(true);
             reset:SetCallback("OnClick", function(widget)
                 if currentEncounter then
                     self:StopEncounter();
