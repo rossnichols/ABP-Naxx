@@ -124,18 +124,23 @@ function ABP_4H:GetCurrentEncounter()
 end
 
 function ABP_4H:RefreshCurrentEncounter()
+    if currentEncounter and currentEncounter.started then
+        self:RefreshMainWindow();
+    else
+        activeWindow:Hide();
+        currentEncounter = nil;
+    end
+end
+
+function ABP_4H:RefreshMainWindow()
     if activeWindow then
         activeWindow:Hide();
-        if currentEncounter and currentEncounter.started then
-            self:ShowMainWindow();
-        else
-            currentEncounter = nil;
-        end
+        self:ShowMainWindow();
     end
 end
 
 function ABP_4H:CreateMainWindow()
-    local window = AceGUI:Create("Window");
+    local window = AceGUI:Create("ABPN_TransparentWindow");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
     window:SetLayout("Flow");
@@ -249,6 +254,7 @@ function ABP_4H:CreateMainWindow()
     image:SetLayout("ABPN_Canvas");
     image:SetUserData("canvas-baseline", 225)
     image:SetImage("Interface\\AddOns\\4H-Assist\\Assets\\map.tga");
+    image:SetImageAlpha(self:Get("alpha"));
     window:AddChild(image);
     window:SetUserData("image", image);
 

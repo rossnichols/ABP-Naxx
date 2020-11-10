@@ -220,10 +220,15 @@ do
     local methods = {
         ["OnAcquire"] = function(self)
             self:SimpleGroupOnAcquire();
+            self:SetImageAlpha(1);
         end,
 
         ["SetImage"] = function(self, image)
             self.image:SetTexture(image);
+        end,
+
+        ["SetImageAlpha"] = function(self, alpha)
+            self.image:SetAlpha(alpha);
         end,
     }
 
@@ -235,8 +240,6 @@ do
 
         local image = elt.content:CreateTexture(nil, "ARTWORK");
         image:SetAllPoints();
-        -- background:SetPoint("TOPLEFT", 8, -24);
-        -- background:SetPoint("BOTTOMRIGHT", -6, 8);
 
         elt.type = Type;
         elt.SimpleGroupOnAcquire = elt.OnAcquire;
@@ -338,6 +341,44 @@ do
 
         elt.type = Type;
         elt.ButtonOnAcquire = elt.OnAcquire;
+        for method, func in pairs(methods) do
+            elt[method] = func;
+        end
+
+        return elt;
+    end
+
+    AceGUI:RegisterWidgetType(Type, Constructor, Version)
+end
+
+do
+    local Type, Version = "ABPN_TransparentWindow", 1;
+
+    --[[-----------------------------------------------------------------------------
+    Methods
+    -------------------------------------------------------------------------------]]
+
+    local methods = {
+        ["OnAcquire"] = function(self)
+            self:WindowOnAcquire();
+        end,
+    }
+
+    --[[-----------------------------------------------------------------------------
+    Constructor
+    -------------------------------------------------------------------------------]]
+    local function Constructor()
+        local elt = AceGUI:Create("Window");
+
+        for i = 1, select("#", elt.frame:GetRegions()) do
+            local region = select(i, elt.frame:GetRegions());
+            if region and region:GetObjectType() == "Texture" and region:GetTexture() == "Interface/Tooltips/UI-Tooltip-Background" then
+                region:SetVertexColor(0, 0, 0, 0.2);
+            end
+        end
+
+        elt.type = Type;
+        elt.WindowOnAcquire = elt.OnAcquire;
         for method, func in pairs(methods) do
             elt[method] = func;
         end

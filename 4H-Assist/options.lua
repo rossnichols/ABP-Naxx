@@ -11,6 +11,7 @@ function ABP_4H:InitOptions()
         char = {
             debug = false,
             showAlert = true,
+            alpha = 0.8,
         }
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);
@@ -104,6 +105,17 @@ function ABP_4H:InitOptions()
                             get = function(info) return self.db.char.showAlert; end,
                             set = function(info, v) self.db.char.showAlert = v; end,
                         },
+                        alpha = {
+                            name = "Map Alpha",
+                            order = 4,
+                            desc = "Controls the alpha of the map.",
+                            type = "range",
+                            min = 0,
+                            max = 1,
+                            step = 0.05,
+                            get = function(info) return self.db.char.alpha; end,
+                            set = function(info, v) self.db.char.alpha = v; self:RefreshMainWindow(); end,
+                        },
                     },
                 },
             },
@@ -136,12 +148,12 @@ function ABP_4H:InitOptions()
         --     },
         -- },
     };
-    AceConfig:RegisterOptionsTable("ABP_4H", {
+    AceConfig:RegisterOptionsTable("4H Assist", {
         name = self:ColorizeText(addonText) .. " Options",
         type = "group",
         args = guiOptions,
     });
-    self.OptionsFrame = AceConfigDialog:AddToBlizOptions("ABP_4H");
+    self.OptionsFrame = AceConfigDialog:AddToBlizOptions("4H Assist");
 end
 
 function ABP_4H:ShowOptionsWindow()
