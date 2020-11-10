@@ -261,7 +261,9 @@ do
     -------------------------------------------------------------------------------]]
     local function Constructor()
         local elt = AceGUI:Create("ABPN_TransparentGroup");
-        elt.frame:SetBackdropColor(0, 0, 0, 0);
+        if elt.frame.SetBackdropColor then
+            elt.frame:SetBackdropColor(0, 0, 0, 0);
+        end
         local image = elt.content:CreateTexture(nil, "ARTWORK");
         image:SetAllPoints();
 
