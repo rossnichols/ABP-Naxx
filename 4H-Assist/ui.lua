@@ -5,6 +5,9 @@ local AceGUI = _G.LibStub("AceGUI-3.0");
 local dbmMoveAlert, dbmTickAlert;
 
 local UnitName = UnitName;
+local UnitIsUnit = UnitIsUnit;
+local IsItemInRange = IsItemInRange;
+local IsMouseButtonDown = IsMouseButtonDown;
 local table = table;
 local pairs = pairs;
 local math = math;
@@ -26,6 +29,34 @@ local function GetPositions(role, tick)
     end
 
     return currentPos, nextPos;
+end
+
+local function GetNeighbors(window)
+    if not currentEncounter then return; end
+
+    local neighbors = {};
+    local tick = window:GetUserData("tick");
+    local myPos = GetPositions(window:GetUserData("role"), tick);
+
+    local raiders = ABP_4H:GetRaiderSlots();
+    local roles = currentEncounter.roles;
+    for slot, player in pairs(raiders) do
+        if not UnitIsUnit(player, "player") then
+            local role = roles[slot];
+            local currentPos = GetPositions(role, tick);
+            if currentPos == myPos then
+                local formatStr = IsItemInRange(21519, player)
+                    and "|cff00ff00%s|r"
+                    or "|cffff0000%s|r";
+
+                -- for i = 1, math.random(1, 15) do
+                    table.insert(neighbors, formatStr:format(player));
+                -- end
+            end
+        end
+    end
+
+    return neighbors;
 end
 
 local function Refresh()
@@ -112,6 +143,7 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
         end
 
         currentEncounter = {
+            roles = data.roles,
             mode = data.mode,
             tickDuration = data.tickDuration,
             role = role,
@@ -150,6 +182,12 @@ function ABP_4H:RefreshMainWindow()
     end
 end
 
+function ABP_4H:OnUITimer()
+    if activeWindow and not activeWindow:GetUserData("moveSize") then
+        self:RefreshMainWindow();
+    end
+end
+
 function ABP_4H:CreateMainWindow()
     if not dbmMoveAlert and _G.DBM and _G.DBM.NewMod then
         local mod = _G.DBM:NewMod("4H Assist");
@@ -171,9 +209,20 @@ function ABP_4H:CreateMainWindow()
     });
     window:SetCallback("OnClose", function(widget)
         self:EndWindowManagement(widget);
+        local timer = widget:GetUserData("timer");
+        if timer then self:CancelTimer(timer); end
+
+        self:Unhook(widget.frame, "StartMoving");
+        self:Unhook(widget.frame, "StartSizing");
+        self:Unhook(widget.frame, "StopMovingOrSizing");
+
         AceGUI:Release(widget);
         activeWindow = nil;
     end);
+
+    self:SecureHook(window.frame, "StartMoving", function(self) self.obj:SetUserData("moveSize", true); end);
+    self:SecureHook(window.frame, "StartSizing", function(self) self.obj:SetUserData("moveSize", true); end);
+    self:SecureHook(window.frame, "StopMovingOrSizing", function(self) self.obj:SetUserData("moveSize", false); end);
 
     local container = AceGUI:Create("ABPN_TransparentGroup");
     container:SetFullWidth(true);
@@ -283,6 +332,10 @@ function ABP_4H:CreateMainWindow()
     image:SetCallback("OnWidthSet", function(widget, event, value)
         if widget.content.height ~= value then
             widget:SetHeight(value);
+            local neighborsElt = window:GetUserData("neighborsElt");
+            if neighborsElt then
+                neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
+            end
             container:DoLayout();
 
             local height = container.frame:GetHeight() + 50;
@@ -308,6 +361,26 @@ function ABP_4H:CreateMainWindow()
     upcoming:SetImage("Interface\\MINIMAP\\Minimap_skull_normal.blp");
     image:AddChild(upcoming);
     window:SetUserData("upcoming", upcoming);
+
+    if currentEncounter then
+        local neighbors = GetNeighbors(window);
+        if neighbors then
+            if #neighbors > 0 then
+                local neighborsElt = AceGUI:Create("ABPN_Label");
+                container:AddChild(neighborsElt);
+                neighborsElt:SetFont("GameFontHighlightOutline");
+                neighborsElt:SetFullWidth(true);
+                neighborsElt:SetWordWrap(true);
+                neighborsElt:SetJustifyH("LEFT");
+                neighborsElt:SetJustifyV("TOP");
+                neighborsElt:SetText(table.concat(neighbors, " "));
+                container:DoLayout();
+                neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
+                window:SetUserData("neighborsElt", neighborsElt);
+            end
+            window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
+        end
+    end
 
     image.content.height = 0;
     container:DoLayout();
