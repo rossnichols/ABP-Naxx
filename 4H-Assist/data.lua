@@ -64,14 +64,6 @@ local rolesSorted = {
 };
 
 local rolesSortedStatus = {
-    roles.tankdps1,
-    roles.tankdps2,
-    roles.tankdps3,
-    roles.tankdps4,
-    roles.ot1,
-    roles.ot2,
-    roles.ot3,
-    roles.ot4,
     roles.healer1,
     roles.healer4,
     roles.healer7,
@@ -84,64 +76,72 @@ local rolesSortedStatus = {
     roles.healer6,
     roles.healer9,
     roles.healer12,
+    roles.ot1,
+    roles.ot2,
+    roles.ot3,
+    roles.ot4,
+    roles.tankdps1,
+    roles.tankdps2,
+    roles.tankdps3,
+    roles.tankdps4,
 };
 
 local raidRoles = {
     -- Group 1
-    roles.tankdps1,
-    roles.tankdps1,
-    roles.tankdps1,
-    roles.tankdps1,
+    roles.healer1,
+    roles.healer2,
+    roles.healer3,
+    roles.ot1,
     roles.tankdps1,
 
     -- Group 2
-    roles.tankdps2,
-    roles.tankdps2,
-    roles.tankdps2,
-    roles.tankdps2,
+    roles.healer4,
+    roles.healer5,
+    roles.healer6,
+    roles.ot2,
     roles.tankdps2,
 
     -- Group 3
-    roles.tankdps3,
-    roles.tankdps3,
-    roles.tankdps3,
-    roles.tankdps3,
+    roles.healer7,
+    roles.healer8,
+    roles.healer9,
+    roles.ot3,
     roles.tankdps3,
 
     -- Group 4
-    roles.tankdps4,
-    roles.tankdps4,
-    roles.tankdps4,
-    roles.tankdps4,
+    roles.healer10,
+    roles.healer11,
+    roles.healer12,
+    roles.ot4,
     roles.tankdps4,
 
     -- Group 5
     roles.tankdps1,
-    roles.ot1,
-    roles.healer1,
-    roles.healer2,
-    roles.healer3,
+    roles.tankdps1,
+    roles.tankdps1,
+    roles.tankdps1,
+    roles.tankdps1,
 
     -- Group 6
     roles.tankdps2,
-    roles.ot2,
-    roles.healer4,
-    roles.healer5,
-    roles.healer6,
+    roles.tankdps2,
+    roles.tankdps2,
+    roles.tankdps2,
+    roles.tankdps2,
 
     -- Group 7
     roles.tankdps3,
-    roles.ot3,
-    roles.healer7,
-    roles.healer8,
-    roles.healer9,
+    roles.tankdps3,
+    roles.tankdps3,
+    roles.tankdps3,
+    roles.tankdps3,
 
     -- Group 8
     roles.tankdps4,
-    roles.ot4,
-    roles.healer10,
-    roles.healer11,
-    roles.healer12,
+    roles.tankdps4,
+    roles.tankdps4,
+    roles.tankdps4,
+    roles.tankdps4,
 };
 
 local roleNames = {
