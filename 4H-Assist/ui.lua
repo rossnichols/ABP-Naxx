@@ -168,14 +168,17 @@ function ABP_4H:CreateMainWindow()
         minWidth = 200,
         maxWidth = 600,
         defaultHeight = 400,
-        minHeight = 200,
-        maxHeight = 600
     });
     window:SetCallback("OnClose", function(widget)
         self:EndWindowManagement(widget);
         AceGUI:Release(widget);
         activeWindow = nil;
     end);
+
+    local container = AceGUI:Create("ABPN_TransparentGroup");
+    container:SetFullWidth(true);
+    container:SetLayout("Flow");
+    window:AddChild(container);
 
     if currentEncounter then
         local role = currentEncounter.role;
@@ -186,7 +189,7 @@ function ABP_4H:CreateMainWindow()
         mainLine:SetFullWidth(true);
         mainLine:SetLayout("table");
         mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
-        window:AddChild(mainLine);
+        container:AddChild(mainLine);
 
         local roleElt = AceGUI:Create("ABPN_Label");
         roleElt:SetFullWidth(true);
@@ -212,7 +215,7 @@ function ABP_4H:CreateMainWindow()
             statusbar:SetFullWidth(true);
             statusbar:SetHeight(5);
             statusbar:SetDuration(currentEncounter.tickDuration);
-            window:AddChild(statusbar);
+            container:AddChild(statusbar);
         end
     else
         local roleSelector = AceGUI:Create("Dropdown");
@@ -224,7 +227,7 @@ function ABP_4H:CreateMainWindow()
             window:SetUserData("tick", -1);
             Refresh();
         end);
-        window:AddChild(roleSelector);
+        container:AddChild(roleSelector);
     end
 
     if not currentEncounter or currentEncounter.driving then
@@ -232,7 +235,7 @@ function ABP_4H:CreateMainWindow()
         mainLine:SetFullWidth(true);
         mainLine:SetLayout("table");
         mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
-        window:AddChild(mainLine);
+        container:AddChild(mainLine);
 
         if not currentEncounter or (currentEncounter.mode ~= self.Modes.live or not currentEncounter.started) then
             local tickTrigger = AceGUI:Create("ABPN_Button");
@@ -270,13 +273,27 @@ function ABP_4H:CreateMainWindow()
 
     local image = AceGUI:Create("ABPN_ImageGroup");
     image:SetFullWidth(true);
-    image:SetFullHeight(true);
+    image:SetHeight(10);
     image:SetLayout("ABPN_Canvas");
     image:SetUserData("canvas-baseline", 225)
     image:SetImage("Interface\\AddOns\\4H-Assist\\Assets\\map.tga");
     image:SetImageAlpha(self:Get("alpha"));
-    window:AddChild(image);
+    container:AddChild(image);
     window:SetUserData("image", image);
+    image:SetCallback("OnWidthSet", function(widget, event, value)
+        if widget.content.height ~= value then
+            widget:SetHeight(value);
+            container:DoLayout();
+
+            local height = container.frame:GetHeight() + 50;
+            window:SetHeight(height);
+
+            local minW = window.frame:GetMinResize();
+            local maxW = window.frame:GetMaxResize();
+            window.frame:SetMinResize(minW, height);
+            window.frame:SetMaxResize(maxW, height);
+        end
+    end);
 
     local current = AceGUI:Create("ABPN_Icon");
     current:SetWidth(24);
@@ -291,6 +308,9 @@ function ABP_4H:CreateMainWindow()
     upcoming:SetImage("Interface\\MINIMAP\\Minimap_skull_normal.blp");
     image:AddChild(upcoming);
     window:SetUserData("upcoming", upcoming);
+
+    image.content.height = 0;
+    container:DoLayout();
 
     window.frame:Raise();
     return window;

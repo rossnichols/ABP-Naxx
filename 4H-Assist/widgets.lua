@@ -211,6 +211,25 @@ do
 end
 
 do
+    local Type, Version = "ABPN_TransparentGroup", 1;
+
+    --[[-----------------------------------------------------------------------------
+    Constructor
+    -------------------------------------------------------------------------------]]
+    local function Constructor()
+        local elt = AceGUI:Create("SimpleGroup");
+        if elt.frame.SetBackdropColor then
+            elt.frame:SetBackdropColor(0, 0, 0, 0);
+        end
+
+        elt.type = Type;
+        return elt;
+    end
+
+    AceGUI:RegisterWidgetType(Type, Constructor, Version)
+end
+
+do
     local Type, Version = "ABPN_ImageGroup", 1;
 
     --[[-----------------------------------------------------------------------------
@@ -230,19 +249,25 @@ do
         ["SetImageAlpha"] = function(self, alpha)
             self.image:SetAlpha(alpha);
         end,
+
+        ["OnWidthSet"] = function(self, width)
+            self:SimpleGroupOnWidthSet(width);
+            self:Fire("OnWidthSet", width);
+        end,
     }
 
     --[[-----------------------------------------------------------------------------
     Constructor
     -------------------------------------------------------------------------------]]
     local function Constructor()
-        local elt = AceGUI:Create("SimpleGroup");
-
+        local elt = AceGUI:Create("ABPN_TransparentGroup");
+        elt.frame:SetBackdropColor(0, 0, 0, 0);
         local image = elt.content:CreateTexture(nil, "ARTWORK");
         image:SetAllPoints();
 
         elt.type = Type;
         elt.SimpleGroupOnAcquire = elt.OnAcquire;
+        elt.SimpleGroupOnWidthSet = elt.OnWidthSet;
         for method, func in pairs(methods) do
             elt[method] = func;
         end
@@ -369,11 +394,14 @@ do
     -------------------------------------------------------------------------------]]
     local function Constructor()
         local elt = AceGUI:Create("Window");
+        if elt.frame.SetBackdropColor then
+            elt.frame:SetBackdropColor(0, 0, 0, 0.25);
+        end
 
         for i = 1, select("#", elt.frame:GetRegions()) do
             local region = select(i, elt.frame:GetRegions());
             if region and region:GetObjectType() == "Texture" and region:GetTexture() == "Interface/Tooltips/UI-Tooltip-Background" then
-                region:SetVertexColor(0, 0, 0, 0.2);
+                region:SetVertexColor(0, 0, 0, 0.25);
             end
         end
 
