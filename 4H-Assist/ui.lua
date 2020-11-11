@@ -6,6 +6,7 @@ local UnitName = UnitName;
 local UnitIsUnit = UnitIsUnit;
 local IsItemInRange = IsItemInRange;
 local IsMouseButtonDown = IsMouseButtonDown;
+local MouseIsOver = MouseIsOver;
 local table = table;
 local pairs = pairs;
 local math = math;
@@ -189,8 +190,12 @@ function ABP_4H:RefreshMainWindow()
     end
 end
 
+local function IsInteractingWithMouse()
+    return activeWindow and MouseIsOver(activeWindow.frame) and IsMouseButtonDown();
+end
+
 function ABP_4H:OnUITimer()
-    if activeWindow and not activeWindow:GetUserData("moveSize") then
+    if activeWindow and not activeWindow:GetUserData("moveSize") and not IsInteractingWithMouse() then
         self:RefreshMainWindow();
     end
 end
@@ -386,7 +391,7 @@ function ABP_4H:CreateMainWindow()
             for slot, raider in pairs(raiders) do
                 local role = currentEncounter.roles[slot];
                 if self.RoleCategories[role] == self.Categories.tank then
-                    local pos, _, nextDiff = GetPositions(role, currentEncounter.tick);
+                    local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks);
                     if pos == self.MapPositions.safe then
                         upcomingTanks[nextDiff] = raider.name;
                     else
@@ -398,6 +403,7 @@ function ABP_4H:CreateMainWindow()
             local tankTL = AceGUI:Create("ABPN_Label");
             tankTL:SetUserData("canvas-fill", true);
             tankTL:SetFont("GameFontHighlightOutline");
+            tankTL:SetWordWrap(true);
             tankTL:SetJustifyH("LEFT");
             tankTL:SetJustifyV("TOP");
             tankTL:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
@@ -407,6 +413,7 @@ function ABP_4H:CreateMainWindow()
             local tankTR = AceGUI:Create("ABPN_Label");
             tankTR:SetUserData("canvas-fill", true);
             tankTR:SetFont("GameFontHighlightOutline");
+            tankTR:SetWordWrap(true);
             tankTR:SetJustifyH("RIGHT");
             tankTR:SetJustifyV("TOP");
             tankTR:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
@@ -416,6 +423,7 @@ function ABP_4H:CreateMainWindow()
             local tankBL = AceGUI:Create("ABPN_Label");
             tankBL:SetUserData("canvas-fill", true);
             tankBL:SetFont("GameFontHighlightOutline");
+            tankBL:SetWordWrap(true);
             tankBL:SetJustifyH("LEFT");
             tankBL:SetJustifyV("BOTTOM");
             tankBL:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
@@ -425,6 +433,7 @@ function ABP_4H:CreateMainWindow()
             local tankBR = AceGUI:Create("ABPN_Label");
             tankBR:SetUserData("canvas-fill", true);
             tankBR:SetFont("GameFontHighlightOutline");
+            tankBR:SetWordWrap(true);
             tankBR:SetJustifyH("RIGHT");
             tankBR:SetJustifyV("BOTTOM");
             tankBR:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(

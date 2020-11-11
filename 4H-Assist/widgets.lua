@@ -52,6 +52,8 @@ do
             self.text:SetJustifyV("CENTER");
             self.text:SetPoint("LEFT", self.frame, 2, 1);
             self.text:SetPoint("RIGHT", self.frame, -2, 1);
+            self.text:SetPoint("TOP", self.frame);
+            self.text:SetPoint("BOTTOM", self.frame);
             self.text:SetWordWrap(false);
             self.highlight:Hide();
 
