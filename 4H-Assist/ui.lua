@@ -5,8 +5,6 @@ local AceGUI = _G.LibStub("AceGUI-3.0");
 local UnitName = UnitName;
 local UnitIsUnit = UnitIsUnit;
 local IsItemInRange = IsItemInRange;
-local IsMouseButtonDown = IsMouseButtonDown;
-local MouseIsOver = MouseIsOver;
 local table = table;
 local pairs = pairs;
 local math = math;
@@ -40,8 +38,6 @@ local function GetPositions(role, tick)
 end
 
 local function GetNeighbors(window, raiders)
-    if not currentEncounter then return; end
-
     local neighbors = {};
     local tick = window:GetUserData("tick");
     local myPos = GetPositions(window:GetUserData("role"), tick);
@@ -118,6 +114,23 @@ local function Refresh()
         end
     end
     image:DoLayout();
+
+    local neighborsElt = activeWindow:GetUserData("neighborsElt");
+    if neighborsElt then
+        local raiders = ABP_4H:GetRaiderSlots();
+        local neighbors = GetNeighbors(activeWindow, raiders);
+        neighborsElt:SetText(table.concat(neighbors, " "));
+        neighborsElt:SetHeight(neighborsElt:GetStringHeight());
+
+        local container = activeWindow:GetUserData("contentContainer");
+        container:DoLayout();
+        local height = container.frame:GetHeight() + 50;
+        activeWindow:SetHeight(height);
+        local minW = activeWindow.frame:GetMinResize();
+        local maxW = activeWindow.frame:GetMaxResize();
+        activeWindow.frame:SetMinResize(minW, height);
+        activeWindow.frame:SetMaxResize(maxW, height);
+    end
 end
 
 function ABP_4H:UIOnGroupJoined()
@@ -190,22 +203,8 @@ function ABP_4H:RefreshMainWindow()
     end
 end
 
-local function IsInteractingWithMouse()
-    return activeWindow and MouseIsOver(activeWindow.frame) and IsMouseButtonDown();
-end
-
 function ABP_4H:OnUITimer()
-    if activeWindow and not activeWindow:GetUserData("moveSize") and not IsInteractingWithMouse() then
-        self:RefreshMainWindow();
-    end
-end
-
-local function MoveSizeStartHook(frame)
-    frame.obj:SetUserData("moveSize", true);
-end
-
-local function MoveSizeStopHook(frame)
-    frame.obj:SetUserData("moveSize", false);
+    Refresh();
 end
 
 function ABP_4H:CreateMainWindow()
@@ -232,23 +231,15 @@ function ABP_4H:CreateMainWindow()
         self:EndWindowManagement(widget);
         local timer = widget:GetUserData("timer");
         if timer then self:CancelTimer(timer); end
-
-        self:Unhook(widget.frame, "StartMoving", MoveSizeStartHook);
-        self:Unhook(widget.frame, "StartSizing", MoveSizeStartHook);
-        self:Unhook(widget.frame, "StopMovingOrSizing", MoveSizeStopHook);
-
         AceGUI:Release(widget);
         activeWindow = nil;
     end);
-
-    self:SecureHook(window.frame, "StartMoving", MoveSizeStartHook);
-    self:SecureHook(window.frame, "StartSizing", MoveSizeStartHook);
-    self:SecureHook(window.frame, "StopMovingOrSizing", MoveSizeStopHook);
 
     local container = AceGUI:Create("ABPN_TransparentGroup");
     container:SetFullWidth(true);
     container:SetLayout("Flow");
     window:AddChild(container);
+    window:SetUserData("contentContainer", container);
 
     if currentEncounter then
         local role = currentEncounter.role;
@@ -355,13 +346,12 @@ function ABP_4H:CreateMainWindow()
             widget:SetHeight(value);
             local neighborsElt = window:GetUserData("neighborsElt");
             if neighborsElt then
-                neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
+                neighborsElt:SetHeight(neighborsElt:GetStringHeight());
             end
-            container:DoLayout();
 
+            container:DoLayout();
             local height = container.frame:GetHeight() + 50;
             window:SetHeight(height);
-
             local minW = window.frame:GetMinResize();
             local maxW = window.frame:GetMaxResize();
             window.frame:SetMinResize(minW, height);
@@ -443,22 +433,17 @@ function ABP_4H:CreateMainWindow()
 
         if self:Get("showNeighbors") then
             local neighbors = GetNeighbors(window, raiders);
-            if neighbors then
-                if #neighbors > 0 then
-                    local neighborsElt = AceGUI:Create("ABPN_Label");
-                    container:AddChild(neighborsElt);
-                    neighborsElt:SetFont("GameFontHighlightOutline");
-                    neighborsElt:SetFullWidth(true);
-                    neighborsElt:SetWordWrap(true);
-                    neighborsElt:SetJustifyH("LEFT");
-                    neighborsElt:SetJustifyV("TOP");
-                    neighborsElt:SetText(table.concat(neighbors, " "));
-                    container:DoLayout();
-                    neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
-                    window:SetUserData("neighborsElt", neighborsElt);
-                end
-                window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
-            end
+            local neighborsElt = AceGUI:Create("ABPN_Label");
+            container:AddChild(neighborsElt);
+            neighborsElt:SetFont("GameFontHighlightOutline");
+            neighborsElt:SetFullWidth(true);
+            neighborsElt:SetWordWrap(true);
+            neighborsElt:SetJustifyH("LEFT");
+            neighborsElt:SetJustifyV("TOP");
+            neighborsElt:SetText(table.concat(neighbors, " "));
+            neighborsElt:SetHeight(neighborsElt:GetStringHeight());
+            window:SetUserData("neighborsElt", neighborsElt);
+            window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
         end
     else
         -- local neighborsElt = AceGUI:Create("ABPN_Label");
@@ -468,9 +453,8 @@ function ABP_4H:CreateMainWindow()
         -- neighborsElt:SetWordWrap(true);
         -- neighborsElt:SetJustifyH("LEFT");
         -- neighborsElt:SetJustifyV("TOP");
-        -- neighborsElt:SetText("Xanido Xanido Xanido Xanido Xanido");
-        -- container:DoLayout();
-        -- neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
+        -- neighborsElt:SetText("");
+        -- neighborsElt:SetHeight(neighborsElt:GetStringHeight());
         -- window:SetUserData("neighborsElt", neighborsElt);
     end
 

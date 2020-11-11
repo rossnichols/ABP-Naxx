@@ -52,8 +52,8 @@ do
             self.text:SetJustifyV("CENTER");
             self.text:SetPoint("LEFT", self.frame, 2, 1);
             self.text:SetPoint("RIGHT", self.frame, -2, 1);
-            self.text:SetPoint("TOP", self.frame);
-            self.text:SetPoint("BOTTOM", self.frame);
+            self.text:SetPoint("TOP", self.frame, 0, -2);
+            self.text:SetPoint("BOTTOM", self.frame, 0, 2);
             self.text:SetWordWrap(false);
             self.highlight:Hide();
 
@@ -92,6 +92,10 @@ do
 
         ["EnableMouse"] = function(self, enable)
             self.frame:EnableMouse(enable);
+        end,
+
+        ["GetStringHeight"] = function(self)
+            return self.text:GetStringHeight() + 4;
         end,
     }
 
