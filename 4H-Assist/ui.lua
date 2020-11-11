@@ -37,23 +37,23 @@ local function GetPositions(role, tick)
     return currentPos, nextPos, nextDifferentPos;
 end
 
-local function GetNeighbors(window, raiders)
+local function GetNeighbors(window, map)
     local neighbors = {};
     local tick = window:GetUserData("tick");
     local myPos = GetPositions(window:GetUserData("role"), tick);
 
     local roles = currentEncounter.roles;
-    for slot, raider in pairs(raiders) do
-        if not UnitIsUnit(raider.name, "player") then
-            local role = roles[slot];
+    for player in pairs(map) do
+        if not UnitIsUnit(player, "player") then
+            local role = roles[player];
             local currentPos = GetPositions(role, tick);
             if currentPos == myPos then
-                local formatStr = IsItemInRange(21519, raider.name)
+                local formatStr = IsItemInRange(21519, player)
                     and "|cff00ff00%s|r"
                     or "|cffff0000%s|r";
 
                 -- for i = 1, math.random(1, 15) do
-                    table.insert(neighbors, formatStr:format(raider.name));
+                    table.insert(neighbors, formatStr:format(player));
                 -- end
             end
         end
@@ -117,8 +117,8 @@ local function Refresh()
 
     local neighborsElt = activeWindow:GetUserData("neighborsElt");
     if neighborsElt then
-        local raiders = ABP_4H:GetRaiderSlots();
-        local neighbors = GetNeighbors(activeWindow, raiders);
+        local _, map = ABP_4H:GetRaiderSlots();
+        local neighbors = GetNeighbors(activeWindow, map);
         neighborsElt:SetText(table.concat(neighbors, " "));
         neighborsElt:SetHeight(neighborsElt:GetStringHeight());
 
@@ -163,8 +163,13 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
             }, "WHISPER", sender);
         end
 
+        local processedRoles = {};
+        for player, slot in pairs(map) do
+            processedRoles[player] = data.roles[slot];
+        end
+
         currentEncounter = {
-            roles = data.roles,
+            roles = processedRoles,
             mode = data.mode,
             tickDuration = data.tickDuration,
             role = role,
@@ -374,18 +379,18 @@ function ABP_4H:CreateMainWindow()
     window:SetUserData("upcoming", upcoming);
 
     if currentEncounter and currentEncounter.started then
-        local raiders = ABP_4H:GetRaiderSlots();
+        local _, map = ABP_4H:GetRaiderSlots();
 
         if self:Get("showTanks") then
             local currentTanks, upcomingTanks = {}, {};
-            for slot, raider in pairs(raiders) do
-                local role = currentEncounter.roles[slot];
+            for player in pairs(map) do
+                local role = currentEncounter.roles[player];
                 if self.RoleCategories[role] == self.Categories.tank then
                     local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks);
                     if pos == self.MapPositions.safe then
-                        upcomingTanks[nextDiff] = raider.name;
+                        upcomingTanks[nextDiff] = player;
                     else
-                        currentTanks[pos] = raider.name;
+                        currentTanks[pos] = player;
                     end
                 end
             end
@@ -432,7 +437,7 @@ function ABP_4H:CreateMainWindow()
         end
 
         if self:Get("showNeighbors") then
-            local neighbors = GetNeighbors(window, raiders);
+            local neighbors = GetNeighbors(window, map);
             local neighborsElt = AceGUI:Create("ABPN_Label");
             container:AddChild(neighborsElt);
             neighborsElt:SetFont("GameFontHighlightOutline");
