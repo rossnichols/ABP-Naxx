@@ -2,8 +2,6 @@ local _G = _G;
 local ABP_4H = _G.ABP_4H;
 local AceGUI = _G.LibStub("AceGUI-3.0");
 
-local dbmMoveAlert, dbmTickAlert;
-
 local UnitName = UnitName;
 local UnitIsUnit = UnitIsUnit;
 local IsItemInRange = IsItemInRange;
@@ -13,8 +11,9 @@ local pairs = pairs;
 local math = math;
 
 local activeWindow;
-
+local dbmMoveAlert, dbmTickAlert;
 local currentEncounter;
+local lastAlertedMove;
 
 local function GetPositions(role, tick)
     local rotation = ABP_4H.Rotations[role];
@@ -105,7 +104,8 @@ local function Refresh()
         upcoming:SetUserData("canvas-X", nextPos[1]);
         upcoming:SetUserData("canvas-Y", nextPos[2]);
 
-        if currentEncounter and dbmMoveAlert and ABP_4H:Get("showAlert") then
+        if currentEncounter and dbmMoveAlert and ABP_4H:Get("showAlert") and lastAlertedMove ~= tick then
+            lastAlertedMove = tick;
             dbmMoveAlert:Show("Move after next mark!");
         end
     end
@@ -188,6 +188,14 @@ function ABP_4H:OnUITimer()
     end
 end
 
+local function MoveSizeStartHook(frame)
+    frame.obj:SetUserData("moveSize", true);
+end
+
+local function MoveSizeStopHook(frame)
+    frame.obj:SetUserData("moveSize", false);
+end
+
 function ABP_4H:CreateMainWindow()
     if not dbmMoveAlert and _G.DBM and _G.DBM.NewMod then
         local mod = _G.DBM:NewMod("4H Assist");
@@ -212,17 +220,17 @@ function ABP_4H:CreateMainWindow()
         local timer = widget:GetUserData("timer");
         if timer then self:CancelTimer(timer); end
 
-        self:Unhook(widget.frame, "StartMoving");
-        self:Unhook(widget.frame, "StartSizing");
-        self:Unhook(widget.frame, "StopMovingOrSizing");
+        self:Unhook(widget.frame, "StartMoving", MoveSizeStartHook);
+        self:Unhook(widget.frame, "StartSizing", MoveSizeStartHook);
+        self:Unhook(widget.frame, "StopMovingOrSizing", MoveSizeStopHook);
 
         AceGUI:Release(widget);
         activeWindow = nil;
     end);
 
-    self:SecureHook(window.frame, "StartMoving", function(self) self.obj:SetUserData("moveSize", true); end);
-    self:SecureHook(window.frame, "StartSizing", function(self) self.obj:SetUserData("moveSize", true); end);
-    self:SecureHook(window.frame, "StopMovingOrSizing", function(self) self.obj:SetUserData("moveSize", false); end);
+    self:SecureHook(window.frame, "StartMoving", MoveSizeStartHook);
+    self:SecureHook(window.frame, "StartSizing", MoveSizeStartHook);
+    self:SecureHook(window.frame, "StopMovingOrSizing", MoveSizeStopHook);
 
     local container = AceGUI:Create("ABPN_TransparentGroup");
     container:SetFullWidth(true);
