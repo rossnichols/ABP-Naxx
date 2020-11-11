@@ -390,18 +390,17 @@ function ABP_4H:CreateMainWindow()
             window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
         end
     else
-    --     local neighborsElt = AceGUI:Create("ABPN_Label");
-    --     container:AddChild(neighborsElt);
-    --     neighborsElt:SetFont("GameFontHighlightOutline");
-    --     neighborsElt:SetFullWidth(true);
-    --     neighborsElt:SetWordWrap(true);
-    --     neighborsElt:SetJustifyH("LEFT");
-    --     neighborsElt:SetJustifyV("TOP");
-    --     neighborsElt:SetHeight(100);
-    --     neighborsElt:SetText("Xanido Xanido Xanido Xanido Xanido");
-    --     container:DoLayout();
-    --     neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
-    --     window:SetUserData("neighborsElt", neighborsElt);
+        -- local neighborsElt = AceGUI:Create("ABPN_Label");
+        -- container:AddChild(neighborsElt);
+        -- neighborsElt:SetFont("GameFontHighlightOutline");
+        -- neighborsElt:SetFullWidth(true);
+        -- neighborsElt:SetWordWrap(true);
+        -- neighborsElt:SetJustifyH("LEFT");
+        -- neighborsElt:SetJustifyV("TOP");
+        -- neighborsElt:SetText("Xanido Xanido Xanido Xanido Xanido");
+        -- container:DoLayout();
+        -- neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
+        -- window:SetUserData("neighborsElt", neighborsElt);
     end
 
     image.content.height = 0;
