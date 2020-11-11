@@ -416,10 +416,10 @@ function ABP_4H:CreateStartWindow()
     end
 
     local function ChooseCategory(raider)
-        local healers = { PRIEST = true, DRUID = true, PALADIN = true };
+        local healers = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true };
         if raider.wowRole == "maintank" then return ABP_4H.Categories.tank; end
         if raider.class and healers[raider.class] then return ABP_4H.Categories.healer; end
-        return ABP_4H.Categories.tank;
+        return ABP_4H.Categories.dps;
     end
 
     local function smartFunc(widget, event, value)
