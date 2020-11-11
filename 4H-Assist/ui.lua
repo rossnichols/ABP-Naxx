@@ -401,7 +401,7 @@ function ABP_4H:CreateMainWindow()
             tankTL:SetJustifyH("LEFT");
             tankTL:SetJustifyV("TOP");
             tankTL:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
-                currentTanks[self.MapPositions.tankdpsTL], upcomingTanks[self.MapPositions.tankdpsTL]));
+                currentTanks[self.MapPositions.tankdpsTL] or "", upcomingTanks[self.MapPositions.tankdpsTL] or ""));
             image:AddChild(tankTL);
 
             local tankTR = AceGUI:Create("ABPN_Label");
@@ -410,7 +410,7 @@ function ABP_4H:CreateMainWindow()
             tankTR:SetJustifyH("RIGHT");
             tankTR:SetJustifyV("TOP");
             tankTR:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
-                currentTanks[self.MapPositions.tankdpsTR], upcomingTanks[self.MapPositions.tankdpsTR]));
+                currentTanks[self.MapPositions.tankdpsTR] or "", upcomingTanks[self.MapPositions.tankdpsTR] or ""));
             image:AddChild(tankTR);
 
             local tankBL = AceGUI:Create("ABPN_Label");
@@ -419,7 +419,7 @@ function ABP_4H:CreateMainWindow()
             tankBL:SetJustifyH("LEFT");
             tankBL:SetJustifyV("BOTTOM");
             tankBL:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
-                upcomingTanks[self.MapPositions.tankdpsBL], currentTanks[self.MapPositions.tankdpsBL]));
+                upcomingTanks[self.MapPositions.tankdpsBL] or "", currentTanks[self.MapPositions.tankdpsBL] or ""));
             image:AddChild(tankBL);
 
             local tankBR = AceGUI:Create("ABPN_Label");
@@ -428,7 +428,7 @@ function ABP_4H:CreateMainWindow()
             tankBR:SetJustifyH("RIGHT");
             tankBR:SetJustifyV("BOTTOM");
             tankBR:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
-                upcomingTanks[self.MapPositions.tankdpsBR], currentTanks[self.MapPositions.tankdpsBR]));
+                upcomingTanks[self.MapPositions.tankdpsBR] or "", currentTanks[self.MapPositions.tankdpsBR] or ""));
             image:AddChild(tankBR);
         end
 
