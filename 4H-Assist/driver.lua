@@ -8,10 +8,12 @@ local IsInRaid = IsInRaid;
 local UnitName = UnitName;
 local GetTime = GetTime;
 local GetInstanceInfo = GetInstanceInfo;
+local UnitClass = UnitClass;
 local table = table;
 local pairs = pairs;
 local ipairs = ipairs;
 local next = next;
+local select = select;
 
 local activeWindow;
 
@@ -55,22 +57,22 @@ function ABP_4H:GetRaiderSlots()
 
     if IsInRaid() then
         for i = 1, GetNumGroupMembers() do
-            local name, _, subgroup = GetRaidRosterInfo(i);
+            local name, _, subgroup, _, _, class, _, _, _, wowRole = GetRaidRosterInfo(i);
             local slot = (5 * (subgroup - 1)) + 1;
             while slots[slot] do slot = slot + 1; end
-            slots[slot] = name;
+            slots[slot] = { name = name, wowRole = wowRole, class = class };
             map[name] = slot;
             count = count + 1;
         end
     else
-        slots[1] = player;
+        slots[1] = { name = player, class = select(2, UnitClass("player")) };
         for i = 1, GetNumGroupMembers() do
-            slots[i + 1] = UnitName("party" .. i);
+            slots[i + 1] = { name = UnitName("party" .. i), class = select(2, UnitClass("party" .. i)) };
         end
-        table.sort(slots);
+        table.sort(slots, function(a, b) return a.name < b.name; end);
 
-        for i, name in ipairs(slots) do
-            map[name] = i;
+        for i, raider in ipairs(slots) do
+            map[raider.name] = i;
             count = count + 1;
         end
     end
@@ -190,7 +192,7 @@ local function Refresh()
     local allAssigned = true;
     local readyCount = 0;
     for index, player in pairs(readyPlayers) do
-        if raiders[index] ~= player then
+        if not raiders[index] or raiders[index].name ~= player then
             readyPlayers[index] = nil;
             if map[player] then
                 slotEditTimes[map[player]] = GetTime();
@@ -204,9 +206,9 @@ local function Refresh()
 
     for i, dropdown in pairs(dropdowns) do
         local mappedIndex = dropdown:GetUserData("mappedIndex");
-        local player = raiders[mappedIndex];
-        local playerText = raiders[mappedIndex]
-            and ("%s%s"):format(GetStatus(player, map), ABP_4H:ColorizeName(player))
+        local raider = raiders[mappedIndex];
+        local playerText = raider
+            and ("%s%s"):format(GetStatus(raider.name, map), ABP_4H:ColorizeName(raider.name))
             or "|cff808080[Empty]|r";
 
         local role = assignedRoles[mappedIndex];
@@ -214,7 +216,7 @@ local function Refresh()
         dropdown:SetList(BuildDropdown(role, raiders, window:GetUserData("restrictedAssignments")));
         dropdown:SetText(("%s     %s"):format(playerText, roleText));
 
-        if player and not role then allAssigned = false; end
+        if raider and not role then allAssigned = false; end
     end
 
     local currentTargets, currentFilledTargets = BuildTargets(raiders);
@@ -395,7 +397,7 @@ function ABP_4H:CreateStartWindow()
     raidRoles:SetTitle("Raid Roles");
     raidRoles:SetFullWidth(true);
     raidRoles:SetLayout("Table");
-    raidRoles:SetUserData("table", { columns = { 1.0, 1.0, 1.0, 1.0 }});
+    raidRoles:SetUserData("table", { columns = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 }});
     container:AddChild(raidRoles);
 
     local dropdowns = {};
@@ -413,8 +415,102 @@ function ABP_4H:CreateStartWindow()
         Refresh();
     end
 
+    local function ChooseCategory(raider)
+        local healers = { PRIEST = true, DRUID = true, PALADIN = true };
+        if raider.wowRole == "maintank" then return ABP_4H.Categories.tank; end
+        if raider.class and healers[raider.class] then return ABP_4H.Categories.healer; end
+        return ABP_4H.Categories.tank;
+    end
+
+    local function smartFunc(widget, event, value)
+        local raiders = ABP_4H:GetRaiderSlots();
+        local group = widget:GetUserData("group");
+        local dropdowns = window:GetUserData("dropdowns");
+        local unassigned = {};
+
+        -- Pass 1: unassign roles with no raider or an unmatching category.
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            local role = assignedRoles[i];
+            if role then
+                if not raiders[i] or ChooseCategory(raiders[i]) ~= ABP_4H.RoleCategories[role] then
+                    assignedRoles[i] = false;
+                    table.insert(unassigned, role);
+                    window:GetUserData("slotEditTimes")[i] = GetTime();
+                    window:GetUserData("readyPlayers")[i] = nil;
+                    dropdowns[dropdownMapReversed[i]]:SetValue(false);
+                end
+            end
+        end
+
+        -- Pass 2: reallocate above roles to raiders matching the category.
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            local role = assignedRoles[i];
+            if raiders[i] and not role then
+                for oldI, oldRole in ipairs(unassigned) do
+                    if ChooseCategory(raiders[i]) == ABP_4H.RoleCategories[oldRole] then
+                        assignedRoles[i] = oldRole;
+                        table.remove(unassigned, oldI);
+                        window:GetUserData("slotEditTimes")[i] = GetTime();
+                        window:GetUserData("readyPlayers")[i] = nil;
+                        dropdowns[dropdownMapReversed[i]]:SetValue(oldRole);
+                        break;
+                    end
+                end
+            end
+        end
+
+        -- Pass 3: if any roles are left, try to reallocate to an empty slot.
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            if not raiders[i] and not assignedRoles[i] then
+                local oldI, oldRole = next(unassigned);
+                if oldI then
+                    assignedRoles[i] = oldRole;
+                    table.remove(unassigned, oldI);
+                    window:GetUserData("slotEditTimes")[i] = GetTime();
+                    window:GetUserData("readyPlayers")[i] = nil;
+                    dropdowns[dropdownMapReversed[i]]:SetValue(oldRole);
+                end
+            end
+        end
+
+        -- Pass 4: if any raiders don't have a role, try to assign from all available.
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            if raiders[i] and not assignedRoles[i] then
+                local available = BuildDropdown(false, raiders, true);
+                for availableRole in pairs(available) do
+                    if availableRole and ChooseCategory(raiders[i]) == ABP_4H.RoleCategories[availableRole] then
+                        assignedRoles[i] = availableRole;
+                        window:GetUserData("slotEditTimes")[i] = GetTime();
+                        window:GetUserData("readyPlayers")[i] = nil;
+                        dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                        break;
+                    end
+                end
+            end
+        end
+
+        -- Pass 5: if any slots don't have a role, try to assign from all available.
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            if not assignedRoles[i] then
+                local available = BuildDropdown(false, raiders, true);
+                for availableRole in pairs(available) do
+                    if availableRole then
+                        assignedRoles[i] = availableRole;
+                        window:GetUserData("slotEditTimes")[i] = GetTime();
+                        window:GetUserData("readyPlayers")[i] = nil;
+                        dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                        break;
+                    end
+                end
+            end
+        end
+
+        Refresh();
+    end
+
     for i = 1, 4 do
         local label = AceGUI:Create("Label");
+        label:SetUserData("cell", { colspan = 2 });
         label:SetText("Group " .. i);
         raidRoles:AddChild(label);
     end
@@ -428,20 +524,30 @@ function ABP_4H:CreateStartWindow()
                 unassign:SetUserData("group", i);
                 unassign:SetCallback("OnClick", unassignFunc);
                 raidRoles:AddChild(unassign);
+
+                local smart = AceGUI:Create("Button");
+                smart:SetText("Smart");
+                smart:SetFullWidth(true);
+                smart:SetUserData("group", i);
+                smart:SetCallback("OnClick", smartFunc);
+                raidRoles:AddChild(smart);
             end
+
+            local label = AceGUI:Create("Label");
+            label:SetUserData("cell", { colspan = 8 });
+            label:SetText(" ");
+            raidRoles:AddChild(label);
+
             for i = 1, 4 do
                 local label = AceGUI:Create("Label");
-                label:SetText(" ");
-                raidRoles:AddChild(label);
-            end
-            for i = 1, 4 do
-                local label = AceGUI:Create("Label");
+                label:SetUserData("cell", { colspan = 2 });
                 label:SetText("Group " .. i + 4);
                 raidRoles:AddChild(label);
             end
         end
 
         local config = AceGUI:Create("Dropdown");
+        config:SetUserData("cell", { colspan = 2 });
         local mappedIndex = dropdownMap[i];
         config:SetUserData("mappedIndex", mappedIndex);
         config:SetValue(assignedRoles[mappedIndex]);
@@ -464,6 +570,13 @@ function ABP_4H:CreateStartWindow()
         unassign:SetUserData("group", i + 4);
         unassign:SetCallback("OnClick", unassignFunc);
         raidRoles:AddChild(unassign);
+
+        local smart = AceGUI:Create("Button");
+        smart:SetText("Smart");
+        smart:SetFullWidth(true);
+        smart:SetUserData("group", i);
+        smart:SetCallback("OnClick", smartFunc);
+        raidRoles:AddChild(smart);
     end
 
     local roleStatusElts = {};

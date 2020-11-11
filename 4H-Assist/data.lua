@@ -86,6 +86,34 @@ local rolesSortedStatus = {
     roles.tankdps4,
 };
 
+local categories = {
+    healer = "healer",
+    tank = "tank",
+};
+
+local roleCategories = {
+    [roles.tankdps1] = categories.tank,
+    [roles.tankdps2] = categories.tank,
+    [roles.tankdps3] = categories.tank,
+    [roles.tankdps4] = categories.tank,
+    [roles.ot1] = categories.tank,
+    [roles.ot2] = categories.tank,
+    [roles.ot3] = categories.tank,
+    [roles.ot4] = categories.tank,
+    [roles.healer1] = categories.healer,
+    [roles.healer2] = categories.healer,
+    [roles.healer3] = categories.healer,
+    [roles.healer4] = categories.healer,
+    [roles.healer5] = categories.healer,
+    [roles.healer6] = categories.healer,
+    [roles.healer7] = categories.healer,
+    [roles.healer8] = categories.healer,
+    [roles.healer9] = categories.healer,
+    [roles.healer10] = categories.healer,
+    [roles.healer11] = categories.healer,
+    [roles.healer12] = categories.healer,
+};
+
 local raidRoles = {
     -- Group 1
     roles.healer1,
@@ -252,3 +280,5 @@ ABP_4H.MapPositions = pos;
 ABP_4H.Rotations = rotations;
 ABP_4H.Modes = modes;
 ABP_4H.ModeNames = modeNames;
+ABP_4H.Categories = categories;
+ABP_4H.RoleCategories = roleCategories;

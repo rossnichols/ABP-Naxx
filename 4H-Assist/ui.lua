@@ -40,17 +40,17 @@ local function GetNeighbors(window)
 
     local raiders = ABP_4H:GetRaiderSlots();
     local roles = currentEncounter.roles;
-    for slot, player in pairs(raiders) do
-        if not UnitIsUnit(player, "player") then
+    for slot, raider in pairs(raiders) do
+        if not UnitIsUnit(raider.name, "player") then
             local role = roles[slot];
             local currentPos = GetPositions(role, tick);
             if currentPos == myPos then
-                local formatStr = IsItemInRange(21519, player)
+                local formatStr = IsItemInRange(21519, raider.name)
                     and "|cff00ff00%s|r"
                     or "|cffff0000%s|r";
 
                 -- for i = 1, math.random(1, 15) do
-                    table.insert(neighbors, formatStr:format(player));
+                    table.insert(neighbors, formatStr:format(raider.name));
                 -- end
             end
         end
