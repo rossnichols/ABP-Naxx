@@ -204,15 +204,16 @@ function ABP_4H:CreateMainWindow()
         dbmTickAlert = mod:NewAnnounce("%s", 1, "136172");
     end
 
+    local windowWidth = 400;
     local window = AceGUI:Create("ABPN_TransparentWindow");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
     window:SetLayout("Flow");
     self:BeginWindowManagement(window, "main", {
         version = 1,
-        defaultWidth = 400,
-        minWidth = 200,
-        maxWidth = 600,
+        defaultWidth = windowWidth,
+        minWidth = windowWidth - 200,
+        maxWidth = windowWidth + 200,
         defaultHeight = 400,
     });
     window:SetCallback("OnClose", function(widget)
@@ -388,10 +389,31 @@ function ABP_4H:CreateMainWindow()
             end
             window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
         end
+    else
+    --     local neighborsElt = AceGUI:Create("ABPN_Label");
+    --     container:AddChild(neighborsElt);
+    --     neighborsElt:SetFont("GameFontHighlightOutline");
+    --     neighborsElt:SetFullWidth(true);
+    --     neighborsElt:SetWordWrap(true);
+    --     neighborsElt:SetJustifyH("LEFT");
+    --     neighborsElt:SetJustifyV("TOP");
+    --     neighborsElt:SetHeight(100);
+    --     neighborsElt:SetText("Xanido Xanido Xanido Xanido Xanido");
+    --     container:DoLayout();
+    --     neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
+    --     window:SetUserData("neighborsElt", neighborsElt);
     end
 
     image.content.height = 0;
     container:DoLayout();
+    local height = container.frame:GetHeight() + 50;
+    self:BeginWindowManagement(window, "main", {
+        version = 1,
+        defaultWidth = windowWidth,
+        minWidth = windowWidth - 200,
+        maxWidth = windowWidth + 200,
+        defaultHeight = height,
+    });
 
     window.frame:Raise();
     return window;

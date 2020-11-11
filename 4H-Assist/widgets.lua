@@ -56,6 +56,7 @@ do
             self.highlight:Hide();
 
             self:SetFont(_G.GameFontHighlight);
+            self:EnableMouse(false);
         end,
 
         ["EnableHighlight"] = function(self, enable)
@@ -85,6 +86,10 @@ do
 
         ["SetWordWrap"] = function(self, enable)
             self.text:SetWordWrap(enable);
+        end,
+
+        ["EnableMouse"] = function(self, enable)
+            self.frame:EnableMouse(enable);
         end,
     }
 
