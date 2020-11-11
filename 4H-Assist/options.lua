@@ -11,6 +11,8 @@ function ABP_4H:InitOptions()
         char = {
             debug = false,
             showAlert = true,
+            showTanks = true,
+            showNeighbors = true,
             alpha = 0.9,
         }
     };
@@ -105,9 +107,25 @@ function ABP_4H:InitOptions()
                             get = function(info) return self.db.char.showAlert; end,
                             set = function(info, v) self.db.char.showAlert = v; end,
                         },
+                        tanks = {
+                            name = "Show tanks",
+                            order = 4,
+                            desc = "Show the current/upcoming tanks for each corner on the map.",
+                            type = "toggle",
+                            get = function(info) return self.db.char.showTanks; end,
+                            set = function(info, v) self.db.char.showTanks = v; self:RefreshMainWindow(); end,
+                        },
+                        neighbors = {
+                            name = "Show neighbors",
+                            order = 5,
+                            desc = "Show a list of players under the map who are supposed to be at your location, colored by range.",
+                            type = "toggle",
+                            get = function(info) return self.db.char.showNeighbors; end,
+                            set = function(info, v) self.db.char.showNeighbors = v; self:RefreshMainWindow(); end,
+                        },
                         alpha = {
                             name = "Map Alpha",
-                            order = 4,
+                            order = 6,
                             desc = "Controls the alpha of the map.",
                             type = "range",
                             min = 0,

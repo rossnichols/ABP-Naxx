@@ -17,8 +17,9 @@ local lastAlertedMove;
 
 local function GetPositions(role, tick)
     local rotation = ABP_4H.Rotations[role];
-    local currentPos, nextPos;
+    local currentPos, nextPos, nextDifferentPos;
     if tick == -1 then
+        tick = 0;
         currentPos = rotation[0];
         nextPos = currentPos;
     else
@@ -27,17 +28,23 @@ local function GetPositions(role, tick)
         nextPos = rotation[tick + 1];
     end
 
-    return currentPos, nextPos;
+    nextDifferentPos = nextPos;
+    while nextDifferentPos == currentPos do
+        tick = tick + 1;
+        tick = tick % 12;
+        nextDifferentPos = rotation[tick];
+    end
+
+    return currentPos, nextPos, nextDifferentPos;
 end
 
-local function GetNeighbors(window)
+local function GetNeighbors(window, raiders)
     if not currentEncounter then return; end
 
     local neighbors = {};
     local tick = window:GetUserData("tick");
     local myPos = GetPositions(window:GetUserData("role"), tick);
 
-    local raiders = ABP_4H:GetRaiderSlots();
     local roles = currentEncounter.roles;
     for slot, raider in pairs(raiders) do
         if not UnitIsUnit(raider.name, "player") then
@@ -371,23 +378,78 @@ function ABP_4H:CreateMainWindow()
     image:AddChild(upcoming);
     window:SetUserData("upcoming", upcoming);
 
-    if currentEncounter then
-        local neighbors = GetNeighbors(window);
-        if neighbors then
-            if #neighbors > 0 then
-                local neighborsElt = AceGUI:Create("ABPN_Label");
-                container:AddChild(neighborsElt);
-                neighborsElt:SetFont("GameFontHighlightOutline");
-                neighborsElt:SetFullWidth(true);
-                neighborsElt:SetWordWrap(true);
-                neighborsElt:SetJustifyH("LEFT");
-                neighborsElt:SetJustifyV("TOP");
-                neighborsElt:SetText(table.concat(neighbors, " "));
-                container:DoLayout();
-                neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
-                window:SetUserData("neighborsElt", neighborsElt);
+    if currentEncounter and currentEncounter.started then
+        local raiders = ABP_4H:GetRaiderSlots();
+
+        if self:Get("showTanks") then
+            local currentTanks, upcomingTanks = {}, {};
+            for slot, raider in pairs(raiders) do
+                local role = currentEncounter.roles[slot];
+                if self.RoleCategories[role] == self.Categories.tank then
+                    local pos, _, nextDiff = GetPositions(role, currentEncounter.tick);
+                    if pos == self.MapPositions.safe then
+                        upcomingTanks[nextDiff] = raider.name;
+                    else
+                        currentTanks[pos] = raider.name;
+                    end
+                end
             end
-            window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
+
+            local tankTL = AceGUI:Create("ABPN_Label");
+            tankTL:SetUserData("canvas-fill", true);
+            tankTL:SetFont("GameFontHighlightOutline");
+            tankTL:SetJustifyH("LEFT");
+            tankTL:SetJustifyV("TOP");
+            tankTL:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
+                currentTanks[self.MapPositions.tankdpsTL], upcomingTanks[self.MapPositions.tankdpsTL]));
+            image:AddChild(tankTL);
+
+            local tankTR = AceGUI:Create("ABPN_Label");
+            tankTR:SetUserData("canvas-fill", true);
+            tankTR:SetFont("GameFontHighlightOutline");
+            tankTR:SetJustifyH("RIGHT");
+            tankTR:SetJustifyV("TOP");
+            tankTR:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
+                currentTanks[self.MapPositions.tankdpsTR], upcomingTanks[self.MapPositions.tankdpsTR]));
+            image:AddChild(tankTR);
+
+            local tankBL = AceGUI:Create("ABPN_Label");
+            tankBL:SetUserData("canvas-fill", true);
+            tankBL:SetFont("GameFontHighlightOutline");
+            tankBL:SetJustifyH("LEFT");
+            tankBL:SetJustifyV("BOTTOM");
+            tankBL:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
+                upcomingTanks[self.MapPositions.tankdpsBL], currentTanks[self.MapPositions.tankdpsBL]));
+            image:AddChild(tankBL);
+
+            local tankBR = AceGUI:Create("ABPN_Label");
+            tankBR:SetUserData("canvas-fill", true);
+            tankBR:SetFont("GameFontHighlightOutline");
+            tankBR:SetJustifyH("RIGHT");
+            tankBR:SetJustifyV("BOTTOM");
+            tankBR:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
+                upcomingTanks[self.MapPositions.tankdpsBR], currentTanks[self.MapPositions.tankdpsBR]));
+            image:AddChild(tankBR);
+        end
+
+        if self:Get("showNeighbors") then
+            local neighbors = GetNeighbors(window, raiders);
+            if neighbors then
+                if #neighbors > 0 then
+                    local neighborsElt = AceGUI:Create("ABPN_Label");
+                    container:AddChild(neighborsElt);
+                    neighborsElt:SetFont("GameFontHighlightOutline");
+                    neighborsElt:SetFullWidth(true);
+                    neighborsElt:SetWordWrap(true);
+                    neighborsElt:SetJustifyH("LEFT");
+                    neighborsElt:SetJustifyV("TOP");
+                    neighborsElt:SetText(table.concat(neighbors, " "));
+                    container:DoLayout();
+                    neighborsElt:SetHeight(neighborsElt.text:GetStringHeight());
+                    window:SetUserData("neighborsElt", neighborsElt);
+                end
+                window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
+            end
         end
     else
         -- local neighborsElt = AceGUI:Create("ABPN_Label");

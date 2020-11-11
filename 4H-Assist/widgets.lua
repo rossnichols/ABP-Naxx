@@ -444,11 +444,15 @@ AceGUI:RegisterLayout("ABPN_Canvas", function (content, children)
     local scale = ((totalH + totalV) / 2) / baseline;
 
     for i, child in ipairs(children) do
-        local x, y = child:GetUserData("canvas-X") or 0, child:GetUserData("canvas-Y") or 0;
         local frame = child.frame;
         frame:ClearAllPoints();
-        frame:SetPoint("CENTER", content, "TOPLEFT", x * totalH / 100 / scale, -y * totalV / 100 / scale);
-        frame:SetScale(scale);
+        if child:GetUserData("canvas-fill") then
+            frame:SetAllPoints(content);
+        else
+            local x, y = child:GetUserData("canvas-X") or 0, child:GetUserData("canvas-Y") or 0;
+            frame:SetPoint("CENTER", content, "TOPLEFT", x * totalH / 100 / scale, -y * totalV / 100 / scale);
+            frame:SetScale(scale);
+        end
     end
 
     safecall(obj.LayoutFinished, obj, totalH, totalV);
