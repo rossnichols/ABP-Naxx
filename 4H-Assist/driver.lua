@@ -107,13 +107,24 @@ local function GetStatus(player, map)
     return "|TInterface\\RAIDFRAME\\ReadyCheck-Waiting.blp:0|t";
 end
 
+local function ChooseCategory(raider)
+    local healers = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true };
+    if raider.wowRole == "maintank" then return ABP_4H.Categories.tank; end
+    if raider.class and healers[raider.class] then return ABP_4H.Categories.healer; end
+    return ABP_4H.Categories.dps;
+end
+
 local function BuildTargets(raiders)
     local currentTargets = {};
     local currentFilledTargets = {};
+    local currentMismatchedTargets = {};
     for i, role in pairs(assignedRoles) do
         currentTargets[role] = (currentTargets[role] or 0) + 1;
         if raiders[i] then
             currentFilledTargets[role] = (currentFilledTargets[role] or 0) + 1;
+            if ChooseCategory(raiders[i]) ~= ABP_4H.RoleCategories[role] then
+                currentMismatchedTargets[role] = (currentMismatchedTargets[role] or 0) + 1;
+            end
         end
     end
     for role in pairs(roleTargets) do
@@ -121,12 +132,13 @@ local function BuildTargets(raiders)
         currentFilledTargets[role] = currentFilledTargets[role] or 0;
     end
 
-    return currentTargets, currentFilledTargets;
+    return currentTargets, currentFilledTargets, currentMismatchedTargets;
 end
 
-local function FormatRoleText(role, currentTargets, currentFilledTargets)
+local function FormatRoleText(role, currentTargets, currentFilledTargets, currentMismatchedTargets)
     local current = currentTargets[role];
     local filled = currentFilledTargets[role];
+    local mismatched = currentMismatchedTargets and currentMismatchedTargets[role] or 0;
     local empty = current - filled;
     local target = roleTargets[role];
 
@@ -140,10 +152,14 @@ local function FormatRoleText(role, currentTargets, currentFilledTargets)
         return formatStr:format(current, target);
     end
 
-    if empty == 0 then
+    if empty == 0 and mismatched == 0 then
         return ("%s: %s"):format(ABP_4H.RoleNamesColored[role], targetText());
-    else
+    elseif empty == 0 then
+        return ("%s: %s |cffff0000(%d mismatched)|r"):format(ABP_4H.RoleNamesColored[role], targetText(), mismatched);
+    elseif mismatched == 0 then
         return ("%s: %s |cffff0000(%d empty)|r"):format(ABP_4H.RoleNamesColored[role], targetText(), empty);
+    else
+        return ("%s: %s |cffff0000(%d empty, %d mismatched)|r"):format(ABP_4H.RoleNamesColored[role], targetText(), empty, mismatched);
     end
 end
 
@@ -213,16 +229,19 @@ local function Refresh()
 
         local role = assignedRoles[mappedIndex];
         local roleText = role and ABP_4H.RoleNamesColored[role] or "|cffff0000[Unassigned]|r";
+        if raider and role and ChooseCategory(raider) ~= ABP_4H.RoleCategories[role] then
+            roleText = ("|cffff0000%s|r"):format( ABP_4H.RoleNames[role]);
+        end
         dropdown:SetList(BuildDropdown(role, raiders, window:GetUserData("restrictedAssignments")));
         dropdown:SetText(("%s     %s"):format(playerText, roleText));
 
         if raider and not role then allAssigned = false; end
     end
 
-    local currentTargets, currentFilledTargets = BuildTargets(raiders);
+    local currentTargets, currentFilledTargets, currentMismatchedTargets = BuildTargets(raiders);
     local roleStatusElts = window:GetUserData("roleStatusElts");
     for role, elt in pairs(roleStatusElts) do
-        elt:SetText(FormatRoleText(role, currentTargets, currentFilledTargets));
+        elt:SetText(FormatRoleText(role, currentTargets, currentFilledTargets, currentMismatchedTargets));
     end
 
     syncElt:SetDisabled(not allAssigned);
@@ -415,13 +434,6 @@ function ABP_4H:CreateStartWindow()
         Refresh();
     end
 
-    local function ChooseCategory(raider)
-        local healers = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true };
-        if raider.wowRole == "maintank" then return ABP_4H.Categories.tank; end
-        if raider.class and healers[raider.class] then return ABP_4H.Categories.healer; end
-        return ABP_4H.Categories.dps;
-    end
-
     local function smartFunc(widget, event, value)
         local raiders = ABP_4H:GetRaiderSlots();
         local group = widget:GetUserData("group");
@@ -592,10 +604,23 @@ function ABP_4H:CreateStartWindow()
     for _, role in ipairs(self.RolesSortedStatus) do
         local roleElt = AceGUI:Create("ABPN_Label");
         roleElt:SetFullWidth(true);
-        roleElt:SetText(self.RoleNamesColored[role]);
         roleStatus:AddChild(roleElt);
         roleStatusElts[role] = roleElt;
     end
+
+    local label = AceGUI:Create("ABPN_Label");
+    label:SetFullWidth(true);
+    label:SetFont(_G.GameFontHighlightSmall);
+    label:SetUserData("cell", { colspan = 4 });
+    label:SetText("|cffff0000Empty|r: the raid slot has a role assigned, but there's no player in it.");
+    roleStatus:AddChild(label);
+
+    local label = AceGUI:Create("ABPN_Label");
+    label:SetFullWidth(true);
+    label:SetFont(_G.GameFontHighlightSmall);
+    label:SetUserData("cell", { colspan = 4 });
+    label:SetText("|cffff0000Mismatched|r: our guess of the player's category (tank/healer/dps) doesn't match their assigned role.");
+    roleStatus:AddChild(label);
 
     local options = AceGUI:Create("InlineGroup");
     options:SetTitle("Options");
