@@ -259,7 +259,7 @@ function ABP_4H:CreateMainWindow()
 
         local roleElt = AceGUI:Create("ABPN_Label");
         roleElt:SetFullWidth(true);
-        roleElt:SetText(self.RoleNames[role]);
+        roleElt:SetText(self.RoleNamesColored[role]);
         roleElt:SetFont("GameFontHighlightOutline");
         mainLine:AddChild(roleElt);
 
@@ -287,7 +287,7 @@ function ABP_4H:CreateMainWindow()
         local roleSelector = AceGUI:Create("Dropdown");
         roleSelector:SetText("Choose a Role");
         roleSelector:SetFullWidth(true);
-        roleSelector:SetList(self.RoleNames, self.RolesSorted);
+        roleSelector:SetList(self.RoleNamesColored, self.RolesSorted);
         roleSelector:SetCallback("OnValueChanged", function(widget, event, value)
             window:SetUserData("role", value);
             window:SetUserData("tick", -1);

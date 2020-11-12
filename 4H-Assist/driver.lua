@@ -141,9 +141,9 @@ local function FormatRoleText(role, currentTargets, currentFilledTargets)
     end
 
     if empty == 0 then
-        return ("%s: %s"):format(ABP_4H.RoleNames[role], targetText());
+        return ("%s: %s"):format(ABP_4H.RoleNamesColored[role], targetText());
     else
-        return ("%s: %s |cffff0000(%d empty)|r"):format(ABP_4H.RoleNames[role], targetText(), empty);
+        return ("%s: %s |cffff0000(%d empty)|r"):format(ABP_4H.RoleNamesColored[role], targetText(), empty);
     end
 end
 
@@ -212,7 +212,7 @@ local function Refresh()
             or "|cff808080[Empty]|r";
 
         local role = assignedRoles[mappedIndex];
-        local roleText = role and ABP_4H.RoleNames[role] or "|cffff0000[Unassigned]|r";
+        local roleText = role and ABP_4H.RoleNamesColored[role] or "|cffff0000[Unassigned]|r";
         dropdown:SetList(BuildDropdown(role, raiders, window:GetUserData("restrictedAssignments")));
         dropdown:SetText(("%s     %s"):format(playerText, roleText));
 
@@ -592,7 +592,7 @@ function ABP_4H:CreateStartWindow()
     for _, role in ipairs(self.RolesSortedStatus) do
         local roleElt = AceGUI:Create("ABPN_Label");
         roleElt:SetFullWidth(true);
-        roleElt:SetText(self.RoleNames[role]);
+        roleElt:SetText(self.RoleNamesColored[role]);
         roleStatus:AddChild(roleElt);
         roleStatusElts[role] = roleElt;
     end

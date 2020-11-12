@@ -244,8 +244,9 @@ local roleColors = {
     [roles.healer12] = "ffff66",
 };
 
+local roleNamesColored = {};
 for role, name in pairs(roleNames) do
-    roleNames[role] = ("|cff%s%s|r"):format(roleColors[role], name);
+    roleNamesColored[role] = ("|cff%s%s|r"):format(roleColors[role], name);
 end
 
 local rotations = {
@@ -307,6 +308,7 @@ ABP_4H.RolesSorted = rolesSorted;
 ABP_4H.RolesSortedStatus = rolesSortedStatus;
 ABP_4H.RaidRoles = raidRoles;
 ABP_4H.RoleNames = roleNames;
+ABP_4H.RoleNamesColored = roleNamesColored;
 ABP_4H.MapPositions = pos;
 ABP_4H.Rotations = rotations;
 ABP_4H.Modes = modes;
