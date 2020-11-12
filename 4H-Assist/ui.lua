@@ -5,6 +5,8 @@ local AceGUI = _G.LibStub("AceGUI-3.0");
 local UnitName = UnitName;
 local UnitIsUnit = UnitIsUnit;
 local IsItemInRange = IsItemInRange;
+local UnitIsConnected = UnitIsConnected;
+local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 local table = table;
 local pairs = pairs;
 local math = math;
@@ -44,7 +46,7 @@ local function GetNeighbors(window, map)
 
     local roles = currentEncounter.roles;
     for player in pairs(map) do
-        if not UnitIsUnit(player, "player") then
+        if not UnitIsUnit(player, "player") and UnitIsConnected(player) and not UnitIsDeadOrGhost(player) then
             local role = roles[player];
             local currentPos = GetPositions(role, tick);
             if currentPos == myPos then
