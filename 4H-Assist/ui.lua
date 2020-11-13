@@ -389,10 +389,13 @@ function ABP_4H:CreateMainWindow()
                 local role = currentEncounter.roles[player];
                 if self.RoleCategories[role] == self.Categories.tank then
                     local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks);
+                    local playerText = (UnitIsConnected(player) and not UnitIsDeadOrGhost(player))
+                        and player
+                        or ("|cffff0000%s|r"):format(player);
                     if pos == self.MapPositions.safe then
-                        upcomingTanks[nextDiff] = player;
+                        upcomingTanks[nextDiff] = playerText;
                     else
-                        currentTanks[pos] = player;
+                        currentTanks[pos] = playerText;
                     end
                 end
             end
