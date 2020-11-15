@@ -10,13 +10,15 @@ jobs:
     - name: Pull source
       uses: actions/checkout@v1
 
-    - name: Get the version
+    - name: Set globals
       id: get_version
       run: |
         echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
         echo ::set-output name=ADDON_VERSION::${GITHUB_REF/refs\/tags\/v/}
+        echo ::set-output name=RETAIL_INTERFACE::90001
+        echo ::set-output name=CLASSIC_INTERFACE::11305
 
-    - name: Update TOC version
+    - name: Set Classic TOC
       uses: cschleiden/replace-tokens@v1.0
       with:
         tokenPrefix: '${'
@@ -24,16 +26,43 @@ jobs:
         files: '["4H-Assist/4H-Assist.toc", "4H-Assist/core.lua"]'
       env:
         ADDON_VERSION: ${{ steps.get_version.outputs.ADDON_VERSION }}
+        INTERFACE: ${{ steps.get_version.outputs.CLASSIC_INTERFACE }}
 
-    - name: Create a zip for the release
+    - name: Create Classic ZIP
       uses: TheDoctor0/zip-release@v0.2.1
       with:
-        filename: 4H-Assist-${{ steps.get_version.outputs.VERSION }}.zip
+        filename: 4H-Assist-${{ steps.get_version.outputs.VERSION }}-classic.zip
         exclusions: '*.git*'
         path: 4H-Assist
 
-    - name: Upload to release
+    - name: Upload Classic ZIP
       uses: fnkr/github-action-ghr@v1
       env:
-        GHR_PATH: 4H-Assist-${{ steps.get_version.outputs.VERSION }}.zip
+        GHR_PATH: 4H-Assist-${{ steps.get_version.outputs.VERSION }}-classic.zip
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Pull source again
+      uses: actions/checkout@v1
+
+    - name: Set Retail TOC
+      uses: cschleiden/replace-tokens@v1.0
+      with:
+        tokenPrefix: '${'
+        tokenSuffix: '}'
+        files: '["4H-Assist/4H-Assist.toc", "4H-Assist/core.lua"]'
+      env:
+        ADDON_VERSION: ${{ steps.get_version.outputs.ADDON_VERSION }}
+        INTERFACE: ${{ steps.get_version.outputs.RETAIL_INTERFACE }}
+
+    - name: Create Retail ZIP
+      uses: TheDoctor0/zip-release@v0.2.1
+      with:
+        filename: 4H-Assist-${{ steps.get_version.outputs.VERSION }}-retail.zip
+        exclusions: '*.git*'
+        path: 4H-Assist
+
+    - name: Upload Retail ZIP
+      uses: fnkr/github-action-ghr@v1
+      env:
+        GHR_PATH: 4H-Assist-${{ steps.get_version.outputs.VERSION }}-retail.zip
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
