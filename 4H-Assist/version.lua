@@ -7,6 +7,7 @@ local IsInRaid = IsInRaid;
 local UnitName = UnitName;
 local UnitIsConnected = UnitIsConnected;
 local GetAddOnMetadata = GetAddOnMetadata;
+local Ambiguate = Ambiguate;
 local tonumber = tonumber;
 
 local versionCheckData;
@@ -111,7 +112,7 @@ end
 
 function ABP_4H:OnVersionResponse(data, distribution, sender)
     if versionCheckData and not versionCheckData.players[sender] then
-        versionCheckData.players[sender] = data.version;
+        versionCheckData.players[Ambiguate(sender, "short")] = data.version;
         versionCheckData.received = versionCheckData.received + 1;
 
         -- See if we can end the timer early if everyone has responded.
@@ -191,7 +192,7 @@ function ABP_4H:VersionCheckCallback()
         elseif i ~= groupSize then
             unit = "party" .. i;
         end
-        local player = UnitName(unit);
+        local player, realm = UnitName(unit);
         if player then
             if UnitIsConnected(unit) then
                 local versionCmp = versionCheckData.players[player];
@@ -200,14 +201,14 @@ function ABP_4H:VersionCheckCallback()
                         self:Notify("%s running an outdated version (%s)!", self:ColorizeName(player), ABP_4H:ColorizeText(versionCmp));
                         _G.SendChatMessage(
                             ("You don't have the latest 4H Assist version installed! Please update it from Curse/Twitch. The latest version is %s, you have %s."):format(version, versionCmp),
-                            "WHISPER", nil, player);
+                            "WHISPER", nil, realm and ("%s-%s"):format(player, realm) or player);
                         allUpToDate = false;
                     end
                 else
                     self:Notify("%s is missing the addon!", self:ColorizeName(player));
                     _G.SendChatMessage(
                         "You don't have the 4H Assist addon installed! Please install it from Curse/Twitch.",
-                        "WHISPER", nil, player);
+                        "WHISPER", nil, realm and ("%s-%s"):format(player, realm) or player);
                     allUpToDate = false;
                 end
             else

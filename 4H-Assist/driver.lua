@@ -218,7 +218,6 @@ local function Refresh()
         end
     end
     syncElt:SetText(readyCount == count and "Ready!" or "Sync");
-    syncElt:SetUserData("ready", readyCount == count);
 
     for i, dropdown in pairs(dropdowns) do
         local mappedIndex = dropdown:GetUserData("mappedIndex");
@@ -280,6 +279,10 @@ function ABP_4H:DriverOnStateSyncRequest(data, distribution, sender, version)
 end
 
 function ABP_4H:DriverOnLogout()
+    if activeWindow then
+        activeWindow:Hide();
+    end
+
     if started then
         self:StopEncounter();
     end
@@ -397,6 +400,9 @@ function ABP_4H:CreateStartWindow()
     window:SetWidth(windowWidth);
     self:OpenWindow(window);
     window:SetCallback("OnClose", function(widget)
+        if not started then
+            SendStateComm(false, "BROADCAST");
+        end
         self:CloseWindow(widget);
         self:EndWindowManagement(widget);
         AceGUI:Release(widget);
@@ -683,15 +689,11 @@ function ABP_4H:CreateStartWindow()
     sync:SetWidth(100);
     sync:SetText("Sync");
     sync:SetCallback("OnClick", function(widget, event)
-        if widget:GetUserData("ready") then
-            window:Hide();
-        else
-            window:SetUserData("lastSync", GetTime());
-            window:SetUserData("readyPlayers", {});
-            Refresh();
+        window:SetUserData("lastSync", GetTime());
+        window:SetUserData("readyPlayers", {});
+        Refresh();
 
-            SendStateComm(true, "BROADCAST");
-        end
+        SendStateComm(true, "BROADCAST");
     end);
     bottom:AddChild(sync);
     window:SetUserData("syncElt", sync);

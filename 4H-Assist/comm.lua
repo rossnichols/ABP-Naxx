@@ -55,7 +55,7 @@ end
 ABP_4H.CommTypes = {
     STATE_SYNC = { name = "STATE_SYNC", id = 1, priority = "ALERT", fireLocally = true },
 
-    STATE_SYNC_ACK = { name = "STATE_SYNC_ACK", id = 2, priority = "INSTANT", fireLocally = true },
+    STATE_SYNC_ACK = { name = "STATE_SYNC_ACK", id = 2, priority = "ALERT", fireLocally = true },
 
     STATE_SYNC_REQUEST = { name = "STATE_SYNC_REQUEST", id = 3, priority = "ALERT" },
 
@@ -148,7 +148,7 @@ function ABP_4H:SendComm(typ, data, distribution, target)
     local priority = typ.priority;
     local payload, prefix = self:Serialize(typ, data, typ.legacy);
 
-    if distribution == "BROADCAST" then
+    if distribution == "BROADCAST" or (distribution == "WHISPER" and not self:IsClassic()) then
         distribution, target = self:GetBroadcastChannel();
     end
     if not distribution then return; end
