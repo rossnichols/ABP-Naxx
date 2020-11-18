@@ -11,6 +11,7 @@ function ABP_4H:InitOptions()
         char = {
             debug = false,
             showAlert = true,
+            showMoveAlert = true,
             showTanks = true,
             showNeighbors = true,
             alpha = 0.9,
@@ -100,16 +101,24 @@ function ABP_4H:InitOptions()
                             func = function() _G.InterfaceOptionsFrame:Hide(); self:ShowStartWindow(); end
                         },
                         alerts = {
-                            name = "DBM alerts",
+                            name = "Alert pending move",
                             order = 3,
                             desc = "Show a DBM alert when you're supposed to move after the next mark.",
                             type = "toggle",
                             get = function(info) return self.db.char.showAlert; end,
                             set = function(info, v) self.db.char.showAlert = v; end,
                         },
+                        moveAlerts = {
+                            name = "Alert immediate move",
+                            order = 4,
+                            desc = "Show a DBM alert when you're supposed to move on the current mark.",
+                            type = "toggle",
+                            get = function(info) return self.db.char.showMoveAlert; end,
+                            set = function(info, v) self.db.char.showMoveAlert = v; end,
+                        },
                         tanks = {
                             name = "Show tanks",
-                            order = 4,
+                            order = 5,
                             desc = "Show the current/upcoming tanks for each corner on the map.",
                             type = "toggle",
                             get = function(info) return self.db.char.showTanks; end,
@@ -117,7 +126,7 @@ function ABP_4H:InitOptions()
                         },
                         neighbors = {
                             name = "Show neighbors",
-                            order = 5,
+                            order = 6,
                             desc = "Show a list of players under the map who are supposed to be at your location, colored by range.",
                             type = "toggle",
                             get = function(info) return self.db.char.showNeighbors; end,
@@ -125,7 +134,7 @@ function ABP_4H:InitOptions()
                         },
                         alpha = {
                             name = "Map Alpha",
-                            order = 6,
+                            order = 7,
                             desc = "Controls the alpha of the map.",
                             type = "range",
                             min = 0,

@@ -12,8 +12,9 @@ local pairs = pairs;
 local math = math;
 
 local activeWindow;
-local dbmMoveAlert, dbmTickAlert;
+local dbmPendingAlert, dbmMoveAlert, dbmTickAlert;
 local currentEncounter;
+local lastAlertedPending;
 local lastAlertedMove;
 
 local function GetPositions(role, tick)
@@ -101,6 +102,14 @@ local function Refresh()
     local rotation = ABP_4H.Rotations[role];
     local currentPos, nextPos = GetPositions(role, tick);
 
+    if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
+        local prevPos = GetPositions(role, tick - 1);
+        if prevPos ~= currentPos and lastAlertedMove ~= tick then
+            lastAlertedMove = tick;
+            dbmMoveAlert:Show("Time to move!");
+        end
+    end
+
     current:SetVisible(true);
     current:SetUserData("canvas-X", currentPos[1]);
     current:SetUserData("canvas-Y", currentPos[2]);
@@ -110,9 +119,9 @@ local function Refresh()
         upcoming:SetUserData("canvas-X", nextPos[1]);
         upcoming:SetUserData("canvas-Y", nextPos[2]);
 
-        if currentEncounter and dbmMoveAlert and ABP_4H:Get("showAlert") and lastAlertedMove ~= tick then
-            lastAlertedMove = tick;
-            dbmMoveAlert:Show("Move after next mark!");
+        if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick then
+            lastAlertedPending = tick;
+            dbmPendingAlert:Show("Move after next mark!");
         end
     end
     image:DoLayout();
@@ -215,10 +224,11 @@ function ABP_4H:OnUITimer()
 end
 
 function ABP_4H:CreateMainWindow()
-    if not dbmMoveAlert and _G.DBM and _G.DBM.NewMod then
+    if not dbmPendingAlert and _G.DBM and _G.DBM.NewMod then
         local mod = _G.DBM:NewMod("4H Assist");
         _G.DBM:GetModLocalization("4H Assist"):SetGeneralLocalization{ name = "4H Assist" }
-        dbmMoveAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1, 2);
+        dbmPendingAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1);
+        dbmMoveAlert = mod:NewSpecialWarning("%s ", nil, nil, nil, 4);
         dbmTickAlert = mod:NewAnnounce("%s", 1, "136172");
     end
 
@@ -240,6 +250,8 @@ function ABP_4H:CreateMainWindow()
         if timer then self:CancelTimer(timer); end
         AceGUI:Release(widget);
         activeWindow = nil;
+        lastAlertedPending = nil;
+        lastAlertedMove = nil;
     end);
 
     local container = AceGUI:Create("ABPN_TransparentGroup");
