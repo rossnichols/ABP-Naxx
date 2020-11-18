@@ -407,6 +407,7 @@ do
     -------------------------------------------------------------------------------]]
     local function Constructor()
         local elt = AceGUI:Create("Window");
+        elt.frame:SetClampedToScreen(true);
         if elt.frame.SetBackdropColor then
             elt.frame:SetBackdropColor(0, 0, 0, 0.25);
         end
