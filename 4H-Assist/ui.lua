@@ -228,7 +228,7 @@ function ABP_4H:CreateMainWindow()
         local mod = _G.DBM:NewMod("4H Assist");
         _G.DBM:GetModLocalization("4H Assist"):SetGeneralLocalization{ name = "4H Assist" }
         dbmPendingAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1);
-        dbmMoveAlert = mod:NewSpecialWarning("%s ", nil, nil, nil, 4);
+        dbmMoveAlert = mod:NewSpecialWarning("%s ", nil, nil, nil, 1);
         dbmTickAlert = mod:NewAnnounce("%s", 1, "136172");
     end
 
