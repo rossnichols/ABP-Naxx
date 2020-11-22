@@ -21,9 +21,12 @@ local GetServerTime = GetServerTime;
 local UnitIsGroupLeader = UnitIsGroupLeader;
 local IsEquippableItem = IsEquippableItem;
 local IsAltKeyDown = IsAltKeyDown;
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
 local GetClassColor = GetClassColor;
 local EasyMenu = EasyMenu;
 local ToggleDropDownMenu = ToggleDropDownMenu;
+local COMBATLOG_OBJECT_TYPE_NPC = COMBATLOG_OBJECT_TYPE_NPC;
+local COMBATLOG_OBJECT_REACTION_HOSTILE = COMBATLOG_OBJECT_REACTION_HOSTILE;
 local select = select;
 local pairs = pairs;
 local ipairs = ipairs;
@@ -34,6 +37,7 @@ local min = min;
 local max = max;
 local date = date;
 local type = type;
+local bit = bit;
 
 local version = "${ADDON_VERSION}";
 
@@ -58,6 +62,7 @@ function ABP_4H:OnEnable()
     self:RegisterComm("ABPN");
     self:RegisterComm(self:GetCommPrefix());
     self:InitOptions();
+    self:InitSpells();
 
     if self:IsClassic() then
         -- Trigger a guild roster update to refresh priorities.
@@ -107,8 +112,16 @@ function ABP_4H:OnEnable()
     self:RegisterEvent("ENCOUNTER_END", function(self, event, ...)
         self:DriverOnEncounterEnd(...);
     end, self);
-    self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", function(self, event, ...)
-        self:DriverOnSpellCast(...);
+    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", function(self, event, ...)
+        local _, event, _, _, _, sourceFlags, _, dest, destName, destFlags, _, spellID, spellName = CombatLogGetCurrentEventInfo();
+        local expected = bit.bor(COMBATLOG_OBJECT_TYPE_NPC, COMBATLOG_OBJECT_REACTION_HOSTILE);
+
+        -- print(table.concat({tostringall(CombatLogGetCurrentEventInfo())}, "||"));
+        if event == "SPELL_CAST_SUCCESS" and bit.band(sourceFlags, expected) == expected then
+            self:DriverOnSpellCast(spellID, spellName);
+        elseif event == "UNIT_DIED" and bit.band(destFlags, expected) == expected then
+            self:DriverOnDeath(dest, destName);
+        end
     end, self);
 
     if IsInGroup() then

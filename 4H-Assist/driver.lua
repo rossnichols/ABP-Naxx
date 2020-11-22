@@ -9,6 +9,7 @@ local UnitName = UnitName;
 local GetTime = GetTime;
 local GetInstanceInfo = GetInstanceInfo;
 local UnitClass = UnitClass;
+local GetSpellInfo = GetSpellInfo;
 local table = table;
 local pairs = pairs;
 local ipairs = ipairs;
@@ -288,7 +289,8 @@ function ABP_4H:DriverOnLogout()
     end
 end
 
-function ABP_4H:DriverOnEncounterStart(bossId)
+function ABP_4H:DriverOnEncounterStart(bossId, bossName)
+    -- self:LogDebug("start %d %s", bossId, bossName);
     if bossId ~= 1121 then return; end
 
     local currentEncounter = self:GetCurrentEncounter();
@@ -304,7 +306,8 @@ function ABP_4H:DriverOnEncounterStart(bossId)
     end
 end
 
-function ABP_4H:DriverOnEncounterEnd(bossId)
+function ABP_4H:DriverOnEncounterEnd(bossId, bossName)
+    -- self:LogDebug("stop %d %s", bossId, bossName);
     if bossId ~= 1121 then return; end
 
     local currentEncounter = self:GetCurrentEncounter();
@@ -322,9 +325,11 @@ end
 
 local lastMarkTime = 0;
 local markSpellIds = { [28832] = true, [28833] = true, [28834] = true, [28835] = true };
-
-function ABP_4H:DriverOnSpellCast(unit, castGUID, spellID)
-    if not markSpellIds[spellID] then return; end
+local markSpellNames = {};
+ABP_4H.markSpellNames = markSpellNames;
+function ABP_4H:DriverOnSpellCast(spellID, spellName)
+    -- self:LogDebug("%s %d", spellName, spellID);
+    if not (markSpellIds[spellID] or markSpellNames[spellName]) then return; end
     local now = GetTime();
     if now - lastMarkTime < 5 then return; end
     lastMarkTime = now;
@@ -340,6 +345,17 @@ function ABP_4H:DriverOnSpellCast(unit, castGUID, spellID)
         ticks = ticks + 1;
         tickDuration = 12;
     end
+end
+
+function ABP_4H:InitSpells()
+    markSpellNames = { ["Mark of Korth'azz"] = true, ["Mark of Blaumeux"] = true, ["Mark of Mograine"] = true, ["Mark of Zeliek"] = true, -- failsafe
+                       [GetSpellInfo(28832)] = true, [GetSpellInfo(28833)] = true, [GetSpellInfo(28834)] = true, [GetSpellInfo(28835)] = true };
+end
+
+function ABP_4H:DriverOnDeath(dest, destName)
+    -- self:LogDebug("%s[%s] died.", destName, dest);
+    local npcID = ("-"):split(dest)[6];
+    if not npcID then return; end
 end
 
 function ABP_4H:OnTimer()
@@ -390,7 +406,9 @@ function ABP_4H:CreateStartWindow()
         return;
     end
 
-    mode = (GetInstanceInfo() == 533) and self.Modes.live or self.Modes.manual;
+    -- Default to "live" for Naxx.
+    local instanceId = select(8, GetInstanceInfo());
+    mode = (instanceId == 533) and self.Modes.live or self.Modes.manual;
 
     local windowWidth = 1100;
     local window = AceGUI:Create("Window");
