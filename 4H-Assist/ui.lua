@@ -392,7 +392,7 @@ function ABP_4H:CreateMainWindow()
     image:AddChild(upcoming);
     window:SetUserData("upcoming", upcoming);
 
-    if currentEncounter and currentEncounter.started then
+    if currentEncounter then
         local _, map = ABP_4H:GetRaiderSlots();
 
         if self:Get("showTanks") then
