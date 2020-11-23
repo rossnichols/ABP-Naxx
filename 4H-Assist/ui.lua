@@ -7,9 +7,12 @@ local UnitIsUnit = UnitIsUnit;
 local IsItemInRange = IsItemInRange;
 local UnitIsConnected = UnitIsConnected;
 local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
+local UnitDebuff = UnitDebuff;
 local table = table;
 local pairs = pairs;
 local math = math;
+local setmetatable = setmetatable;
+local tostring = tostring;
 
 local activeWindow;
 local dbmPendingAlert, dbmMoveAlert, dbmTickAlert;
@@ -17,7 +20,7 @@ local currentEncounter;
 local lastAlertedPending;
 local lastAlertedMove;
 
-local function GetPositions(role, tick)
+local function GetPositions(role, tick, onlyOriginal)
     local rotation = ABP_4H.Rotations[role];
     local currentPos, nextPos, nextDifferentPos;
     if tick == -1 then
@@ -35,6 +38,29 @@ local function GetPositions(role, tick)
         tick = tick + 1;
         tick = tick % 12;
         nextDifferentPos = rotation[tick];
+    end
+
+    if currentEncounter and not onlyOriginal then
+        if currentEncounter.bossDeaths[ABP_4H.Marks.bl] and currentEncounter.bossDeaths[ABP_4H.Marks.br] then
+            local map = {
+                [ABP_4H.MapPositions.tankdpsBL] = ABP_4H.MapPositions.tankdpsTL,
+                [ABP_4H.MapPositions.tankdpsBR] = ABP_4H.MapPositions.tankdpsTR,
+            };
+            currentPos = map[currentPos] or currentPos;
+            nextPos = map[nextPos] or nextPos;
+            nextDifferentPos = map[nextDifferentPos] or nextDifferentPos;
+        end
+        for mark in pairs(currentEncounter.bossDeaths) do
+            if ABP_4H.MarkPositions[mark][currentPos] then
+                currentPos = ABP_4H.MapPositions.safe;
+            end
+            if ABP_4H.MarkPositions[mark][nextPos] then
+                nextPos = ABP_4H.MapPositions.safe;
+            end
+            if ABP_4H.MarkPositions[mark][nextDifferentPos] then
+                nextDifferentPos = ABP_4H.MapPositions.safe;
+            end
+        end
     end
 
     return currentPos, nextPos, nextDifferentPos;
@@ -66,6 +92,7 @@ local function GetNeighbors(window, map)
 end
 
 local function Refresh()
+    if not activeWindow then return; end
     local current = activeWindow:GetUserData("current");
     local upcoming = activeWindow:GetUserData("upcoming");
     local image = activeWindow:GetUserData("image");
@@ -142,6 +169,74 @@ local function Refresh()
         activeWindow.frame:SetMinResize(minW, height);
         activeWindow.frame:SetMaxResize(maxW, height);
     end
+
+    local markElts = activeWindow:GetUserData("markElts");
+    if markElts then
+        local texts = setmetatable({
+            [0] = "|cff00ff000|r",
+            [1] = "|cffffff001|r",
+            [2] = "|cffffff002|r",
+            [3] = "|cffff00003|r",
+        }, { __index = function(t, k)
+            -- return "|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t";
+            return ("|cffff0000%s|r"):format(tostring(k));
+        end});
+        if currentEncounter and currentEncounter.mode == ABP_4H.Modes.live then
+            local updated = {};
+            local i = 1;
+            local name, _, count, _, _, _, _, _, _, spellID = UnitDebuff("player", i);
+            while name do
+                local elt = markElts[spellID];
+                if elt then
+                    updated[elt] = true;
+                    elt:SetText(texts[count]);
+                end
+
+                i = i + 1;
+                name, _, count, _, _, _, _, _, _, spellID = UnitDebuff("player", i);
+            end
+
+            for mark, elt in pairs(markElts) do
+                if currentEncounter.bossDeaths[mark] then
+                    elt:SetText("|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t");
+                elseif not updated[elt] then
+                    elt:SetText(texts[0]);
+                end
+            end
+        else
+            for mark, elt in pairs(markElts) do
+                local count = 0;
+                local oldest = tick - 7;
+                local positions = ABP_4H.MarkPositions[mark];
+                for checkedTick = oldest, tick - 1 do
+                    if checkedTick >= 0 then
+                        local checkedPos = GetPositions(role, checkedTick);
+                        if positions[checkedPos] then
+                            count = count + 1;
+                        end
+                    end
+                end
+                if count > 0 then
+                    local checkedTick = oldest - 1;
+                    while checkedTick >= 0 do
+                        local checkedPos = GetPositions(role, checkedTick);
+                        if positions[checkedPos] then
+                            count = count + 1;
+                            checkedTick = checkedTick - 1;
+                        else
+                            break;
+                        end
+                    end
+                end
+
+                if currentEncounter and currentEncounter.bossDeaths[mark] then
+                    elt:SetText("|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t");
+                else
+                    elt:SetText(texts[count]);
+                end
+            end
+        end
+    end
 end
 
 function ABP_4H:UIOnGroupJoined()
@@ -150,6 +245,8 @@ end
 
 function ABP_4H:UIOnGroupLeft()
     currentEncounter = nil;
+    lastAlertedPending = nil;
+    lastAlertedMove = nil;
     if activeWindow then activeWindow:Hide(); end
 end
 
@@ -187,9 +284,12 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
             driving = (sender == player),
             started = data.started,
             ticks = data.ticks,
+            bossDeaths = data.bossDeaths,
         };
     else
         currentEncounter = nil;
+        lastAlertedPending = nil;
+        lastAlertedMove = nil;
     end
 
     if activeWindow then activeWindow:Hide(); end
@@ -209,6 +309,8 @@ function ABP_4H:RefreshCurrentEncounter()
     else
         activeWindow:Hide();
         currentEncounter = nil;
+        lastAlertedPending = nil;
+        lastAlertedMove = nil;
     end
 end
 
@@ -220,6 +322,10 @@ function ABP_4H:RefreshMainWindow()
 end
 
 function ABP_4H:OnUITimer()
+    Refresh();
+end
+
+function ABP_4H:UIOnAura()
     Refresh();
 end
 
@@ -250,8 +356,6 @@ function ABP_4H:CreateMainWindow()
         if timer then self:CancelTimer(timer); end
         AceGUI:Release(widget);
         activeWindow = nil;
-        lastAlertedPending = nil;
-        lastAlertedMove = nil;
     end);
 
     local container = AceGUI:Create("ABPN_TransparentGroup");
@@ -349,6 +453,31 @@ function ABP_4H:CreateMainWindow()
             mainLine:AddChild(reset);
             window:SetUserData("reset", reset);
         end
+
+        if currentEncounter and currentEncounter.mode ~= self.Modes.live then
+            local bosses = {
+                [self.Bosses.korthazz] = "Thane Korth'azz (BL)",
+                [self.Bosses.blaumeux] = "Lady Blaumeux (TL)",
+                [self.Bosses.mograine] = "Highlord Mograine (BR)",
+                [self.Bosses.zeliek] = "Sir Zeliek (TR)",
+            };
+            local deathSelector = AceGUI:Create("Dropdown");
+            deathSelector:SetDisabled(not currentEncounter.started);
+            deathSelector:SetFullWidth(true);
+            deathSelector:SetUserData("cell", { colspan = 2 });
+            deathSelector:SetMultiselect(true);
+            deathSelector:SetList(bosses);
+            for id in pairs(bosses) do
+                if currentEncounter.bossDeaths[self.BossMarks[id]] then
+                    deathSelector:SetItemValue(id, true);
+                end
+            end
+            deathSelector:SetText("Boss Deaths");
+            deathSelector:SetCallback("OnValueChanged", function(widget, event, value, checked)
+                self:ScheduleTimer(function() self:DriverOnDeath(value, checked) end, 0);
+            end);
+            mainLine:AddChild(deathSelector);
+        end
     end
 
     local image = AceGUI:Create("ABPN_ImageGroup");
@@ -392,6 +521,44 @@ function ABP_4H:CreateMainWindow()
     image:AddChild(upcoming);
     window:SetUserData("upcoming", upcoming);
 
+    local markElts = {};
+    window:SetUserData("markElts", markElts);
+    local markTL = AceGUI:Create("ABPN_Label");
+    markTL:SetUserData("canvas-fill", true);
+    markTL:SetFont("GameFontNormalHuge3Outline");
+    markTL:SetWordWrap(true);
+    markTL:SetJustifyH("LEFT");
+    markTL:SetJustifyV("TOP");
+    image:AddChild(markTL);
+    markElts[self.Marks.tl] = markTL; -- Blaumeux
+
+    local markTR = AceGUI:Create("ABPN_Label");
+    markTR:SetUserData("canvas-fill", true);
+    markTR:SetFont("GameFontNormalHuge3Outline");
+    markTR:SetWordWrap(true);
+    markTR:SetJustifyH("RIGHT");
+    markTR:SetJustifyV("TOP");
+    image:AddChild(markTR);
+    markElts[self.Marks.tr] = markTR; -- Zeliek
+
+    local markBL = AceGUI:Create("ABPN_Label");
+    markBL:SetUserData("canvas-fill", true);
+    markBL:SetFont("GameFontNormalHuge3Outline");
+    markBL:SetWordWrap(true);
+    markBL:SetJustifyH("LEFT");
+    markBL:SetJustifyV("BOTTOM");
+    image:AddChild(markBL);
+    markElts[self.Marks.bl] = markBL; -- Korth'azz
+
+    local markBR = AceGUI:Create("ABPN_Label");
+    markBR:SetUserData("canvas-fill", true);
+    markBR:SetFont("GameFontNormalHuge3Outline");
+    markBR:SetWordWrap(true);
+    markBR:SetJustifyH("RIGHT");
+    markBR:SetJustifyV("BOTTOM");
+    image:AddChild(markBR);
+    markElts[self.Marks.br] = markBR; -- Mograine
+
     if currentEncounter then
         local _, map = ABP_4H:GetRaiderSlots();
 
@@ -400,7 +567,7 @@ function ABP_4H:CreateMainWindow()
             for player in pairs(map) do
                 local role = currentEncounter.roles[player];
                 if self.RoleCategories[role] == self.Categories.tank then
-                    local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks);
+                    local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks, true);
                     local playerText = (UnitIsConnected(player) and not UnitIsDeadOrGhost(player))
                         and player
                         or ("|cffff0000%s|r"):format(player);
@@ -412,45 +579,57 @@ function ABP_4H:CreateMainWindow()
                 end
             end
 
-            local tankTL = AceGUI:Create("ABPN_Label");
-            tankTL:SetUserData("canvas-fill", true);
-            tankTL:SetFont("GameFontHighlightOutline");
-            tankTL:SetWordWrap(true);
-            tankTL:SetJustifyH("LEFT");
-            tankTL:SetJustifyV("TOP");
-            tankTL:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
-                currentTanks[self.MapPositions.tankdpsTL] or "", upcomingTanks[self.MapPositions.tankdpsTL] or ""));
-            image:AddChild(tankTL);
+            if not currentEncounter.bossDeaths[self.Marks.tl] then
+                local tankTL = AceGUI:Create("ABPN_Label");
+                tankTL:SetUserData("canvas-fill", true);
+                tankTL:SetUserData("canvas-left", 30);
+                tankTL:SetFont("GameFontHighlightOutline");
+                tankTL:SetWordWrap(true);
+                tankTL:SetJustifyH("LEFT");
+                tankTL:SetJustifyV("TOP");
+                tankTL:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
+                    currentTanks[self.MapPositions.tankdpsTL] or "", upcomingTanks[self.MapPositions.tankdpsTL] or ""));
+                image:AddChild(tankTL);
+            end
 
-            local tankTR = AceGUI:Create("ABPN_Label");
-            tankTR:SetUserData("canvas-fill", true);
-            tankTR:SetFont("GameFontHighlightOutline");
-            tankTR:SetWordWrap(true);
-            tankTR:SetJustifyH("RIGHT");
-            tankTR:SetJustifyV("TOP");
-            tankTR:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
-                currentTanks[self.MapPositions.tankdpsTR] or "", upcomingTanks[self.MapPositions.tankdpsTR] or ""));
-            image:AddChild(tankTR);
+            if not currentEncounter.bossDeaths[self.Marks.tr] then
+                local tankTR = AceGUI:Create("ABPN_Label");
+                tankTR:SetUserData("canvas-fill", true);
+                tankTR:SetUserData("canvas-right", -30);
+                tankTR:SetFont("GameFontHighlightOutline");
+                tankTR:SetWordWrap(true);
+                tankTR:SetJustifyH("RIGHT");
+                tankTR:SetJustifyV("TOP");
+                tankTR:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
+                    currentTanks[self.MapPositions.tankdpsTR] or "", upcomingTanks[self.MapPositions.tankdpsTR] or ""));
+                image:AddChild(tankTR);
+            end
 
-            local tankBL = AceGUI:Create("ABPN_Label");
-            tankBL:SetUserData("canvas-fill", true);
-            tankBL:SetFont("GameFontHighlightOutline");
-            tankBL:SetWordWrap(true);
-            tankBL:SetJustifyH("LEFT");
-            tankBL:SetJustifyV("BOTTOM");
-            tankBL:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
-                upcomingTanks[self.MapPositions.tankdpsBL] or "", currentTanks[self.MapPositions.tankdpsBL] or ""));
-            image:AddChild(tankBL);
+            if not currentEncounter.bossDeaths[self.Marks.bl] then
+                local tankBL = AceGUI:Create("ABPN_Label");
+                tankBL:SetUserData("canvas-fill", true);
+                tankBL:SetUserData("canvas-left", 30);
+                tankBL:SetFont("GameFontHighlightOutline");
+                tankBL:SetWordWrap(true);
+                tankBL:SetJustifyH("LEFT");
+                tankBL:SetJustifyV("BOTTOM");
+                tankBL:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
+                    upcomingTanks[self.MapPositions.tankdpsBL] or "", currentTanks[self.MapPositions.tankdpsBL] or ""));
+                image:AddChild(tankBL);
+            end
 
-            local tankBR = AceGUI:Create("ABPN_Label");
-            tankBR:SetUserData("canvas-fill", true);
-            tankBR:SetFont("GameFontHighlightOutline");
-            tankBR:SetWordWrap(true);
-            tankBR:SetJustifyH("RIGHT");
-            tankBR:SetJustifyV("BOTTOM");
-            tankBR:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
-                upcomingTanks[self.MapPositions.tankdpsBR] or "", currentTanks[self.MapPositions.tankdpsBR] or ""));
-            image:AddChild(tankBR);
+            if not currentEncounter.bossDeaths[self.Marks.br] then
+                local tankBR = AceGUI:Create("ABPN_Label");
+                tankBR:SetUserData("canvas-fill", true);
+                tankBR:SetUserData("canvas-right", -30);
+                tankBR:SetFont("GameFontHighlightOutline");
+                tankBR:SetWordWrap(true);
+                tankBR:SetJustifyH("RIGHT");
+                tankBR:SetJustifyV("BOTTOM");
+                tankBR:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
+                    upcomingTanks[self.MapPositions.tankdpsBR] or "", currentTanks[self.MapPositions.tankdpsBR] or ""));
+                image:AddChild(tankBR);
+            end
         end
 
         if self:Get("showNeighbors") then

@@ -454,7 +454,10 @@ AceGUI:RegisterLayout("ABPN_Canvas", function (content, children)
         local frame = child.frame;
         frame:ClearAllPoints();
         if child:GetUserData("canvas-fill") then
-            frame:SetAllPoints(content);
+            frame:SetPoint("LEFT", content, "LEFT", child:GetUserData("canvas-left") or 0, 0);
+            frame:SetPoint("TOP", content, "TOP", 0, child:GetUserData("canvas-top") or 0);
+            frame:SetPoint("RIGHT", content, "RIGHT", child:GetUserData("canvas-right") or 0, 0);
+            frame:SetPoint("BOTTOM", content, "BOTTOM", 0, child:GetUserData("canvas-bottom") or 0);
         else
             local x, y = child:GetUserData("canvas-X") or 0, child:GetUserData("canvas-Y") or 0;
             frame:SetPoint("CENTER", content, "TOPLEFT", x * totalH / 100 / scale, -y * totalV / 100 / scale);

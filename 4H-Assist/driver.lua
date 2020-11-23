@@ -48,6 +48,7 @@ local tickDuration = 12;
 local started = false;
 local ticks = 0;
 local timer;
+local bossDeaths = {};
 
 function ABP_4H:GetRaiderSlots()
     local slots = {};
@@ -90,6 +91,7 @@ local function SendStateComm(active, dist, target)
             roles = assignedRoles,
             started = started,
             ticks = ticks,
+            bossDeaths = bossDeaths,
         }, dist, target);
     else
         ABP_4H:SendComm(ABP_4H.CommTypes.STATE_SYNC, {
@@ -320,11 +322,12 @@ function ABP_4H:DriverOnEncounterEnd(bossId, bossName)
     if started and mode == self.Modes.live then
         started = false;
         ticks = 0;
+        bossDeaths = {};
     end
 end
 
 local lastMarkTime = 0;
-local markSpellIds = { [28832] = true, [28833] = true, [28834] = true, [28835] = true };
+local markSpellIds = { [ABP_4H.Marks.bl] = true, [ABP_4H.Marks.tl] = true, [ABP_4H.Marks.br] = true, [ABP_4H.Marks.tr] = true };
 local markSpellNames = {};
 ABP_4H.markSpellNames = markSpellNames;
 function ABP_4H:DriverOnSpellCast(spellID, spellName)
@@ -349,13 +352,22 @@ end
 
 function ABP_4H:InitSpells()
     markSpellNames = { ["Mark of Korth'azz"] = true, ["Mark of Blaumeux"] = true, ["Mark of Mograine"] = true, ["Mark of Zeliek"] = true, -- failsafe
-                       [GetSpellInfo(28832)] = true, [GetSpellInfo(28833)] = true, [GetSpellInfo(28834)] = true, [GetSpellInfo(28835)] = true };
+                       [GetSpellInfo(ABP_4H.Marks.bl)] = true, [GetSpellInfo(ABP_4H.Marks.tl)] = true, [GetSpellInfo(ABP_4H.Marks.br)] = true, [GetSpellInfo(ABP_4H.Marks.tr)] = true };
 end
 
-function ABP_4H:DriverOnDeath(dest, destName)
-    -- self:LogDebug("%s[%s] died.", destName, dest);
-    local npcID = ("-"):split(dest)[6];
-    if not npcID then return; end
+function ABP_4H:DriverOnDeath(npcID, dead)
+    -- self:LogDebug("%s died.", npcID);
+    if not self.BossMarks[npcID] then return; end
+
+    local currentEncounter = self:GetCurrentEncounter();
+    if currentEncounter and currentEncounter.started then
+        currentEncounter.bossDeaths[self.BossMarks[npcID]] = dead or nil;
+        self:RefreshCurrentEncounter();
+    end
+
+    if started and mode == self.Modes.live then
+        bossDeaths[self.BossMarks[npcID]] = dead or nil;
+    end
 end
 
 function ABP_4H:OnTimer()
@@ -394,6 +406,7 @@ end
 function ABP_4H:StopEncounter()
     started = false;
     ticks = 0;
+    bossDeaths = {};
 
     if timer then self:CancelTimer(timer); end
 

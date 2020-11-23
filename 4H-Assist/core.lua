@@ -22,6 +22,7 @@ local UnitIsGroupLeader = UnitIsGroupLeader;
 local IsEquippableItem = IsEquippableItem;
 local IsAltKeyDown = IsAltKeyDown;
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
+local UnitIsUnit = UnitIsUnit;
 local GetClassColor = GetClassColor;
 local EasyMenu = EasyMenu;
 local ToggleDropDownMenu = ToggleDropDownMenu;
@@ -120,7 +121,16 @@ function ABP_4H:OnEnable()
         if event == "SPELL_CAST_SUCCESS" and bit.band(sourceFlags, expected) == expected then
             self:DriverOnSpellCast(spellID, spellName);
         elseif event == "UNIT_DIED" and bit.band(destFlags, expected) == expected then
-            self:DriverOnDeath(dest, destName);
+            local npcID = ("-"):split(dest)[6];
+            if npcID then
+                self:DriverOnDeath(npcID, true);
+            end
+        end
+    end, self);
+    self:RegisterEvent("UNIT_AURA", function(self, event, ...)
+        local unit = ...;
+        if UnitIsUnit(unit, "player") then
+            self:UIOnAura(...);
         end
     end, self);
 

@@ -15,6 +15,34 @@ local pos = {
     safe = { 52, 52 },
 };
 
+local marks = {
+    tl = 28833,
+    tr = 28835,
+    bl = 28832,
+    br = 28834,
+};
+
+local markPositions = {
+    [marks.tl] = { [pos.tankdpsTL] = true, [pos.healerTL] = true },
+    [marks.tr] = { [pos.tankdpsTR] = true, [pos.healerTR] = true },
+    [marks.bl] = { [pos.tankdpsBL] = true, [pos.healerBL] = true },
+    [marks.br] = { [pos.tankdpsBR] = true, [pos.healerBR] = true },
+};
+
+local bosses = {
+    korthazz = 16064,
+    blaumeux = 16065,
+    mograine = 16062,
+    zeliek = 16063,
+};
+
+local bossMarks = {
+    [bosses.korthazz] = marks.bl,
+    [bosses.blaumeux] = marks.tl,
+    [bosses.mograine] = marks.br,
+    [bosses.zeliek] = marks.tr,
+};
+
 local roles = {
     dps1 = "dps1",
     dps2 = "dps2",
@@ -315,3 +343,7 @@ ABP_4H.Modes = modes;
 ABP_4H.ModeNames = modeNames;
 ABP_4H.Categories = categories;
 ABP_4H.RoleCategories = roleCategories;
+ABP_4H.Marks = marks;
+ABP_4H.MarkPositions = markPositions;
+ABP_4H.Bosses = bosses;
+ABP_4H.BossMarks = bossMarks;
