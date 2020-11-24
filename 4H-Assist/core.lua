@@ -121,7 +121,7 @@ function ABP_4H:OnEnable()
         if event == "SPELL_CAST_SUCCESS" and bit.band(sourceFlags, expected) == expected then
             self:DriverOnSpellCast(spellID, spellName);
         elseif event == "UNIT_DIED" and bit.band(destFlags, expected) == expected then
-            local npcID = ("-"):split(dest)[6];
+            local npcID = tonumber((select(6, ("-"):split(dest))));
             if npcID then
                 self:DriverOnDeath(npcID, true);
             end

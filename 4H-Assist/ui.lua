@@ -170,6 +170,11 @@ local function Refresh()
         activeWindow.frame:SetMaxResize(maxW, height);
     end
 
+    local tomb = {
+        [true] = "|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t",
+        [false] = "|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:72.5:81:0.25:4.5|t",
+    };
+
     local markElts = activeWindow:GetUserData("markElts");
     if markElts then
         local texts = setmetatable({
@@ -178,7 +183,7 @@ local function Refresh()
             [2] = "|cffffff002|r",
             [3] = "|cffff00003|r",
         }, { __index = function(t, k)
-            -- return "|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t";
+            -- return tomb[ABP_4H:IsClassic()];
             return ("|cffff0000%s|r"):format(tostring(k));
         end});
         if currentEncounter and currentEncounter.mode == ABP_4H.Modes.live then
@@ -198,7 +203,7 @@ local function Refresh()
 
             for mark, elt in pairs(markElts) do
                 if currentEncounter.bossDeaths[mark] then
-                    elt:SetText("|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t");
+                    elt:SetText(tomb[ABP_4H:IsClassic()]);
                 elseif not updated[elt] then
                     elt:SetText(texts[0]);
                 end
@@ -230,7 +235,7 @@ local function Refresh()
                 end
 
                 if currentEncounter and currentEncounter.bossDeaths[mark] then
-                    elt:SetText("|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t");
+                    elt:SetText(tomb[ABP_4H:IsClassic()]);
                 else
                     elt:SetText(texts[count]);
                 end

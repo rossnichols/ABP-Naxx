@@ -356,7 +356,7 @@ function ABP_4H:InitSpells()
 end
 
 function ABP_4H:DriverOnDeath(npcID, dead)
-    -- self:LogDebug("%s died.", npcID);
+    -- self:LogDebug("%s %s.", npcID, dead and "dead" or "alive");
     if not self.BossMarks[npcID] then return; end
 
     local currentEncounter = self:GetCurrentEncounter();
