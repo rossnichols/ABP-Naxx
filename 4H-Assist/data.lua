@@ -34,12 +34,14 @@ local bosses = {
     blaumeux = 16065,
     mograine = 16062,
     zeliek = 16063,
+    rivendare = 30549, -- retail only (replacement for mograine)
 };
 
 local bossMarks = {
     [bosses.korthazz] = marks.bl,
     [bosses.blaumeux] = marks.tl,
     [bosses.mograine] = marks.br,
+    [bosses.rivendare] = marks.br,
     [bosses.zeliek] = marks.tr,
 };
 
