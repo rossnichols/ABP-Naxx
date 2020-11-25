@@ -68,8 +68,9 @@ function ABP_4H:GetRaiderSlots()
         end
     else
         slots[1] = { name = player, class = select(2, UnitClass("player")) };
-        for i = 1, GetNumGroupMembers() do
-            slots[i + 1] = { name = UnitName("party" .. i), class = select(2, UnitClass("party" .. i)) };
+        for i = 1, GetNumGroupMembers() - 1 do
+            local unit = "party" .. i;
+            table.insert(slots, { name = UnitName(unit), class = select(2, UnitClass(unit)) });
         end
         table.sort(slots, function(a, b) return a.name < b.name; end);
 
