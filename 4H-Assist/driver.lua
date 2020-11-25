@@ -365,8 +365,11 @@ function ABP_4H:DriverOnDeath(npcID, dead)
         self:RefreshCurrentEncounter();
     end
 
-    if started and mode == self.Modes.live then
+    if started then
         bossDeaths[self.BossMarks[npcID]] = dead or nil;
+        if mode ~= self.Modes.live then
+            SendStateComm(true, "BROADCAST");
+        end
     end
 end
 
