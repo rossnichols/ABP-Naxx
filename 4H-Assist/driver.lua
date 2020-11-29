@@ -724,7 +724,7 @@ function ABP_4H:CreateStartWindow()
         Refresh();
     end);
     options:AddChild(nonHealers);
-    self:AddWidgetTooltip(restricted, "List druids/priests/paladins/shaman that should not be considered as healers.");
+    self:AddWidgetTooltip(nonHealers, "List druids/priests/paladins/shaman that should not be considered as healers.");
 
     local bottom = AceGUI:Create("SimpleGroup");
     bottom:SetFullWidth(true);
