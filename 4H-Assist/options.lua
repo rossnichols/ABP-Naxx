@@ -14,6 +14,7 @@ function ABP_4H:InitOptions()
             showMoveAlert = true,
             showTanks = true,
             showNeighbors = true,
+            nonHealers = "",
             alpha = 0.9,
         }
     };

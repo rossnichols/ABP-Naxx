@@ -114,7 +114,12 @@ end
 local function ChooseCategory(raider)
     local healers = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true };
     if raider.wowRole == "maintank" then return ABP_4H.Categories.tank; end
-    if raider.class and healers[raider.class] then return ABP_4H.Categories.healer; end
+
+    local nonHealersText = ABP_4H:Get("nonHealers");
+    local nonHealers = {};
+    for nonHealer in nonHealersText:gmatch("%S+") do nonHealers[nonHealer:lower()] = true; end
+    if raider.class and healers[raider.class] and not nonHealers[raider.name:lower()] then return ABP_4H.Categories.healer; end
+
     return ABP_4H.Categories.dps;
 end
 
@@ -710,6 +715,16 @@ function ABP_4H:CreateStartWindow()
     end);
     options:AddChild(restricted);
     self:AddWidgetTooltip(restricted, "If assignments are capped, you cannot assign a role to more slots than it was originally allocated in the base configuration.");
+
+    local nonHealers = AceGUI:Create("MultiLineEditBox");
+    nonHealers:SetLabel("Non-Healer Overrides");
+    nonHealers:SetText(self:Get("nonHealers"));
+    nonHealers:SetCallback("OnEnterPressed", function(widget, event, value)
+        self:Set("nonHealers", value);
+        Refresh();
+    end);
+    options:AddChild(nonHealers);
+    self:AddWidgetTooltip(restricted, "List druids/priests/paladins/shaman that should not be considered as healers.");
 
     local bottom = AceGUI:Create("SimpleGroup");
     bottom:SetFullWidth(true);
