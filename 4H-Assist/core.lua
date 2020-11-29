@@ -312,6 +312,25 @@ function ABP_4H:BeginWindowManagement(window, name, defaults)
     window.frame:SetMinResize(defaults.minWidth, defaults.minHeight);
     window.frame:SetMaxResize(defaults.maxWidth, defaults.maxHeight);
 
+    -- Ensure the window is onscreen.
+    local offset = window.frame:GetLeft() - _G.UIParent:GetLeft();
+    if offset < 0 then
+        saved.left = saved.left - offset;
+    end
+    offset = _G.UIParent:GetTop() - window.frame:GetTop();
+    if offset < 0 then
+        saved.top = saved.top + offset;
+    end
+    offset = _G.UIParent:GetRight() - window.frame:GetRight();
+    if offset < 0 then
+        saved.left = saved.left + offset;
+    end
+    offset = window.frame:GetBottom() - _G.UIParent:GetBottom();
+    if offset < 0 then
+        saved.top = saved.top - offset;
+    end
+    window:SetStatusTable(saved);
+
     if defaults.minWidth == defaults.maxWidth and defaults.minHeight == defaults.maxHeight then
         window.line1:Hide();
         window.line2:Hide();
