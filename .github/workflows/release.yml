@@ -16,7 +16,7 @@ jobs:
         echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
         echo ::set-output name=ADDON_VERSION::${GITHUB_REF/refs\/tags\/v/}
         echo ::set-output name=RETAIL_INTERFACE::90002
-        echo ::set-output name=CLASSIC_INTERFACE::11305
+        echo ::set-output name=CLASSIC_INTERFACE::11306
 
     - name: Set Classic TOC
       uses: cschleiden/replace-tokens@v1.0
