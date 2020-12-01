@@ -20,7 +20,7 @@ local math = math;
 
 local activeWindow;
 
-local assignedRoles = ABP_4H.tCopy(ABP_4H.RaidRoles);
+local assignedRoles;
 local roleTargets = {};
 for _, role in pairs(ABP_4H.RaidRoles) do
     roleTargets[role] = (roleTargets[role] or 0) + 1;
@@ -509,7 +509,7 @@ function ABP_4H:CreateStartWindow()
         return;
     end
 
-    assignedRoles = self:Get("raidLayout") or self.tCopy(self.RaidRoles);
+    assignedRoles = assignedRoles or self:Get("raidLayout") or self.tCopy(self.RaidRoles);
 
     -- Default to "live" for Naxx.
     local instanceId = select(8, GetInstanceInfo());
