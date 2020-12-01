@@ -15,6 +15,7 @@ local pairs = pairs;
 local ipairs = ipairs;
 local next = next;
 local select = select;
+local math = math;
 
 local activeWindow;
 
@@ -56,9 +57,10 @@ function ABP_4H:GetRaiderSlots()
     local player = UnitName("player");
     local playerSlot;
     local count = 0;
+    local groupSize = GetNumGroupMembers();
 
     if IsInRaid() then
-        for i = 1, GetNumGroupMembers() do
+        for i = 1, groupSize do
             local name, _, subgroup, _, _, class, _, _, _, wowRole = GetRaidRosterInfo(i);
             local slot = (5 * (subgroup - 1)) + 1;
             while slots[slot] do slot = slot + 1; end
@@ -66,13 +68,68 @@ function ABP_4H:GetRaiderSlots()
             map[name] = slot;
             count = count + 1;
         end
-    else
+    elseif groupSize > 0 then
         slots[1] = { name = player, class = select(2, UnitClass("player")) };
-        for i = 1, GetNumGroupMembers() - 1 do
+        for i = 1, groupSize - 1 do
             local unit = "party" .. i;
             table.insert(slots, { name = UnitName(unit), class = select(2, UnitClass(unit)) });
         end
         table.sort(slots, function(a, b) return a.name < b.name; end);
+
+        for i, raider in ipairs(slots) do
+            map[raider.name] = i;
+            count = count + 1;
+        end
+    else
+        slots = {
+            { name = "Arrowcard", class = "WARRIOR", wowRole = "maintank", fake = true },
+            { name = "Avalanchion", class = "WARRIOR", wowRole = "maintank", fake = true },
+            { name = "Bakedpancake", class = "PRIEST", wowRole = "", fake = true },
+            { name = "Consuela", class = "PRIEST", wowRole = "", fake = true },
+            { name = "Endestroy", class = "PRIEST", wowRole = "", fake = true },
+
+            { name = "Coop", class = "WARRIOR", wowRole = "maintank", fake = true },
+            { name = "Executi", class = "WARRIOR", wowRole = "maintank", fake = true },
+            { name = "Groggy", class = "PALADIN", wowRole = "", fake = true },
+            { name = "Lago", class = "PRIEST", wowRole = "", fake = true },
+            { name = "Nadrell", class = "PALADIN", wowRole = "", fake = true },
+
+            { name = "Jearom", class = "WARRIOR", wowRole = "maintank", fake = true },
+            { name = "Klisk", class = "WARRIOR", wowRole = "maintank", fake = true },
+            { name = "Peachapple", class = "PRIEST", wowRole = "", fake = true },
+            { name = "Starlight", class = "DRUID", wowRole = "", fake = true },
+            { name = "Quellia", class = "DRUID", wowRole = "", fake = true },
+
+            { name = "Kxw", class = "WARRIOR", wowRole = "maintank", fake = true },
+            { name = "Rumhammer", class = "WARRIOR", wowRole = "maintank", fake = true },
+            { name = "Righteous", class = "PALADIN", wowRole = "", fake = true },
+            { name = "Rplix", class = "PALADIN", wowRole = "", fake = true },
+            { name = "Soggybottom", class = "PRIEST", wowRole = "", fake = true },
+
+            { name = player, class = select(2, UnitClass("player")), wowRole = "" },
+            { name = "Therrook", class = "WARRIOR", wowRole = "", fake = true },
+            { name = "Tracer", class = "WARRIOR", wowRole = "", fake = true },
+            { name = "Azuj", class = "ROGUE", wowRole = "", fake = true },
+            { name = "Basherslice", class = "HUNTER", wowRole = "", fake = true },
+
+            { name = "Cmdk", class = "MAGE", wowRole = "", fake = true },
+            { name = "Deconstruct", class = "WARLOCK", wowRole = "", fake = true },
+            { name = "Ezekkiel", class = "MAGE", wowRole = "", fake = true },
+            { name = "Friend", class = "WARLOCK", wowRole = "", fake = true },
+            { name = "Gyda", class = "ROGUE", wowRole = "", fake = true },
+
+            { name = "Hawkeye", class = "HUNTER", wowRole = "", fake = true },
+            { name = "Klue", class = "WARLOCK", wowRole = "", fake = true },
+            { name = "Krustytop", class = "WARLOCK", wowRole = "", fake = true },
+            { name = "Lunamar", class = "MAGE", wowRole = "", fake = true },
+            { name = "Magivagi", class = "MAGE", wowRole = "", fake = true },
+
+            { name = "Perol", class = "ROGUE", wowRole = "", fake = true },
+            { name = "Rangda", class = "ROGUE", wowRole = "", fake = true },
+            { name = "Saccrilege", class = "WARLOCK", wowRole = "", fake = true },
+            { name = "Shindizzle", class = "HUNTER", wowRole = "", fake = true },
+            { name = "Spacca", class = "MAGE", wowRole = "", fake = true },
+        };
 
         for i, raider in ipairs(slots) do
             map[raider.name] = i;
@@ -232,7 +289,7 @@ local function Refresh()
         local mappedIndex = dropdown:GetUserData("mappedIndex");
         local raider = raiders[mappedIndex];
         local playerText = raider
-            and ("%s%s"):format(GetStatus(raider.name, map), ABP_4H:ColorizeName(raider.name))
+            and ("%s%s"):format(GetStatus(raider.name, map), ABP_4H:ColorizeName(raider.name, raider.class))
             or "|cff808080[Empty]|r";
 
         local role = assignedRoles[mappedIndex];
@@ -545,15 +602,15 @@ function ABP_4H:CreateStartWindow()
                             end
                         end
                         if originalGroup == group then
-                        assignedRoles[i] = availableRole;
-                        window:GetUserData("slotEditTimes")[i] = GetTime();
-                        window:GetUserData("readyPlayers")[i] = nil;
-                        dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
-                        break;
+                            assignedRoles[i] = availableRole;
+                            window:GetUserData("slotEditTimes")[i] = GetTime();
+                            window:GetUserData("readyPlayers")[i] = nil;
+                            dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                            break;
+                        end
                     end
                 end
             end
-        end
         end
 
         -- Pass 5: if any raiders don't have a role, try to assign from all available.
@@ -583,20 +640,20 @@ function ABP_4H:CreateStartWindow()
 
         if not skipEmptySlots then
             -- Pass 6: if any slots don't have a role, try to assign from all available.
-        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
-            if not assignedRoles[i] then
-                local available = BuildDropdown(false, raiders, true);
-                for availableRole in pairs(available) do
-                    if availableRole then
-                        assignedRoles[i] = availableRole;
-                        window:GetUserData("slotEditTimes")[i] = GetTime();
-                        window:GetUserData("readyPlayers")[i] = nil;
-                        dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
-                        break;
+            for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+                if not assignedRoles[i] then
+                    local available = BuildDropdown(false, raiders, true);
+                    for availableRole in pairs(available) do
+                        if availableRole then
+                            assignedRoles[i] = availableRole;
+                            window:GetUserData("slotEditTimes")[i] = GetTime();
+                            window:GetUserData("readyPlayers")[i] = nil;
+                            dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                            break;
+                        end
                     end
                 end
             end
-        end
         end
 
         Refresh();
@@ -814,6 +871,21 @@ function ABP_4H:CreateStartWindow()
         Refresh();
 
         SendStateComm(true, "BROADCAST");
+
+        local raiders = ABP_4H:GetRaiderSlots();
+        local i, raider = next(raiders);
+        local updateFunc;
+        updateFunc = function()
+            if i then
+                if raider.fake then
+                    self:DriverOnStateSyncAck({ role = assignedRoles[i]--[[ , fake = true ]] }, "WHISPER", raider.name);
+                end
+
+                i, raider = next(raiders, i);
+                self:ScheduleTimer(updateFunc, 0);
+            end
+        end
+        self:ScheduleTimer(updateFunc, 0);
     end);
     bottom:AddChild(sync);
     window:SetUserData("syncElt", sync);

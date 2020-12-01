@@ -66,20 +66,25 @@ local function GetPositions(role, tick, onlyOriginal)
     return currentPos, nextPos, nextDifferentPos;
 end
 
-local function GetNeighbors(window, map)
+local function GetNeighbors(window, raiders)
     local neighbors = {};
     local tick = window:GetUserData("tick");
     local myPos = GetPositions(window:GetUserData("role"), tick);
 
     local roles = currentEncounter.roles;
-    for player in pairs(map) do
-        if not UnitIsUnit(player, "player") and UnitIsConnected(player) and not UnitIsDeadOrGhost(player) then
+    for _, raider in pairs(raiders) do
+        local player = raider.name;
+        if raider.fake or (not UnitIsUnit(player, "player") and UnitIsConnected(player) and not UnitIsDeadOrGhost(player)) then
             local role = roles[player];
             local currentPos = GetPositions(role, tick);
             if currentPos == myPos then
-                local formatStr = IsItemInRange(21519, player)
-                    and "|cff00ff00%s|r"
-                    or "|cffff0000%s|r";
+                local inRange;
+                if raider.fake then
+                    inRange = (math.random() < 0.95);
+                else
+                    inRange = IsItemInRange(21519, player);
+                end
+                local formatStr = inRange and "|cff00ff00%s|r" or "|cffff0000%s|r";
 
                 -- for i = 1, math.random(1, 15) do
                     table.insert(neighbors, formatStr:format(player));
@@ -155,8 +160,8 @@ local function Refresh()
 
     local neighborsElt = activeWindow:GetUserData("neighborsElt");
     if neighborsElt then
-        local _, map = ABP_4H:GetRaiderSlots();
-        local neighbors = GetNeighbors(activeWindow, map);
+        local raiders = ABP_4H:GetRaiderSlots();
+        local neighbors = GetNeighbors(activeWindow, raiders);
         neighborsElt:SetText(table.concat(neighbors, " "));
         neighborsElt:SetHeight(neighborsElt:GetStringHeight());
 
@@ -565,17 +570,17 @@ function ABP_4H:CreateMainWindow()
     markElts[self.Marks.br] = markBR; -- Mograine
 
     if currentEncounter then
-        local _, map = ABP_4H:GetRaiderSlots();
+        local raiders = ABP_4H:GetRaiderSlots();
 
         if self:Get("showTanks") then
             local currentTanks, upcomingTanks = {}, {};
-            for player in pairs(map) do
-                local role = currentEncounter.roles[player];
+            for _, raider in pairs(raiders) do
+                local role = currentEncounter.roles[raider.name];
                 if self.RoleCategories[role] == self.Categories.tank then
                     local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks, true);
-                    local playerText = (UnitIsConnected(player) and not UnitIsDeadOrGhost(player))
-                        and player
-                        or ("|cffff0000%s|r"):format(player);
+                    local playerText = (raider.fake or (UnitIsConnected(raider.name) and not UnitIsDeadOrGhost(raider.name)))
+                        and raider.name
+                        or ("|cffff0000%s|r"):format(raider.name);
                     if pos == self.MapPositions.safe then
                         upcomingTanks[nextDiff] = playerText;
                     else
@@ -638,7 +643,7 @@ function ABP_4H:CreateMainWindow()
         end
 
         if self:Get("showNeighbors") then
-            local neighbors = GetNeighbors(window, map);
+            local neighbors = GetNeighbors(window, raiders);
             local neighborsElt = AceGUI:Create("ABPN_Label");
             container:AddChild(neighborsElt);
             neighborsElt:SetFont("GameFontHighlightOutline");
