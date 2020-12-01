@@ -619,20 +619,11 @@ function ABP_4H:CreateStartWindow()
                 local available = BuildDropdown(false, raiders, true);
                 for availableRole in pairs(available) do
                     if availableRole and ChooseCategory(raiders[i]) == ABP_4H.RoleCategories[availableRole] then
-                        local originalGroup = 0;
-                        for j, role in ipairs(self.RaidRoles) do
-                            if role == availableRole then
-                                originalGroup = math.floor((j - 1) / 5) + 1;
-                                break;
-                            end
-                        end
-                        if originalGroup == group then
-                            assignedRoles[i] = availableRole;
-                            window:GetUserData("slotEditTimes")[i] = GetTime();
-                            window:GetUserData("readyPlayers")[i] = nil;
-                            dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
-                            break;
-                        end
+                        assignedRoles[i] = availableRole;
+                        window:GetUserData("slotEditTimes")[i] = GetTime();
+                        window:GetUserData("readyPlayers")[i] = nil;
+                        dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                        break;
                     end
                 end
             end
