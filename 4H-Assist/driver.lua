@@ -21,6 +21,7 @@ local math = math;
 local activeWindow;
 
 local assignedRoles;
+local processedRoles;
 local roleTargets = {};
 for _, role in pairs(ABP_4H.RaidRoles) do
     roleTargets[role] = (roleTargets[role] or 0) + 1;
@@ -143,11 +144,22 @@ end
 
 local function SendStateComm(active, dist, target)
     if active then
+        -- Every time the roles are broadcast, convert them into
+        -- a map based on player names. When sending a direct comm,
+        -- the last map will be sent, in case the roster has shifted.
+        if dist == "BROADCAST" then
+            local _, map = self:GetRaiderSlots();
+            processedRoles = {};
+            for player, slot in pairs(map) do
+                processedRoles[player] = assignedRoles[slot];
+            end
+        end
+
         ABP_4H:SendComm(ABP_4H.CommTypes.STATE_SYNC, {
             active = true,
             mode = mode,
             tickDuration = tickDuration,
-            roles = assignedRoles,
+            roles = processedRoles,
             started = started,
             ticks = ticks,
             bossDeaths = bossDeaths,

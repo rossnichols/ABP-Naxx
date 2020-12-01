@@ -265,8 +265,7 @@ end
 function ABP_4H:UIOnStateSync(data, distribution, sender, version)
     if data.active then
         local player = UnitName("player");
-        local _, map = self:GetRaiderSlots();
-        local role = data.roles[map[player]];
+        local role = data.roles[player];
 
         if data.started then
             if data.mode ~= ABP_4H.Modes.live and dbmTickAlert then
@@ -283,13 +282,8 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
             }, "WHISPER", sender);
         end
 
-        local processedRoles = {};
-        for player, slot in pairs(map) do
-            processedRoles[player] = data.roles[slot];
-        end
-
         currentEncounter = {
-            roles = processedRoles,
+            roles = data.roles,
             mode = data.mode,
             tickDuration = data.tickDuration,
             role = role,
