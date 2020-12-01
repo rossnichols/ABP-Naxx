@@ -22,6 +22,7 @@ local activeWindow;
 
 local assignedRoles;
 local processedRoles;
+local fakePlayers;
 local roleTargets = {};
 for _, role in pairs(ABP_4H.RaidRoles) do
     roleTargets[role] = (roleTargets[role] or 0) + 1;
@@ -83,56 +84,80 @@ function ABP_4H:GetRaiderSlots()
             count = count + 1;
         end
     else
-        slots = {
-            { name = "Arrowcard", class = "WARRIOR", wowRole = "maintank", fake = true },
-            { name = "Avalanchion", class = "WARRIOR", wowRole = "maintank", fake = true },
-            { name = "Bakedpancake", class = "PRIEST", wowRole = "", fake = true },
-            { name = "Consuela", class = "PRIEST", wowRole = "", fake = true },
-            { name = "Endestroy", class = "PRIEST", wowRole = "", fake = true },
+        if not fakePlayers then
+            fakePlayers = {};
+            local tanks = {
+                { name = "Arrowcard", class = "WARRIOR", wowRole = "maintank", fake = true },
+                { name = "Avalanchion", class = "WARRIOR", wowRole = "maintank", fake = true },
+                { name = "Coop", class = "WARRIOR", wowRole = "maintank", fake = true },
+                { name = "Executi", class = "WARRIOR", wowRole = "maintank", fake = true },
+                { name = "Jearom", class = "WARRIOR", wowRole = "maintank", fake = true },
+                { name = "Klisk", class = "WARRIOR", wowRole = "maintank", fake = true },
+                { name = "Kxw", class = "WARRIOR", wowRole = "maintank", fake = true },
+                { name = "Rumhammer", class = "WARRIOR", wowRole = "maintank", fake = true },
+            };
+            local healers = {
+                { name = "Bakedpancake", class = "PRIEST", wowRole = "", fake = true },
+                { name = "Consuela", class = "PRIEST", wowRole = "", fake = true },
+                { name = "Endestroy", class = "PRIEST", wowRole = "", fake = true },
+                { name = "Groggy", class = "PALADIN", wowRole = "", fake = true },
+                { name = "Lago", class = "PRIEST", wowRole = "", fake = true },
+                { name = "Nadrell", class = "PALADIN", wowRole = "", fake = true },
+                { name = "Peachapple", class = "PRIEST", wowRole = "", fake = true },
+                { name = "Starlight", class = "DRUID", wowRole = "", fake = true },
+                { name = "Quellia", class = "DRUID", wowRole = "", fake = true },
+                { name = "Righteous", class = "PALADIN", wowRole = "", fake = true },
+                { name = "Rplix", class = "PALADIN", wowRole = "", fake = true },
+                { name = "Soggybottom", class = "PRIEST", wowRole = "", fake = true },
+            };
+            local dps = {
+                { name = player, class = select(2, UnitClass("player")), wowRole = "" },
+                { name = "Therrook", class = "WARRIOR", wowRole = "", fake = true },
+                { name = "Tracer", class = "WARRIOR", wowRole = "", fake = true },
+                { name = "Azuj", class = "ROGUE", wowRole = "", fake = true },
+                { name = "Basherslice", class = "HUNTER", wowRole = "", fake = true },
+                { name = "Cmdk", class = "MAGE", wowRole = "", fake = true },
+                { name = "Deconstruct", class = "WARLOCK", wowRole = "", fake = true },
+                { name = "Ezekkiel", class = "MAGE", wowRole = "", fake = true },
+                { name = "Friend", class = "WARLOCK", wowRole = "", fake = true },
+                { name = "Gyda", class = "ROGUE", wowRole = "", fake = true },
+                { name = "Hawkeye", class = "HUNTER", wowRole = "", fake = true },
+                { name = "Klue", class = "WARLOCK", wowRole = "", fake = true },
+                { name = "Krustytop", class = "WARLOCK", wowRole = "", fake = true },
+                { name = "Lunamar", class = "MAGE", wowRole = "", fake = true },
+                { name = "Magivagi", class = "MAGE", wowRole = "", fake = true },
+                { name = "Perol", class = "ROGUE", wowRole = "", fake = true },
+                { name = "Rangda", class = "ROGUE", wowRole = "", fake = true },
+                { name = "Saccrilege", class = "WARLOCK", wowRole = "", fake = true },
+                { name = "Shindizzle", class = "HUNTER", wowRole = "", fake = true },
+                { name = "Spacca", class = "MAGE", wowRole = "", fake = true },
+            };
+            local pool = {
+                [ABP_4H.Categories.tank] = tanks,
+                [ABP_4H.Categories.healer] = healers,
+                [ABP_4H.Categories.dps] = dps,
+            };
+            for i = 1, #self.RaidRoles do
+                if assignedRoles[i] then
+                    local players = pool[ABP_4H.RoleCategories[assignedRoles[i]]];
+                    if players[1] then
+                        fakePlayers[i] = table.remove(players, 1);
+                    end
+                end
+            end
+            for i = 1, #self.RaidRoles do
+                if not fakePlayers[i] then
+                    for _, players in pairs(pool) do
+                        if players[1] then
+                            fakePlayers[i] = table.remove(players, 1);
+                            break;
+                        end
+                    end
+                end
+            end
+        end
 
-            { name = "Coop", class = "WARRIOR", wowRole = "maintank", fake = true },
-            { name = "Executi", class = "WARRIOR", wowRole = "maintank", fake = true },
-            { name = "Groggy", class = "PALADIN", wowRole = "", fake = true },
-            { name = "Lago", class = "PRIEST", wowRole = "", fake = true },
-            { name = "Nadrell", class = "PALADIN", wowRole = "", fake = true },
-
-            { name = "Jearom", class = "WARRIOR", wowRole = "maintank", fake = true },
-            { name = "Klisk", class = "WARRIOR", wowRole = "maintank", fake = true },
-            { name = "Peachapple", class = "PRIEST", wowRole = "", fake = true },
-            { name = "Starlight", class = "DRUID", wowRole = "", fake = true },
-            { name = "Quellia", class = "DRUID", wowRole = "", fake = true },
-
-            { name = "Kxw", class = "WARRIOR", wowRole = "maintank", fake = true },
-            { name = "Rumhammer", class = "WARRIOR", wowRole = "maintank", fake = true },
-            { name = "Righteous", class = "PALADIN", wowRole = "", fake = true },
-            { name = "Rplix", class = "PALADIN", wowRole = "", fake = true },
-            { name = "Soggybottom", class = "PRIEST", wowRole = "", fake = true },
-
-            { name = player, class = select(2, UnitClass("player")), wowRole = "" },
-            { name = "Therrook", class = "WARRIOR", wowRole = "", fake = true },
-            { name = "Tracer", class = "WARRIOR", wowRole = "", fake = true },
-            { name = "Azuj", class = "ROGUE", wowRole = "", fake = true },
-            { name = "Basherslice", class = "HUNTER", wowRole = "", fake = true },
-
-            { name = "Cmdk", class = "MAGE", wowRole = "", fake = true },
-            { name = "Deconstruct", class = "WARLOCK", wowRole = "", fake = true },
-            { name = "Ezekkiel", class = "MAGE", wowRole = "", fake = true },
-            { name = "Friend", class = "WARLOCK", wowRole = "", fake = true },
-            { name = "Gyda", class = "ROGUE", wowRole = "", fake = true },
-
-            { name = "Hawkeye", class = "HUNTER", wowRole = "", fake = true },
-            { name = "Klue", class = "WARLOCK", wowRole = "", fake = true },
-            { name = "Krustytop", class = "WARLOCK", wowRole = "", fake = true },
-            { name = "Lunamar", class = "MAGE", wowRole = "", fake = true },
-            { name = "Magivagi", class = "MAGE", wowRole = "", fake = true },
-
-            { name = "Perol", class = "ROGUE", wowRole = "", fake = true },
-            { name = "Rangda", class = "ROGUE", wowRole = "", fake = true },
-            { name = "Saccrilege", class = "WARLOCK", wowRole = "", fake = true },
-            { name = "Shindizzle", class = "HUNTER", wowRole = "", fake = true },
-            { name = "Spacca", class = "MAGE", wowRole = "", fake = true },
-        };
-
+        slots = self.tCopy(fakePlayers);
         for i, raider in ipairs(slots) do
             map[raider.name] = i;
             count = count + 1;
@@ -521,6 +546,7 @@ function ABP_4H:CreateStartWindow()
         return;
     end
 
+    fakePlayers = nil;
     assignedRoles = assignedRoles or self:Get("raidLayout") or self.tCopy(self.RaidRoles);
 
     -- Default to "live" for Naxx.
