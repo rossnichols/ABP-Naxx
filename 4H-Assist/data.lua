@@ -104,12 +104,12 @@ local rolesSorted = {
 
 local rolesSortedStatus = {
     roles.tank1,
-    roles.ot1,
     roles.tank3,
+    roles.ot1,
     roles.ot3,
     roles.tank2,
-    roles.ot2,
     roles.tank4,
+    roles.ot2,
     roles.ot4,
     roles.healer1,
     roles.healer4,
