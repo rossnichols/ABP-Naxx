@@ -16,6 +16,7 @@ function ABP_4H:InitOptions()
             showNeighbors = true,
             nonHealers = "",
             alpha = 0.9,
+            raidLayout = nil,
         }
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);

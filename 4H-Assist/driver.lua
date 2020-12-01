@@ -485,6 +485,8 @@ function ABP_4H:CreateStartWindow()
         return;
     end
 
+    assignedRoles = self:Get("raidLayout") or self.tCopy(self.RaidRoles);
+
     -- Default to "live" for Naxx.
     local instanceId = select(8, GetInstanceInfo());
     mode = (instanceId == 533) and self.Modes.live or self.Modes.manual;
@@ -833,6 +835,26 @@ function ABP_4H:CreateStartWindow()
     end);
     options:AddChild(restricted);
     self:AddWidgetTooltip(restricted, "If assignments are capped, you cannot assign a role to more slots than it was originally allocated in the base configuration.");
+
+    local save = AceGUI:Create("Button");
+    save:SetWidth(150);
+    save:SetText("Save Layout");
+    save:SetCallback("OnClick", function(widget, event)
+        self:Set("raidLayout", assignedRoles);
+    end);
+    options:AddChild(save);
+    self:AddWidgetTooltip(save, "Save the current layout of raid roles as the new default.");
+
+    local restore = AceGUI:Create("Button");
+    restore:SetWidth(150);
+    restore:SetText("Original Layout");
+    restore:SetCallback("OnClick", function(widget, event)
+        self:Set("raidLayout", nil);
+        assignedRoles = self.tCopy(self.RaidRoles);
+        Refresh();
+    end);
+    options:AddChild(restore);
+    self:AddWidgetTooltip(restore, "Restore the original layout for raid roles.");
 
     local nonHealers = AceGUI:Create("MultiLineEditBox");
     nonHealers:SetLabel("Non-Healer Overrides");
