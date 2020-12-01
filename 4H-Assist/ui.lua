@@ -8,6 +8,7 @@ local IsItemInRange = IsItemInRange;
 local UnitIsConnected = UnitIsConnected;
 local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 local UnitDebuff = UnitDebuff;
+local UnitExists = UnitExists;
 local GetRaidTargetIndex = GetRaidTargetIndex;
 local table = table;
 local pairs = pairs;
@@ -582,8 +583,8 @@ function ABP_4H:CreateMainWindow()
                     local playerText = (raider.fake or (UnitIsConnected(raider.name) and not UnitIsDeadOrGhost(raider.name)))
                         and raider.name
                         or ("|cffff0000%s|r"):format(raider.name);
-                    local icon = GetRaidTargetIndex(raider.name);
-                    local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0|t"):format(icon);
+                    local icon = UnitExists(raider.name) and GetRaidTargetIndex(raider.name);
+                    local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
                     if pos == self.MapPositions.safe then
                         upcomingTanks[nextDiff] = { text = playerText, icon = iconText };
                     else
@@ -603,9 +604,9 @@ function ABP_4H:CreateMainWindow()
                 tankTL:SetJustifyH("LEFT");
                 tankTL:SetJustifyV("TOP");
                 tankTL:SetText(("%s|cff00ff00%s|r\n%s|cffcccccc%s|r"):format(
-                    current and current.icon or "",
+                    current and current.icon and current.icon:format(0) or "",
                     current and current.text or "",
-                    upcoming and upcoming.icon or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(0) or "",
                     upcoming and upcoming.text or ""));
                 image:AddChild(tankTL);
             end
@@ -622,9 +623,9 @@ function ABP_4H:CreateMainWindow()
                 tankTR:SetJustifyV("TOP");
                 tankTR:SetText(("|cff00ff00%s|r%s\n|cffcccccc%s|r%s"):format(
                     current and current.text or "",
-                    current and current.icon or "",
+                    current and current.icon and current.icon:format(0) or "",
                     upcoming and upcoming.text or "",
-                    upcoming and upcoming.icon or ""));
+                    upcoming and upcoming.icon and upcoming.icon:format(0) or ""));
                 image:AddChild(tankTR);
             end
 
@@ -639,9 +640,9 @@ function ABP_4H:CreateMainWindow()
                 tankBL:SetJustifyH("LEFT");
                 tankBL:SetJustifyV("BOTTOM");
                 tankBL:SetText(("%s|cffcccccc%s|r\n%s|cff00ff00%s|r"):format(
-                    upcoming and upcoming.icon or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
                     upcoming and upcoming.text or "",
-                    current and current.icon or "",
+                    current and current.icon and current.icon:format(-16) or "",
                     current and current.text or ""));
                 image:AddChild(tankBL);
             end
@@ -658,9 +659,9 @@ function ABP_4H:CreateMainWindow()
                 tankBR:SetJustifyV("BOTTOM");
                 tankBR:SetText(("|cffcccccc%s|r%s\n|cff00ff00%s|r%s"):format(
                     upcoming and upcoming.text or "",
-                    upcoming and upcoming.icon or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
                     current and current.text or "",
-                    current and current.icon or ""));
+                    current and current.icon and current.icon:format(-16) or ""));
                 image:AddChild(tankBR);
             end
         end
