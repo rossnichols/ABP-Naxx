@@ -496,7 +496,13 @@ function ABP_4H:CreateStartWindow()
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
     window:SetLayout("Flow");
-    window:SetWidth(windowWidth);
+    self:BeginWindowManagement(window, "driver", {
+        version = 1,
+        defaultWidth = windowWidth,
+        minWidth = windowWidth - 200,
+        maxWidth = windowWidth + 200,
+        defaultHeight = 400,
+    });
     self:OpenWindow(window);
     window:SetCallback("OnClose", function(widget)
         if not started then
