@@ -8,6 +8,7 @@ local IsItemInRange = IsItemInRange;
 local UnitIsConnected = UnitIsConnected;
 local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 local UnitDebuff = UnitDebuff;
+local GetRaidTargetIndex = GetRaidTargetIndex;
 local table = table;
 local pairs = pairs;
 local math = math;
@@ -581,15 +582,19 @@ function ABP_4H:CreateMainWindow()
                     local playerText = (raider.fake or (UnitIsConnected(raider.name) and not UnitIsDeadOrGhost(raider.name)))
                         and raider.name
                         or ("|cffff0000%s|r"):format(raider.name);
+                    local icon = GetRaidTargetIndex(raider.name);
+                    local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0|t"):format(icon);
                     if pos == self.MapPositions.safe then
-                        upcomingTanks[nextDiff] = playerText;
+                        upcomingTanks[nextDiff] = { text = playerText, icon = iconText };
                     else
-                        currentTanks[pos] = playerText;
+                        currentTanks[pos] = { text = playerText, icon = iconText };
                     end
                 end
             end
 
             if not currentEncounter.bossDeaths[self.Marks.tl] then
+                local current = currentTanks[self.MapPositions.tankdpsTL];
+                local upcoming = upcomingTanks[self.MapPositions.tankdpsTL];
                 local tankTL = AceGUI:Create("ABPN_Label");
                 tankTL:SetUserData("canvas-fill", true);
                 tankTL:SetUserData("canvas-left", 30);
@@ -597,12 +602,17 @@ function ABP_4H:CreateMainWindow()
                 tankTL:SetWordWrap(true);
                 tankTL:SetJustifyH("LEFT");
                 tankTL:SetJustifyV("TOP");
-                tankTL:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
-                    currentTanks[self.MapPositions.tankdpsTL] or "", upcomingTanks[self.MapPositions.tankdpsTL] or ""));
+                tankTL:SetText(("%s|cff00ff00%s|r\n%s|cffcccccc%s|r"):format(
+                    current and current.icon or "",
+                    current and current.text or "",
+                    upcoming and upcoming.icon or "",
+                    upcoming and upcoming.text or ""));
                 image:AddChild(tankTL);
             end
 
             if not currentEncounter.bossDeaths[self.Marks.tr] then
+                local current = currentTanks[self.MapPositions.tankdpsTR];
+                local upcoming = upcomingTanks[self.MapPositions.tankdpsTR];
                 local tankTR = AceGUI:Create("ABPN_Label");
                 tankTR:SetUserData("canvas-fill", true);
                 tankTR:SetUserData("canvas-right", -30);
@@ -610,12 +620,17 @@ function ABP_4H:CreateMainWindow()
                 tankTR:SetWordWrap(true);
                 tankTR:SetJustifyH("RIGHT");
                 tankTR:SetJustifyV("TOP");
-                tankTR:SetText(("|cff00ff00%s|r\n|cffcccccc%s|r"):format(
-                    currentTanks[self.MapPositions.tankdpsTR] or "", upcomingTanks[self.MapPositions.tankdpsTR] or ""));
+                tankTR:SetText(("|cff00ff00%s|r%s\n|cffcccccc%s|r%s"):format(
+                    current and current.text or "",
+                    current and current.icon or "",
+                    upcoming and upcoming.text or "",
+                    upcoming and upcoming.icon or ""));
                 image:AddChild(tankTR);
             end
 
             if not currentEncounter.bossDeaths[self.Marks.bl] then
+                local current = currentTanks[self.MapPositions.tankdpsBL];
+                local upcoming = upcomingTanks[self.MapPositions.tankdpsBL];
                 local tankBL = AceGUI:Create("ABPN_Label");
                 tankBL:SetUserData("canvas-fill", true);
                 tankBL:SetUserData("canvas-left", 30);
@@ -623,12 +638,17 @@ function ABP_4H:CreateMainWindow()
                 tankBL:SetWordWrap(true);
                 tankBL:SetJustifyH("LEFT");
                 tankBL:SetJustifyV("BOTTOM");
-                tankBL:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
-                    upcomingTanks[self.MapPositions.tankdpsBL] or "", currentTanks[self.MapPositions.tankdpsBL] or ""));
+                tankBL:SetText(("%s|cffcccccc%s|r\n%s|cff00ff00%s|r"):format(
+                    upcoming and upcoming.icon or "",
+                    upcoming and upcoming.text or "",
+                    current and current.icon or "",
+                    current and current.text or ""));
                 image:AddChild(tankBL);
             end
 
             if not currentEncounter.bossDeaths[self.Marks.br] then
+                local current = currentTanks[self.MapPositions.tankdpsBR];
+                local upcoming = upcomingTanks[self.MapPositions.tankdpsBR];
                 local tankBR = AceGUI:Create("ABPN_Label");
                 tankBR:SetUserData("canvas-fill", true);
                 tankBR:SetUserData("canvas-right", -30);
@@ -636,8 +656,11 @@ function ABP_4H:CreateMainWindow()
                 tankBR:SetWordWrap(true);
                 tankBR:SetJustifyH("RIGHT");
                 tankBR:SetJustifyV("BOTTOM");
-                tankBR:SetText(("|cffcccccc%s|r\n|cff00ff00%s|r"):format(
-                    upcomingTanks[self.MapPositions.tankdpsBR] or "", currentTanks[self.MapPositions.tankdpsBR] or ""));
+                tankBR:SetText(("|cffcccccc%s|r%s\n|cff00ff00%s|r%s"):format(
+                    upcoming and upcoming.text or "",
+                    upcoming and upcoming.icon or "",
+                    current and current.text or "",
+                    current and current.icon or ""));
                 image:AddChild(tankBR);
             end
         end
