@@ -79,6 +79,10 @@ function ABP_4H:OnEnable()
     self:SetCallback(self.CommTypes.STATE_SYNC_REQUEST.name, function(self, event, data, distribution, sender, version)
         self:DriverOnStateSyncRequest(data, distribution, sender, version);
     end, self);
+    self:SetCallback(self.CommTypes.MARK_UPDATE.name, function(self, event, data, distribution, sender, version)
+        self:DriverOnMarkUpdate(data, distribution, sender, version);
+    end, self);
+
     self:SetCallback(self.CommTypes.VERSION_REQUEST.name, function(self, event, data, distribution, sender, version)
         self:OnVersionRequest(data, distribution, sender, version);
     end, self);

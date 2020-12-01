@@ -51,13 +51,15 @@ function ABP_4H:GetCommPrefix()
     return "ABPN2";
 end
 
--- Highest ID: 3
+-- Highest ID: 4
 ABP_4H.CommTypes = {
     STATE_SYNC = { name = "STATE_SYNC", id = 1, priority = "ALERT", fireLocally = true },
 
     STATE_SYNC_ACK = { name = "STATE_SYNC_ACK", id = 2, priority = "ALERT", fireLocally = true },
 
     STATE_SYNC_REQUEST = { name = "STATE_SYNC_REQUEST", id = 3, priority = "ALERT" },
+
+    MARK_UPDATE = { name = "MARK_UPDATE", id = 4, priority = "ALERT" },
 
     -- NOTE: these aren't versioned and use legacy encoding so they can continue to function across major changes.
     VERSION_REQUEST = { name = "ABPN_VERSION_REQUEST", priority = "BULK", legacy = true },

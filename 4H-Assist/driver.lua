@@ -7,6 +7,7 @@ local GetRaidRosterInfo = GetRaidRosterInfo;
 local IsInRaid = IsInRaid;
 local UnitName = UnitName;
 local GetTime = GetTime;
+local GetServerTime = GetServerTime;
 local GetInstanceInfo = GetInstanceInfo;
 local UnitClass = UnitClass;
 local GetSpellInfo = GetSpellInfo;
@@ -361,13 +362,13 @@ function ABP_4H:DriverOnEncounterStart(bossId, bossName)
     local currentEncounter = self:GetCurrentEncounter();
     if currentEncounter and currentEncounter.started and currentEncounter.mode == self.Modes.live then
         currentEncounter.ticks = 0;
-        currentEncounter.tickDuration = 21;
+        currentEncounter.tickDuration = 20;
         self:RefreshCurrentEncounter();
     end
 
     if started and mode == self.Modes.live then
         ticks = 0;
-        tickDuration = 21;
+        tickDuration = 20;
     end
 end
 
@@ -393,24 +394,47 @@ local lastMarkTime = 0;
 local markSpellIds = { [ABP_4H.Marks.bl] = true, [ABP_4H.Marks.tl] = true, [ABP_4H.Marks.br] = true, [ABP_4H.Marks.tr] = true };
 local markSpellNames = {};
 ABP_4H.markSpellNames = markSpellNames;
+
+local function OnNewMark(now, sendComm, newTickCount)
+    local currentEncounter = ABP_4H:GetCurrentEncounter();
+    if currentEncounter and currentEncounter.started and currentEncounter.mode == ABP_4H.Modes.live then
+        -- Update mark count if the passed-in value doesn't match our current,
+        -- or if the time difference since our last update is too high.
+        ABP_4H:LogDebug("New mark: ticks=%d lastTime=%d newTicks=%d newTime=%d",
+            currentEncounter.ticks, lastMarkTime, newTickCount or -1, now);
+        if (newTickCount and newTickCount ~= currentEncounter.ticks) or (math.abs(now - lastMarkTime) > 5) then
+            lastMarkTime = now;
+            newTickCount = newTickCount or currentEncounter.ticks + 1;
+            local offset = GetServerTime() - now;
+
+            currentEncounter.ticks = newTickCount;
+            currentEncounter.tickDuration = 12 - offset;
+            ABP_4H:RefreshCurrentEncounter();
+
+            if sendComm then
+                ABP_4H:SendComm(ABP_4H.CommTypes.MARK_UPDATE, {
+                    time = now,
+                    ticks = newTickCount,
+                }, "BROADCAST");
+            end
+
+            if started and mode == ABP_4H.Modes.live then
+                ticks = newTickCount;
+                tickDuration = 12 - offset;
+            end
+        end
+    end
+end
+
 function ABP_4H:DriverOnSpellCast(spellID, spellName)
     -- self:LogDebug("%s %d", spellName, spellID);
     if not (markSpellIds[spellID] or markSpellNames[spellName]) then return; end
-    local now = GetTime();
-    if now - lastMarkTime < 5 then return; end
-    lastMarkTime = now;
 
-    local currentEncounter = self:GetCurrentEncounter();
-    if currentEncounter and currentEncounter.started and currentEncounter.mode == self.Modes.live then
-        currentEncounter.ticks = currentEncounter.ticks + 1;
-        currentEncounter.tickDuration = 12;
-        self:RefreshCurrentEncounter();
-    end
+    OnNewMark(GetServerTime(), true);
+end
 
-    if started and mode == self.Modes.live then
-        ticks = ticks + 1;
-        tickDuration = 12;
-    end
+function ABP_4H:DriverOnMarkUpdate(data, distribution, sender)
+    OnNewMark(data.time, false, data.ticks);
 end
 
 function ABP_4H:InitSpells()
