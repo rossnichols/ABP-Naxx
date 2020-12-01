@@ -644,16 +644,18 @@ function ABP_4H:CreateStartWindow()
             end
         end
 
-        -- Pass 3: if any roles are left, try to reallocate to an empty slot.
-        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
-            if not raiders[i] and not assignedRoles[i] then
-                local oldI, oldRole = next(unassigned);
-                if oldI then
-                    assignedRoles[i] = oldRole;
-                    table.remove(unassigned, oldI);
-                    window:GetUserData("slotEditTimes")[i] = GetTime();
-                    window:GetUserData("readyPlayers")[i] = nil;
-                    dropdowns[dropdownMapReversed[i]]:SetValue(oldRole);
+        if not skipEmptySlots then
+            -- Pass 3: if any roles are left, try to reallocate to an empty slot.
+            for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+                if not raiders[i] and not assignedRoles[i] then
+                    local oldI, oldRole = next(unassigned);
+                    if oldI then
+                        assignedRoles[i] = oldRole;
+                        table.remove(unassigned, oldI);
+                        window:GetUserData("slotEditTimes")[i] = GetTime();
+                        window:GetUserData("readyPlayers")[i] = nil;
+                        dropdowns[dropdownMapReversed[i]]:SetValue(oldRole);
+                    end
                 end
             end
         end
