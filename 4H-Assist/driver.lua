@@ -148,7 +148,7 @@ local function SendStateComm(active, dist, target)
         -- a map based on player names. When sending a direct comm,
         -- the last map will be sent, in case the roster has shifted.
         if dist == "BROADCAST" then
-            local _, map = self:GetRaiderSlots();
+            local _, map = ABP_4H:GetRaiderSlots();
             processedRoles = {};
             for player, slot in pairs(map) do
                 processedRoles[player] = assignedRoles[slot];
