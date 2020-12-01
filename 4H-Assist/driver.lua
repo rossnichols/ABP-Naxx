@@ -432,7 +432,7 @@ function ABP_4H:CreateStartWindow()
     local instanceId = select(8, GetInstanceInfo());
     mode = (instanceId == 533) and self.Modes.live or self.Modes.manual;
 
-    local windowWidth = 1100;
+    local windowWidth = 1200;
     local window = AceGUI:Create("Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
@@ -480,7 +480,7 @@ function ABP_4H:CreateStartWindow()
         Refresh();
     end
 
-    local function smartFunc(widget, event, value)
+    local function smartFunc(widget, event, value, skipEmptySlots)
         local raiders = ABP_4H:GetRaiderSlots();
         local group = widget:GetUserData("group");
         local dropdowns = window:GetUserData("dropdowns");
@@ -531,12 +531,20 @@ function ABP_4H:CreateStartWindow()
             end
         end
 
-        -- Pass 4: if any raiders don't have a role, try to assign from all available.
+        -- Pass 4: if any raiders don't have a role, try to assign from available roles that defaulted to the same group.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             if raiders[i] and not assignedRoles[i] then
                 local available = BuildDropdown(false, raiders, true);
                 for availableRole in pairs(available) do
                     if availableRole and ChooseCategory(raiders[i]) == ABP_4H.RoleCategories[availableRole] then
+                        local originalGroup = 0;
+                        for j, role in ipairs(self.RaidRoles) do
+                            if role == availableRole then
+                                originalGroup = math.floor((j - 1) / 5) + 1;
+                                break;
+                            end
+                        end
+                        if originalGroup == group then
                         assignedRoles[i] = availableRole;
                         window:GetUserData("slotEditTimes")[i] = GetTime();
                         window:GetUserData("readyPlayers")[i] = nil;
@@ -546,8 +554,35 @@ function ABP_4H:CreateStartWindow()
                 end
             end
         end
+        end
 
-        -- Pass 5: if any slots don't have a role, try to assign from all available.
+        -- Pass 5: if any raiders don't have a role, try to assign from all available.
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            if raiders[i] and not assignedRoles[i] then
+                local available = BuildDropdown(false, raiders, true);
+                for availableRole in pairs(available) do
+                    if availableRole and ChooseCategory(raiders[i]) == ABP_4H.RoleCategories[availableRole] then
+                        local originalGroup = 0;
+                        for j, role in ipairs(self.RaidRoles) do
+                            if role == availableRole then
+                                originalGroup = math.floor((j - 1) / 5) + 1;
+                                break;
+                            end
+                        end
+                        if originalGroup == group then
+                            assignedRoles[i] = availableRole;
+                            window:GetUserData("slotEditTimes")[i] = GetTime();
+                            window:GetUserData("readyPlayers")[i] = nil;
+                            dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                            break;
+                        end
+                    end
+                end
+            end
+        end
+
+        if not skipEmptySlots then
+            -- Pass 6: if any slots don't have a role, try to assign from all available.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             if not assignedRoles[i] then
                 local available = BuildDropdown(false, raiders, true);
@@ -561,6 +596,7 @@ function ABP_4H:CreateStartWindow()
                     end
                 end
             end
+        end
         end
 
         Refresh();
@@ -582,13 +618,15 @@ function ABP_4H:CreateStartWindow()
                 unassign:SetUserData("group", i);
                 unassign:SetCallback("OnClick", unassignFunc);
                 raidRoles:AddChild(unassign);
+                self:AddWidgetTooltip(unassign, "Unassign all roles in this group.");
 
                 local smart = AceGUI:Create("Button");
-                smart:SetText("Smart");
+                smart:SetText("Smart Assign");
                 smart:SetFullWidth(true);
                 smart:SetUserData("group", i);
                 smart:SetCallback("OnClick", smartFunc);
                 raidRoles:AddChild(smart);
+                self:AddWidgetTooltip(smart, "Smart-assign all roles in this group, based on the player's category (tank/healer/dps). Roles currently assigned in the same group will be prioritized first, then unassigned roles.");
             end
 
             local label = AceGUI:Create("Label");
@@ -628,14 +666,46 @@ function ABP_4H:CreateStartWindow()
         unassign:SetUserData("group", i + 4);
         unassign:SetCallback("OnClick", unassignFunc);
         raidRoles:AddChild(unassign);
+        self:AddWidgetTooltip(unassign, "Unassign all roles in this group.");
 
         local smart = AceGUI:Create("Button");
-        smart:SetText("Smart");
+        smart:SetText("Smart Assign");
         smart:SetFullWidth(true);
-        smart:SetUserData("group", i);
+        smart:SetUserData("group", i + 4);
         smart:SetCallback("OnClick", smartFunc);
         raidRoles:AddChild(smart);
+        self:AddWidgetTooltip(smart, "Smart-assign all roles in this group, based on the player's category (tank/healer/dps). Roles currently assigned in the same group will be prioritized first, then unassigned roles.");
     end
+
+    local unassign = AceGUI:Create("Button");
+    unassign:SetText("Unassign All");
+    unassign:SetWidth(150);
+    unassign:SetCallback("OnClick", function(widget, event, value)
+        for i = 1, 8 do
+            widget:SetUserData("group", i);
+            unassignFunc(widget, event, value);
+        end
+    end);
+    container:AddChild(unassign);
+    self:AddWidgetTooltip(unassign, "Unassign all roles in the raid.");
+
+    local smart = AceGUI:Create("Button");
+    smart:SetText("Smart Assign All");
+    smart:SetWidth(150);
+    smart:SetCallback("OnClick", function(widget, event, value)
+        -- First pass: skip filling empty slots (in case the roles are better suited to another group).
+        for i = 1, 8 do
+            widget:SetUserData("group", i);
+            smartFunc(widget, event, value, true);
+        end
+        -- Second pass: normal behavior (empty slots given an available role).
+        for i = 1, 8 do
+            widget:SetUserData("group", i);
+            smartFunc(widget, event, value, false);
+        end
+    end);
+    container:AddChild(smart);
+    self:AddWidgetTooltip(smart, "Smart-assign all roles in the raid, based on the player's category (tank/healer/dps). Roles currently assigned in the same group will be prioritized first, then unassigned roles.");
 
     local roleStatusElts = {};
     window:SetUserData("roleStatusElts", roleStatusElts);
@@ -665,7 +735,7 @@ function ABP_4H:CreateStartWindow()
     label:SetFullWidth(true);
     label:SetFont(_G.GameFontHighlightSmall);
     label:SetUserData("cell", { colspan = 4 });
-    label:SetText("|cffff0000Mismatched|r: our guess of the player's category (tank/healer/dps) doesn't match their assigned role.");
+    label:SetText("|cffff0000Mismatched|r: the player's assumed category (tank/healer/dps) doesn't match their assigned role.");
     roleStatus:AddChild(label);
 
     local options = AceGUI:Create("InlineGroup");
