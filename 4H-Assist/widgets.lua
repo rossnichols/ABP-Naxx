@@ -111,6 +111,12 @@ do
         frame:SetScript("OnClick", function(self, ...)
             self.obj:Fire("OnClick", ...);
         end);
+        frame:SetScript("OnEnter", function(self, ...)
+            self.obj:Fire("OnEnter", ...);
+        end);
+        frame:SetScript("OnLeave", function(self, ...)
+            self.obj:Fire("OnLeave", ...);
+        end);
         frame:SetHyperlinksEnabled(true);
         frame:SetScript("OnHyperlinkEnter", function(self, itemLink)
             _G.ShowUIPanel(_G.GameTooltip);
@@ -458,6 +464,11 @@ AceGUI:RegisterLayout("ABPN_Canvas", function (content, children)
             frame:SetPoint("TOP", content, "TOP", 0, child:GetUserData("canvas-top") or 0);
             frame:SetPoint("RIGHT", content, "RIGHT", child:GetUserData("canvas-right") or 0, 0);
             frame:SetPoint("BOTTOM", content, "BOTTOM", 0, child:GetUserData("canvas-bottom") or 0);
+        elseif child:GetUserData("canvas-fill-scaled") then
+            frame:SetPoint("LEFT", content, "LEFT", (child:GetUserData("canvas-left") or 0) * totalH / 100, 0);
+            frame:SetPoint("TOP", content, "TOP", 0, (child:GetUserData("canvas-top") or 0) * totalV / 100);
+            frame:SetPoint("RIGHT", content, "RIGHT", (child:GetUserData("canvas-right") or 0) * totalH / 100, 0);
+            frame:SetPoint("BOTTOM", content, "BOTTOM", 0, (child:GetUserData("canvas-bottom") * totalV / 100 or 0));
         else
             local x, y = child:GetUserData("canvas-X") or 0, child:GetUserData("canvas-Y") or 0;
             frame:SetPoint("CENTER", content, "TOPLEFT", x * totalH / 100 / scale, -y * totalV / 100 / scale);

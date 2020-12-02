@@ -533,40 +533,64 @@ function ABP_4H:CreateMainWindow()
     local markElts = {};
     window:SetUserData("markElts", markElts);
     local markTL = AceGUI:Create("ABPN_Label");
-    markTL:SetUserData("canvas-fill", true);
+    markTL:SetUserData("canvas-fill-scaled", true);
     markTL:SetFont("GameFontNormalHuge3Outline");
+    markTL:EnableMouse(true);
     markTL:SetWordWrap(true);
     markTL:SetJustifyH("LEFT");
     markTL:SetJustifyV("TOP");
+    markTL:SetUserData("canvas-left", 5);
+    markTL:SetUserData("canvas-top", -5);
+    markTL:SetUserData("canvas-right", -50);
+    markTL:SetUserData("canvas-bottom", 50);
     image:AddChild(markTL);
-    markElts[self.Marks.tl] = markTL; -- Blaumeux
+    markElts[self.Marks.tl] = markTL;
+    self:AddWidgetTooltip(markTL, "Lady Blaumeux");
 
     local markTR = AceGUI:Create("ABPN_Label");
-    markTR:SetUserData("canvas-fill", true);
+    markTR:SetUserData("canvas-fill-scaled", true);
     markTR:SetFont("GameFontNormalHuge3Outline");
+    markTR:EnableMouse(true);
     markTR:SetWordWrap(true);
     markTR:SetJustifyH("RIGHT");
     markTR:SetJustifyV("TOP");
+    markTR:SetUserData("canvas-left", 50);
+    markTR:SetUserData("canvas-top", -5);
+    markTR:SetUserData("canvas-right", -5);
+    markTR:SetUserData("canvas-bottom", 50);
     image:AddChild(markTR);
-    markElts[self.Marks.tr] = markTR; -- Zeliek
+    markElts[self.Marks.tr] = markTR;
+    self:AddWidgetTooltip(markTR, "Sir Zeliek");
 
     local markBL = AceGUI:Create("ABPN_Label");
-    markBL:SetUserData("canvas-fill", true);
+    markBL:SetUserData("canvas-fill-scaled", true);
     markBL:SetFont("GameFontNormalHuge3Outline");
+    markBL:EnableMouse(true);
     markBL:SetWordWrap(true);
     markBL:SetJustifyH("LEFT");
     markBL:SetJustifyV("BOTTOM");
+    markBL:SetUserData("canvas-left", 5);
+    markBL:SetUserData("canvas-top", -50);
+    markBL:SetUserData("canvas-right", -50);
+    markBL:SetUserData("canvas-bottom", 5);
     image:AddChild(markBL);
-    markElts[self.Marks.bl] = markBL; -- Korth'azz
+    markElts[self.Marks.bl] = markBL;
+    self:AddWidgetTooltip(markBL, "Thane Korth'azz");
 
     local markBR = AceGUI:Create("ABPN_Label");
-    markBR:SetUserData("canvas-fill", true);
+    markBR:SetUserData("canvas-fill-scaled", true);
     markBR:SetFont("GameFontNormalHuge3Outline");
+    markBR:EnableMouse(true);
     markBR:SetWordWrap(true);
     markBR:SetJustifyH("RIGHT");
     markBR:SetJustifyV("BOTTOM");
+    markBR:SetUserData("canvas-left", 50);
+    markBR:SetUserData("canvas-top", -50);
+    markBR:SetUserData("canvas-right", -5);
+    markBR:SetUserData("canvas-bottom", 5);
     image:AddChild(markBR);
-    markElts[self.Marks.br] = markBR; -- Mograine
+    markElts[self.Marks.br] = markBR;
+    self:AddWidgetTooltip(markBR, "Highlord Mograine");
 
     if currentEncounter then
         local raiders = ABP_4H:GetRaiderSlots();
