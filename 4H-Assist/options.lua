@@ -50,8 +50,6 @@ function ABP_4H:InitOptions()
             name = "Version Check",
             desc = "checks the raid for an outdated or missing addon versions (alias: vc)",
             type = "execute",
-            hidden = function() return not self:IsPrivileged(); end,
-            validate = function() if self:IsClassic() and not self:IsPrivileged() then return "|cffff0000not privileged|r"; end end,
             func = function() self:PerformVersionCheck(); end
         },
     };

@@ -9,6 +9,7 @@ local UnitIsConnected = UnitIsConnected;
 local GetAddOnMetadata = GetAddOnMetadata;
 local Ambiguate = Ambiguate;
 local tonumber = tonumber;
+local math = math;
 
 local versionCheckData;
 local showedNagPopup = false;
@@ -127,7 +128,7 @@ end
 
 local function GetNumOnlineGroupMembers()
     local count = 0;
-    local groupSize = GetNumGroupMembers();
+    local groupSize = math.max(GetNumGroupMembers(), 1);
     for i = 1, groupSize do
         local unit = "player";
         if IsInRaid() then
@@ -146,10 +147,6 @@ end
 function ABP_4H:PerformVersionCheck()
     if versionCheckData then
         self:Error("Already performing version check!");
-        return;
-    end
-    if not IsInGroup() then
-        self:Error("Not in a group!");
         return;
     end
 
@@ -184,7 +181,7 @@ function ABP_4H:VersionCheckCallback()
     local version = self:GetCompareVersion();
 
     local allUpToDate = true;
-    local groupSize = GetNumGroupMembers();
+    local groupSize = math.max(GetNumGroupMembers(), 1);
     for i = 1, groupSize do
         local unit = "player";
         if IsInRaid() then
@@ -200,14 +197,14 @@ function ABP_4H:VersionCheckCallback()
                     if self:VersionIsNewer(version, versionCmp, true) then
                         self:Notify("%s running an outdated version (%s)!", self:ColorizeName(player), ABP_4H:ColorizeText(versionCmp));
                         _G.SendChatMessage(
-                            ("You don't have the latest 4H Assist version installed! Please update it from Curse/Twitch. The latest version is %s, you have %s."):format(version, versionCmp),
+                            ("You don't have the latest 4H Assist version installed! Please update it from Curse/WoWInterface. The latest version is %s, you have %s."):format(version, versionCmp),
                             "WHISPER", nil, realm and ("%s-%s"):format(player, realm) or player);
                         allUpToDate = false;
                     end
                 else
                     self:Notify("%s is missing the addon!", self:ColorizeName(player));
                     _G.SendChatMessage(
-                        "You don't have the 4H Assist addon installed! Please install it from Curse/Twitch.",
+                        "You don't have the 4H Assist addon installed! Please install it from Curse/WoWInterface.",
                         "WHISPER", nil, realm and ("%s-%s"):format(player, realm) or player);
                     allUpToDate = false;
                 end

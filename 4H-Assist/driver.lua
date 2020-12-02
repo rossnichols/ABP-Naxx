@@ -957,11 +957,20 @@ function ABP_4H:CreateStartWindow()
     local bottom = AceGUI:Create("SimpleGroup");
     bottom:SetFullWidth(true);
     bottom:SetLayout("Table");
-    bottom:SetUserData("table", { columns = { 1.0, 0 }});
+    bottom:SetUserData("table", { columns = { 1.0, 0, 0 }});
     container:AddChild(bottom);
 
     local spacer = AceGUI:Create("Label");
     bottom:AddChild(spacer);
+
+    local vc = AceGUI:Create("Button");
+    vc:SetWidth(150);
+    vc:SetText("Version Check");
+    vc:SetCallback("OnClick", function(widget, event)
+        self:PerformVersionCheck();
+    end);
+    bottom:AddChild(vc);
+    self:AddWidgetTooltip(vc, "Perform a version check. For the addon to work, everyone must have it, and ideally be on your version (for breaking changes).");
 
     local sync = AceGUI:Create("Button");
     sync:SetWidth(100);
@@ -990,6 +999,7 @@ function ABP_4H:CreateStartWindow()
     end);
     bottom:AddChild(sync);
     window:SetUserData("syncElt", sync);
+    self:AddWidgetTooltip(sync, "Broadcast the current role configuration to the raid.");
 
     container:DoLayout();
     local height = container.frame:GetHeight() + 57;

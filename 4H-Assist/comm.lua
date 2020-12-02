@@ -48,7 +48,7 @@ end
 
 -- The prefix can be revved to create a backwards-incompatible version.
 function ABP_4H:GetCommPrefix()
-    return "ABPN2";
+    return "ABPN3";
 end
 
 -- Highest ID: 4
