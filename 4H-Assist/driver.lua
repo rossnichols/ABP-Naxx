@@ -175,8 +175,13 @@ local function SendStateComm(active, dist, target)
         if dist == "BROADCAST" then
             local _, map = ABP_4H:GetRaiderSlots();
             processedRoles = {};
+            local ccw = ABP_4H:Get("healerCCW");
             for player, slot in pairs(map) do
-                processedRoles[player] = assignedRoles[slot];
+                local role = assignedRoles[slot];
+                if ccw and ABP_4H.RoleCategories[role] == ABP_4H.Categories.healer then
+                    role = ABP_4H.HealerMap[role];
+                end
+                processedRoles[player] = role;
             end
         end
 
@@ -905,6 +910,19 @@ function ABP_4H:CreateStartWindow()
     end);
     options:AddChild(restricted);
     self:AddWidgetTooltip(restricted, "If assignments are capped, you cannot assign a role to more slots than it was originally allocated in the base configuration.");
+
+    local ccw = AceGUI:Create("CheckBox");
+    ccw:SetWidth(125);
+    ccw:SetLabel("CCW Healers");
+    ccw:SetValue(true);
+    ccw:SetCallback("OnValueChanged", function(widget, event, value)
+        self:Set("healerCCW", value);
+        window:SetUserData("readyPlayers", {});
+        window:SetUserData("lastSync", 0);
+        Refresh();
+    end);
+    options:AddChild(ccw);
+    self:AddWidgetTooltip(ccw, "If checked, healers will rotate counterclockwise instead of clockwise.");
 
     local save = AceGUI:Create("Button");
     save:SetWidth(150);

@@ -17,6 +17,7 @@ function ABP_4H:InitOptions()
             nonHealers = "",
             alpha = 0.9,
             raidLayout = nil,
+            healerCCW = false,
         }
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);
@@ -134,9 +135,17 @@ function ABP_4H:InitOptions()
                             get = function(info) return self.db.char.showNeighbors; end,
                             set = function(info, v) self.db.char.showNeighbors = v; self:RefreshMainWindow(); end,
                         },
+                        ccw = {
+                            name = "CCW Healers",
+                            order = 7,
+                            desc = "If checked, healers will rotate counterclockwise instead of clockwise.",
+                            type = "toggle",
+                            get = function(info) return self.db.char.healerCCW; end,
+                            set = function(info, v) self.db.char.healerCCW = v; self:RefreshMainWindow(); end,
+                        },
                         alpha = {
                             name = "Map Alpha",
-                            order = 7,
+                            order = 8,
                             desc = "Controls the alpha of the map.",
                             type = "range",
                             min = 0,

@@ -73,6 +73,34 @@ local roles = {
     healer10 = "healer10",
     healer11 = "healer11",
     healer12 = "healer12",
+
+    healerccw1 = "healerccw1",
+    healerccw2 = "healerccw2",
+    healerccw3 = "healerccw3",
+    healerccw4 = "healerccw4",
+    healerccw5 = "healerccw5",
+    healerccw6 = "healerccw6",
+    healerccw7 = "healerccw7",
+    healerccw8 = "healerccw8",
+    healerccw9 = "healerccw9",
+    healerccw10 = "healerccw10",
+    healerccw11 = "healerccw11",
+    healerccw12 = "healerccw12",
+};
+
+local healerMap = {
+    [roles.healer1] = roles.healerccw1,
+    [roles.healer2] = roles.healerccw2,
+    [roles.healer3] = roles.healerccw3,
+    [roles.healer4] = roles.healerccw4,
+    [roles.healer5] = roles.healerccw5,
+    [roles.healer6] = roles.healerccw6,
+    [roles.healer7] = roles.healerccw7,
+    [roles.healer8] = roles.healerccw8,
+    [roles.healer9] = roles.healerccw9,
+    [roles.healer10] = roles.healerccw10,
+    [roles.healer11] = roles.healerccw11,
+    [roles.healer12] = roles.healerccw12,
 };
 
 local rolesSorted = {
@@ -245,6 +273,18 @@ local roleNames = {
     [roles.healer10] = "Healer TR 1",
     [roles.healer11] = "Healer TR 2",
     [roles.healer12] = "Healer TR 3",
+    [roles.healerccw1] = "Healer BL CCW 1",
+    [roles.healerccw2] = "Healer BL CCW 2",
+    [roles.healerccw3] = "Healer BL CCW 3",
+    [roles.healerccw4] = "Healer BR CCW 1",
+    [roles.healerccw5] = "Healer BR CCW 2",
+    [roles.healerccw6] = "Healer BR CCW 3",
+    [roles.healerccw7] = "Healer TL CCW 1",
+    [roles.healerccw8] = "Healer TL CCW 2",
+    [roles.healerccw9] = "Healer TL CCW 3",
+    [roles.healerccw10] = "Healer TR CCW 1",
+    [roles.healerccw11] = "Healer TR CCW 2",
+    [roles.healerccw12] = "Healer TR CCW 3",
 };
 
 local roleColors = {
@@ -272,6 +312,18 @@ local roleColors = {
     [roles.healer10] = "ffff66",
     [roles.healer11] = "ffff66",
     [roles.healer12] = "ffff66",
+    [roles.healerccw1] = "ffff66",
+    [roles.healerccw2] = "ffff66",
+    [roles.healerccw3] = "ffff66",
+    [roles.healerccw4] = "ffff66",
+    [roles.healerccw5] = "ffff66",
+    [roles.healerccw6] = "ffff66",
+    [roles.healerccw7] = "ffff66",
+    [roles.healerccw8] = "ffff66",
+    [roles.healerccw9] = "ffff66",
+    [roles.healerccw10] = "ffff66",
+    [roles.healerccw11] = "ffff66",
+    [roles.healerccw12] = "ffff66",
 };
 
 local roleNamesColored = {};
@@ -310,6 +362,22 @@ local rotations = {
     [roles.healer10] = { [0] = pos.healerTR, [1] = pos.healerBR, [4] = pos.healerBL, [7] = pos.healerTL, [10] = pos.healerTR },
     [roles.healer11] = { [0] = pos.healerTR, [2] = pos.healerBR, [5] = pos.healerBL, [8] = pos.healerTL, [11] = pos.healerTR },
     [roles.healer12] = { [0] = pos.healerTR, [3] = pos.healerBR, [6] = pos.healerBL, [9] = pos.healerTL, [12] = pos.healerTR },
+
+    [roles.healerccw1] = { [0] = pos.healerBL, [1] = pos.healerBR, [4] = pos.healerTR, [7] = pos.healerTL, [10] = pos.healerBL },
+    [roles.healerccw2] = { [0] = pos.healerBL, [2] = pos.healerBR, [5] = pos.healerTR, [8] = pos.healerTL, [11] = pos.healerBL },
+    [roles.healerccw3] = { [0] = pos.healerBL, [3] = pos.healerBR, [6] = pos.healerTR, [9] = pos.healerTL, [12] = pos.healerBL },
+
+    [roles.healerccw4] = { [0] = pos.healerBR, [1] = pos.healerTR, [4] = pos.healerTL, [7] = pos.healerBL, [10] = pos.healerBR },
+    [roles.healerccw5] = { [0] = pos.healerBR, [2] = pos.healerTR, [5] = pos.healerTL, [8] = pos.healerBL, [11] = pos.healerBR },
+    [roles.healerccw6] = { [0] = pos.healerBR, [3] = pos.healerTR, [6] = pos.healerTL, [9] = pos.healerBL, [12] = pos.healerBR },
+
+    [roles.healerccw7] = { [0] = pos.healerTL, [1] = pos.healerBL, [4] = pos.healerBR, [7] = pos.healerTR, [10] = pos.healerTL },
+    [roles.healerccw8] = { [0] = pos.healerTL, [2] = pos.healerBL, [5] = pos.healerBR, [8] = pos.healerTR, [11] = pos.healerTL },
+    [roles.healerccw9] = { [0] = pos.healerTL, [3] = pos.healerBL, [6] = pos.healerBR, [9] = pos.healerTR, [12] = pos.healerTL },
+
+    [roles.healerccw10] = { [0] = pos.healerTR, [1] = pos.healerTL, [4] = pos.healerBL, [7] = pos.healerBR, [10] = pos.healerTR },
+    [roles.healerccw11] = { [0] = pos.healerTR, [2] = pos.healerTL, [5] = pos.healerBL, [8] = pos.healerBR, [11] = pos.healerTR },
+    [roles.healerccw12] = { [0] = pos.healerTR, [3] = pos.healerTL, [6] = pos.healerBL, [9] = pos.healerBR, [12] = pos.healerTR },
 };
 for _, rotation in pairs(rotations) do
     local pos = rotation[0];
@@ -349,3 +417,4 @@ ABP_4H.Marks = marks;
 ABP_4H.MarkPositions = markPositions;
 ABP_4H.Bosses = bosses;
 ABP_4H.BossMarks = bossMarks;
+ABP_4H.HealerMap = healerMap;
