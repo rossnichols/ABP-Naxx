@@ -914,7 +914,7 @@ function ABP_4H:CreateStartWindow()
     local ccw = AceGUI:Create("CheckBox");
     ccw:SetWidth(125);
     ccw:SetLabel("CCW Healers");
-    ccw:SetValue(true);
+    ccw:SetValue(self:Get("healerCCW"));
     ccw:SetCallback("OnValueChanged", function(widget, event, value)
         self:Set("healerCCW", value);
         window:SetUserData("readyPlayers", {});
