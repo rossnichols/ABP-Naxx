@@ -124,7 +124,8 @@ local function Refresh()
         end
     end
 
-    local rotation = ABP_4H.Rotations[role];
+    local bottomBossesDead = currentEncounter and currentEncounter.bossDeaths[ABP_4H.Marks.bl] and currentEncounter.bossDeaths[ABP_4H.Marks.br];
+    if not bottomBossesDead then
     local currentPos, nextPos = GetPositions(role, tick);
 
     if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
@@ -150,6 +151,7 @@ local function Refresh()
         end
     end
     image:DoLayout();
+    end
 
     local neighborsElt = activeWindow:GetUserData("neighborsElt");
     if neighborsElt then
