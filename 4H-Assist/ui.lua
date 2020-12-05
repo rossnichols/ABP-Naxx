@@ -72,17 +72,7 @@ local function GetNeighbors(window, raiders)
             local role = roles[player];
             local currentPos = GetPositions(role, tick);
             if currentPos == myPos then
-                local inRange;
-                if raider.fake then
-                    inRange = (math.random() < 0.95);
-                else
-                    inRange = IsItemInRange(21519, player);
-                end
-                local formatStr = inRange and "|cff00ff00%s|r" or "|cffff0000%s|r";
-
-                -- for i = 1, math.random(1, 15) do
-                    table.insert(neighbors, formatStr:format(player));
-                -- end
+                table.insert(neighbors, player);
             end
         end
     end
@@ -162,7 +152,7 @@ local function Refresh()
 
     local neighborsElt = activeWindow:GetUserData("neighborsElt");
     if neighborsElt then
-        local raiders = ABP_4H:GetRaiderSlots();
+        local raiders, map = ABP_4H:GetRaiderSlots();
         local neighbors = GetNeighbors(activeWindow, raiders);
         neighborsElt:SetText(table.concat(neighbors, " "));
         neighborsElt:SetHeight(neighborsElt:GetStringHeight());
@@ -175,6 +165,20 @@ local function Refresh()
         local maxW = activeWindow.frame:GetMaxResize();
         activeWindow.frame:SetMinResize(minW, height);
         activeWindow.frame:SetMaxResize(maxW, height);
+
+        -- Now that the height of the window has been adjusted properly,
+        -- check range to all neighbors. This is deferred until after the
+        -- size has been updated since it's a more expensive operation.
+        for i, neighbor in pairs(neighbors) do
+            local inRange;
+            if raiders[map[neighbor]].fake then
+                inRange = (math.random() < 0.95);
+            else
+                inRange = IsItemInRange(21519, neighbor);
+            end
+            neighbors[i] = (inRange and "|cff00ff00%s|r" or "|cffff0000%s|r"):format(neighbor);
+        end
+        neighborsElt:SetText(table.concat(neighbors, " "));
     end
 
     local tomb = {
@@ -731,7 +735,7 @@ function ABP_4H:CreateMainWindow()
             neighborsElt:SetText(table.concat(neighbors, " "));
             neighborsElt:SetHeight(neighborsElt:GetStringHeight());
             window:SetUserData("neighborsElt", neighborsElt);
-            window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
+            window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 1, self));
         end
     else
         -- local neighborsElt = AceGUI:Create("ABPN_Label");
