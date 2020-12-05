@@ -154,7 +154,12 @@ local function Refresh()
     if neighborsElt then
         local raiders, map = ABP_4H:GetRaiderSlots();
         local neighbors = GetNeighbors(activeWindow, raiders);
-        neighborsElt:SetText(table.concat(neighbors, " "));
+
+        if bottomBossesDead then
+            neighborsElt:SetText("");
+        else
+            neighborsElt:SetText(table.concat(neighbors, " "));
+        end
         neighborsElt:SetHeight(neighborsElt:GetStringHeight());
 
         local container = activeWindow:GetUserData("contentContainer");
@@ -166,19 +171,21 @@ local function Refresh()
         activeWindow.frame:SetMinResize(minW, height);
         activeWindow.frame:SetMaxResize(maxW, height);
 
-        -- Now that the height of the window has been adjusted properly,
-        -- check range to all neighbors. This is deferred until after the
-        -- size has been updated since it's a more expensive operation.
-        for i, neighbor in pairs(neighbors) do
-            local inRange;
-            if raiders[map[neighbor]].fake then
-                inRange = (math.random() < 0.95);
-            else
-                inRange = IsItemInRange(21519, neighbor);
+        if not bottomBossesDead then
+            -- Now that the height of the window has been adjusted properly,
+            -- check range to all neighbors. This is deferred until after the
+            -- size has been updated since it's a more expensive operation.
+            for i, neighbor in pairs(neighbors) do
+                local inRange;
+                if raiders[map[neighbor]].fake then
+                    inRange = (math.random() < 0.95);
+                else
+                    inRange = IsItemInRange(21519, neighbor);
+                end
+                neighbors[i] = (inRange and "|cff00ff00%s|r" or "|cffff0000%s|r"):format(neighbor);
             end
-            neighbors[i] = (inRange and "|cff00ff00%s|r" or "|cffff0000%s|r"):format(neighbor);
+            neighborsElt:SetText(table.concat(neighbors, " "));
         end
-        neighborsElt:SetText(table.concat(neighbors, " "));
     end
 
     local tomb = {
