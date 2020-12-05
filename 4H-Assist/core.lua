@@ -117,6 +117,9 @@ function ABP_4H:OnEnable()
     self:RegisterEvent("ENCOUNTER_END", function(self, event, ...)
         self:DriverOnEncounterEnd(...);
     end, self);
+    self:RegisterEvent("LOADING_SCREEN_ENABLED", function(self, event, ...)
+        self:DriverOnLoadingScreen(...);
+    end, self);
     self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", function(self, event, ...)
         local _, event, _, _, _, sourceFlags, _, dest, destName, destFlags, _, spellID, spellName = CombatLogGetCurrentEventInfo();
         local expected = bit.bor(COMBATLOG_OBJECT_TYPE_NPC, COMBATLOG_OBJECT_REACTION_HOSTILE);

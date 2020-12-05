@@ -432,6 +432,21 @@ function ABP_4H:DriverOnEncounterEnd(bossId, bossName)
     end
 end
 
+function ABP_4H:DriverOnLoadingScreen()
+    local currentEncounter = self:GetCurrentEncounter();
+    if currentEncounter and currentEncounter.started and currentEncounter.mode == self.Modes.live then
+        currentEncounter.started = false;
+        currentEncounter.ticks = 0;
+        self:RefreshCurrentEncounter();
+    end
+
+    if started and mode == self.Modes.live then
+        started = false;
+        ticks = 0;
+        bossDeaths = {};
+    end
+end
+
 local lastMarkTime = 0;
 local markSpellIds = { [ABP_4H.Marks.bl] = true, [ABP_4H.Marks.tl] = true, [ABP_4H.Marks.br] = true, [ABP_4H.Marks.tr] = true };
 local markSpellNames = {};
@@ -442,8 +457,8 @@ local function OnNewMark(now, sendComm, newTickCount)
     if currentEncounter and currentEncounter.started and currentEncounter.mode == ABP_4H.Modes.live then
         -- Update mark count if the passed-in value doesn't match our current,
         -- or if the time difference since our last update is too high.
-        ABP_4H:LogDebug("New mark: ticks=%d lastTime=%d newTicks=%d newTime=%d",
-            currentEncounter.ticks, lastMarkTime, newTickCount or -1, now);
+        -- ABP_4H:LogDebug("New mark: ticks=%d lastTime=%d newTicks=%d newTime=%d",
+            -- currentEncounter.ticks, lastMarkTime, newTickCount or -1, now);
         if (newTickCount and newTickCount ~= currentEncounter.ticks) or (math.abs(now - lastMarkTime) > 5) then
             lastMarkTime = now;
             newTickCount = newTickCount or currentEncounter.ticks + 1;

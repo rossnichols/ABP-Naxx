@@ -43,15 +43,6 @@ local function GetPositions(role, tick, onlyOriginal)
     end
 
     if currentEncounter and not onlyOriginal then
-        if currentEncounter.bossDeaths[ABP_4H.Marks.bl] and currentEncounter.bossDeaths[ABP_4H.Marks.br] then
-            local map = {
-                [ABP_4H.MapPositions.tankdpsBL] = ABP_4H.MapPositions.tankdpsTL,
-                [ABP_4H.MapPositions.tankdpsBR] = ABP_4H.MapPositions.tankdpsTR,
-            };
-            currentPos = map[currentPos] or currentPos;
-            nextPos = map[nextPos] or nextPos;
-            nextDifferentPos = map[nextDifferentPos] or nextDifferentPos;
-        end
         for mark in pairs(currentEncounter.bossDeaths) do
             if ABP_4H.MarkPositions[mark][currentPos] then
                 currentPos = ABP_4H.MapPositions.safe;
@@ -140,7 +131,7 @@ local function Refresh()
         local prevPos = GetPositions(role, tick - 1);
         if prevPos ~= currentPos and lastAlertedMove ~= tick then
             lastAlertedMove = tick;
-            dbmMoveAlert:Show("Time to move!");
+            ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show("Time to move!"); end, 0);
         end
     end
 
@@ -155,7 +146,7 @@ local function Refresh()
 
         if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick then
             lastAlertedPending = tick;
-            dbmPendingAlert:Show("Move after next mark!");
+            ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
         end
     end
     image:DoLayout();
@@ -274,7 +265,7 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
                 -- if currentPos ~= nextPos then
                 --     extra = " - NEW POSITION!"
                 -- end
-                dbmTickAlert:Show(("Mark %d%s"):format(data.ticks, extra));
+                self:ScheduleTimer(function() dbmTickAlert:Show(("Mark %d%s"):format(data.ticks, extra)); end, 0);
             end
         else
             self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
@@ -532,6 +523,16 @@ function ABP_4H:CreateMainWindow()
 
     local markElts = {};
     window:SetUserData("markElts", markElts);
+
+    local markTL = AceGUI:Create("ABPN_Label");
+    markTL:SetUserData("canvas-fill", true);
+    markTL:SetFont("GameFontNormalHuge3Outline");
+    markTL:SetWordWrap(true);
+    markTL:SetJustifyH("LEFT");
+    markTL:SetJustifyV("TOP");
+    image:AddChild(markTL);
+    markElts[self.Marks.tl] = markTL; -- Blaumeux
+
     local markTL = AceGUI:Create("ABPN_Label");
     markTL:SetUserData("canvas-fill-scaled", true);
     markTL:SetFont("GameFontNormalHuge3Outline");
@@ -544,8 +545,16 @@ function ABP_4H:CreateMainWindow()
     markTL:SetUserData("canvas-right", -50);
     markTL:SetUserData("canvas-bottom", 50);
     image:AddChild(markTL);
-    markElts[self.Marks.tl] = markTL;
     self:AddWidgetTooltip(markTL, "Lady Blaumeux");
+
+    local markTR = AceGUI:Create("ABPN_Label");
+    markTR:SetUserData("canvas-fill", true);
+    markTR:SetFont("GameFontNormalHuge3Outline");
+    markTR:SetWordWrap(true);
+    markTR:SetJustifyH("RIGHT");
+    markTR:SetJustifyV("TOP");
+    image:AddChild(markTR);
+    markElts[self.Marks.tr] = markTR; -- Zeliek
 
     local markTR = AceGUI:Create("ABPN_Label");
     markTR:SetUserData("canvas-fill-scaled", true);
@@ -559,8 +568,16 @@ function ABP_4H:CreateMainWindow()
     markTR:SetUserData("canvas-right", -5);
     markTR:SetUserData("canvas-bottom", 50);
     image:AddChild(markTR);
-    markElts[self.Marks.tr] = markTR;
     self:AddWidgetTooltip(markTR, "Sir Zeliek");
+
+    local markBL = AceGUI:Create("ABPN_Label");
+    markBL:SetUserData("canvas-fill", true);
+    markBL:SetFont("GameFontNormalHuge3Outline");
+    markBL:SetWordWrap(true);
+    markBL:SetJustifyH("LEFT");
+    markBL:SetJustifyV("BOTTOM");
+    image:AddChild(markBL);
+    markElts[self.Marks.bl] = markBL; -- Korth'azz
 
     local markBL = AceGUI:Create("ABPN_Label");
     markBL:SetUserData("canvas-fill-scaled", true);
@@ -574,8 +591,16 @@ function ABP_4H:CreateMainWindow()
     markBL:SetUserData("canvas-right", -50);
     markBL:SetUserData("canvas-bottom", 5);
     image:AddChild(markBL);
-    markElts[self.Marks.bl] = markBL;
     self:AddWidgetTooltip(markBL, "Thane Korth'azz");
+
+    local markBR = AceGUI:Create("ABPN_Label");
+    markBR:SetUserData("canvas-fill", true);
+    markBR:SetFont("GameFontNormalHuge3Outline");
+    markBR:SetWordWrap(true);
+    markBR:SetJustifyH("RIGHT");
+    markBR:SetJustifyV("BOTTOM");
+    image:AddChild(markBR);
+    markElts[self.Marks.br] = markBR; -- Mograine
 
     local markBR = AceGUI:Create("ABPN_Label");
     markBR:SetUserData("canvas-fill-scaled", true);
@@ -589,7 +614,6 @@ function ABP_4H:CreateMainWindow()
     markBR:SetUserData("canvas-right", -5);
     markBR:SetUserData("canvas-bottom", 5);
     image:AddChild(markBR);
-    markElts[self.Marks.br] = markBR;
     self:AddWidgetTooltip(markBR, "Highlord Mograine");
 
     if currentEncounter then
