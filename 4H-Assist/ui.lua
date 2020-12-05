@@ -125,8 +125,14 @@ local function Refresh()
         end
     end
 
+    local topRoles = {
+        [ABP_4H.Roles.ot1] = true,
+        [ABP_4H.Roles.ot2] = true,
+        [ABP_4H.Roles.ot3] = true,
+        [ABP_4H.Roles.ot4] = true,
+    };
     local bottomBossesDead = currentEncounter and currentEncounter.bossDeaths[ABP_4H.Marks.bl] and currentEncounter.bossDeaths[ABP_4H.Marks.br];
-    if not bottomBossesDead then
+    if not bottomBossesDead or topRoles[role] then
         local currentPos, nextPos = GetPositions(role, tick);
 
         if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
