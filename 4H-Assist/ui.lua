@@ -21,6 +21,7 @@ local dbmPendingAlert, dbmMoveAlert, dbmTickAlert;
 local currentEncounter;
 local lastAlertedPending;
 local lastAlertedMove;
+local lastAlertedTick;
 
 local function GetPositions(role, tick, onlyOriginal)
     local rotation = ABP_4H.Rotations[role];
@@ -126,31 +127,31 @@ local function Refresh()
 
     local bottomBossesDead = currentEncounter and currentEncounter.bossDeaths[ABP_4H.Marks.bl] and currentEncounter.bossDeaths[ABP_4H.Marks.br];
     if not bottomBossesDead then
-    local currentPos, nextPos = GetPositions(role, tick);
+        local currentPos, nextPos = GetPositions(role, tick);
 
-    if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
-        local prevPos = GetPositions(role, tick - 1);
-        if prevPos ~= currentPos and lastAlertedMove ~= tick then
-            lastAlertedMove = tick;
-            ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show("Time to move!"); end, 0);
+        if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
+            local prevPos = GetPositions(role, tick - 1);
+            if prevPos ~= currentPos and lastAlertedMove ~= tick then
+                lastAlertedMove = tick;
+                ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show("Time to move!"); end, 0);
+            end
         end
-    end
 
-    current:SetVisible(true);
-    current:SetUserData("canvas-X", currentPos[1]);
-    current:SetUserData("canvas-Y", currentPos[2]);
+        current:SetVisible(true);
+        current:SetUserData("canvas-X", currentPos[1]);
+        current:SetUserData("canvas-Y", currentPos[2]);
 
-    if nextPos ~= currentPos then
-        upcoming:SetVisible(true);
-        upcoming:SetUserData("canvas-X", nextPos[1]);
-        upcoming:SetUserData("canvas-Y", nextPos[2]);
+        if nextPos ~= currentPos then
+            upcoming:SetVisible(true);
+            upcoming:SetUserData("canvas-X", nextPos[1]);
+            upcoming:SetUserData("canvas-Y", nextPos[2]);
 
-        if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick then
-            lastAlertedPending = tick;
-            ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
+            if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick then
+                lastAlertedPending = tick;
+                ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
+            end
         end
-    end
-    image:DoLayout();
+        image:DoLayout();
     end
 
     local neighborsElt = activeWindow:GetUserData("neighborsElt");
@@ -252,6 +253,7 @@ function ABP_4H:UIOnGroupLeft()
     currentEncounter = nil;
     lastAlertedPending = nil;
     lastAlertedMove = nil;
+    lastAlertedTick = nil;
     if activeWindow then activeWindow:Hide(); end
 end
 
@@ -261,13 +263,9 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
         local role = data.roles[player];
 
         if data.started then
-            if data.mode ~= ABP_4H.Modes.live and dbmTickAlert then
-                local extra = "";
-                -- local currentPos, nextPos = GetPositions(role, data.ticks - 1);
-                -- if currentPos ~= nextPos then
-                --     extra = " - NEW POSITION!"
-                -- end
-                self:ScheduleTimer(function() dbmTickAlert:Show(("Mark %d%s"):format(data.ticks, extra)); end, 0);
+            if data.mode ~= ABP_4H.Modes.live and dbmTickAlert and lastAlertedTick ~= data.ticks then
+                lastAlertedTick = data.ticks;
+                self:ScheduleTimer(function() dbmTickAlert:Show(("Mark %d"):format(data.ticks)); end, 0);
             end
         else
             self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
@@ -289,6 +287,7 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
         currentEncounter = nil;
         lastAlertedPending = nil;
         lastAlertedMove = nil;
+        lastAlertedTick = nil;
     end
 
     if activeWindow then activeWindow:Hide(); end
@@ -310,6 +309,7 @@ function ABP_4H:RefreshCurrentEncounter()
         currentEncounter = nil;
         lastAlertedPending = nil;
         lastAlertedMove = nil;
+        lastAlertedTick = nil;
     end
 end
 
