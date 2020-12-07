@@ -190,6 +190,37 @@ local roleCategories = {
     [roles.healer12] = categories.healer,
 };
 
+local topRoles = {
+    [roles.ot1] = true,
+    [roles.ot2] = true,
+    [roles.ot3] = true,
+    [roles.ot4] = true,
+    [roles.healer1] = true,
+    [roles.healer2] = true,
+    [roles.healer3] = true,
+    [roles.healer4] = true,
+    [roles.healer5] = true,
+    [roles.healer6] = true,
+    [roles.healer7] = true,
+    [roles.healer8] = true,
+    [roles.healer9] = true,
+    [roles.healer10] = true,
+    [roles.healer11] = true,
+    [roles.healer12] = true,
+    [roles.healerccw1] = true,
+    [roles.healerccw2] = true,
+    [roles.healerccw3] = true,
+    [roles.healerccw4] = true,
+    [roles.healerccw5] = true,
+    [roles.healerccw6] = true,
+    [roles.healerccw7] = true,
+    [roles.healerccw8] = true,
+    [roles.healerccw9] = true,
+    [roles.healerccw10] = true,
+    [roles.healerccw11] = true,
+    [roles.healerccw12] = true,
+};
+
 local raidRoles = {
     -- Group 1
     roles.tank1,
@@ -418,3 +449,4 @@ ABP_4H.MarkPositions = markPositions;
 ABP_4H.Bosses = bosses;
 ABP_4H.BossMarks = bossMarks;
 ABP_4H.HealerMap = healerMap;
+ABP_4H.TopRoles = topRoles;
