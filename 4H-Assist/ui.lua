@@ -168,14 +168,14 @@ end
 
 local function GetMarkCount(unit, mark)
     local i = 1;
-    local name, _, count, _, _, _, _, _, _, spellID = UnitDebuff(mark, i);
+    local name, _, count, _, _, _, _, _, _, spellID = UnitDebuff(unit, i);
     while name do
         if spellID == mark then
             return count;
         end
 
         i = i + 1;
-        name, _, count, _, _, _, _, _, _, spellID = UnitDebuff(mark, i);
+        name, _, count, _, _, _, _, _, _, spellID = UnitDebuff(unit, i);
     end
 
     return 0;
@@ -488,6 +488,7 @@ end
 function ABP_4H:UIOnPlayerAura()
     if activeWindow then
         RefreshMarks();
+        self:UIOnAura("player");
     end
 end
 
