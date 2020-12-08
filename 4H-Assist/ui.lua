@@ -4,7 +4,7 @@ local AceGUI = _G.LibStub("AceGUI-3.0");
 
 local UnitName = UnitName;
 local UnitIsUnit = UnitIsUnit;
-local UnitInRange = UnitInRange;
+local IsItemInRange = IsItemInRange;
 local UnitIsConnected = UnitIsConnected;
 local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 local UnitDebuff = UnitDebuff;
@@ -181,7 +181,7 @@ local function Refresh()
                 if raiders[map[neighbor]].fake then
                     inRange = (math.random() < 0.95);
                 else
-                    inRange = UnitInRange(neighbor);
+                    inRange = IsItemInRange(21519, neighbor);
                 end
                 neighbors[i] = (inRange and "|cff00ff00%s|r" or "|cffff0000%s|r"):format(neighbor);
             end
