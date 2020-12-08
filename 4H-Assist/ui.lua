@@ -98,80 +98,11 @@ local function EndEncounter()
     if activeWindow then activeWindow:Hide(); end
 end
 
-local function Refresh()
-    if not activeWindow then return; end
-    local current = activeWindow:GetUserData("current");
-    local upcoming = activeWindow:GetUserData("upcoming");
-    local image = activeWindow:GetUserData("image");
-    local role = activeWindow:GetUserData("role");
-    local tick = activeWindow:GetUserData("tick");
-
-    current:SetVisible(false);
-    upcoming:SetVisible(false);
-
-    if not currentEncounter or currentEncounter.driving then
-        local tickTrigger = activeWindow:GetUserData("tickTrigger");
-        local reset = activeWindow:GetUserData("reset");
-
-        if not role then
-            if reset then
-                reset:SetDisabled(true);
-            end
-            if tickTrigger then
-                tickTrigger:SetDisabled(true);
-                tickTrigger:SetText("Ticks");
-            end
-            return;
-        end
-
-        if reset then
-            reset:SetDisabled(tick == -1);
-        end
-        if tickTrigger then
-            tickTrigger:SetDisabled(false);
-            tickTrigger:SetText(tick == -1 and "Start" or ("Tick (%d)"):format(tick));
-        end
-    end
-
-    local showingRole = ShouldShowRole(role);
-    if showingRole then
-        local currentPos, nextPos = GetPositions(role, tick);
-
-        if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
-            local prevPos = GetPositions(role, tick - 1);
-            if prevPos ~= currentPos and lastAlertedMove ~= tick then
-                lastAlertedMove = tick;
-                ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show("Time to move!"); end, 0);
-            end
-        end
-
-        current:SetVisible(true);
-        current:SetUserData("canvas-X", currentPos[1]);
-        current:SetUserData("canvas-Y", currentPos[2]);
-        local size = ABP_4H.SmallPositions[currentPos] and 16 or 24;
-        current:SetWidth(size);
-        current:SetHeight(size);
-
-        if nextPos ~= currentPos then
-            upcoming:SetVisible(true);
-            upcoming:SetUserData("canvas-X", nextPos[1]);
-            upcoming:SetUserData("canvas-Y", nextPos[2]);
-            local size = ABP_4H.SmallPositions[nextPos] and 16 or 24;
-            upcoming:SetWidth(size);
-            upcoming:SetHeight(size);
-
-            if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick and lastAlertedMove ~= tick then
-                lastAlertedPending = tick;
-                ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
-            end
-        end
-        image:DoLayout();
-    end
-
+local function RefreshNeighbors(raiders, map)
     local neighborsElt = activeWindow:GetUserData("neighborsElt");
     if neighborsElt then
-        local raiders, map = ABP_4H:GetRaiderSlots();
         local neighbors = GetNeighbors(activeWindow, raiders);
+        local showingRole = ShouldShowRole(activeWindow:GetUserData("role"));
 
         if showingRole then
             neighborsElt:SetText(table.concat(neighbors, " "));
@@ -205,6 +136,54 @@ local function Refresh()
             neighborsElt:SetText(table.concat(neighbors, " "));
         end
     end
+end
+
+local function MakeFakeCount(tick, role, mark)
+    local count = 0;
+    local oldest = tick - 7;
+    local positions = ABP_4H.MarkPositions[mark];
+    for checkedTick = oldest, tick - 1 do
+        if checkedTick >= 0 then
+            local checkedPos = GetPositions(role, checkedTick);
+            if positions[checkedPos] then
+                count = count + 1;
+            end
+        end
+    end
+    if count > 0 then
+        local checkedTick = oldest - 1;
+        while checkedTick >= 0 do
+            local checkedPos = GetPositions(role, checkedTick);
+            if positions[checkedPos] then
+                count = count + 1;
+                checkedTick = checkedTick - 1;
+            else
+                break;
+            end
+        end
+    end
+
+    return count;
+end
+
+local function GetMarkCount(unit, mark)
+    local i = 1;
+    local name, _, count, _, _, _, _, _, _, spellID = UnitDebuff(mark, i);
+    while name do
+        if spellID == mark then
+            return count;
+        end
+
+        i = i + 1;
+        name, _, count, _, _, _, _, _, _, spellID = UnitDebuff(mark, i);
+    end
+
+    return 0;
+end
+
+local function RefreshMarks()
+    local role = activeWindow:GetUserData("role");
+    local tick = activeWindow:GetUserData("tick");
 
     local tomb = {
         [true] = "|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t",
@@ -251,38 +230,179 @@ local function Refresh()
             end
         else
             for mark, elt in pairs(markElts) do
-                local count = 0;
-                local oldest = tick - 7;
-                local positions = ABP_4H.MarkPositions[mark];
-                for checkedTick = oldest, tick - 1 do
-                    if checkedTick >= 0 then
-                        local checkedPos = GetPositions(role, checkedTick);
-                        if positions[checkedPos] then
-                            count = count + 1;
-                        end
-                    end
-                end
-                if count > 0 then
-                    local checkedTick = oldest - 1;
-                    while checkedTick >= 0 do
-                        local checkedPos = GetPositions(role, checkedTick);
-                        if positions[checkedPos] then
-                            count = count + 1;
-                            checkedTick = checkedTick - 1;
-                        else
-                            break;
-                        end
-                    end
-                end
-
                 if currentEncounter and currentEncounter.bossDeaths[mark] then
                     elt:SetText(tomb[ABP_4H:IsClassic()]);
                 else
+                    local count = MakeFakeCount(tick, role, mark);
                     elt:SetText(texts[count]);
                 end
             end
         end
     end
+end
+
+local function RefreshTanks(raiders, map)
+    local tick = activeWindow:GetUserData("tick");
+
+    local tankElts = activeWindow:GetUserData("tankElts");
+    if tankElts then
+        local currentTanks, upcomingTanks = {}, {};
+        local markMap = {
+            [ABP_4H.MapPositions.tankdpsTL] = ABP_4H.Marks.tl,
+            [ABP_4H.MapPositions.tankdpsTR] = ABP_4H.Marks.tr,
+            [ABP_4H.MapPositions.tankdpsBL] = ABP_4H.Marks.bl,
+            [ABP_4H.MapPositions.tankdpsBR] = ABP_4H.Marks.br,
+        };
+        for _, raider in pairs(raiders) do
+            local role = currentEncounter.roles[raider.name];
+            if ABP_4H.RoleCategories[role] == ABP_4H.Categories.tank then
+                local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks, true);
+                local playerText = (raider.fake or (UnitIsConnected(raider.name) and not UnitIsDeadOrGhost(raider.name)))
+                    and raider.name
+                    or ("|cffff0000%s|r"):format(raider.name);
+                local icon = UnitExists(raider.name) and GetRaidTargetIndex(raider.name);
+                local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
+                if pos == ABP_4H.MapPositions.safe then
+                    local count = raider.fake and MakeFakeCount(tick, role, markMap[nextDiff]) or GetMarkCount(raider.name, markMap[nextDiff]);
+                    upcomingTanks[nextDiff] = { text = playerText, icon = iconText, count = ("%%s[%d]%%s"):format(count) };
+                else
+                    local count = raider.fake and MakeFakeCount(tick, role, markMap[pos]) or GetMarkCount(raider.name, markMap[pos]);
+                    currentTanks[pos] = { text = playerText, icon = iconText, count = ("%%s[%d]%%s"):format(count) };
+                end
+            end
+        end
+
+        if currentEncounter.bossDeaths[ABP_4H.Marks.tl] then
+            tankElts[ABP_4H.Marks.tl]:SetText("");
+        else
+            local current = currentTanks[ABP_4H.MapPositions.tankdpsTL];
+            local upcoming = upcomingTanks[ABP_4H.MapPositions.tankdpsTL];
+            tankElts[ABP_4H.Marks.tl]:SetText(("%s|cff00ff00%s%s|r\n%s|cffcccccc%s%s|r"):format(
+                current and current.icon and current.icon:format(0) or "",
+                current and current.count and current.count:format("", " ") or "",
+                current and current.text or "",
+                upcoming and upcoming.icon and upcoming.icon:format(0) or "",
+                upcoming and upcoming.count and upcoming.count:format("", " ") or "",
+                upcoming and upcoming.text or ""));
+        end
+
+        if currentEncounter.bossDeaths[ABP_4H.Marks.tr] then
+            tankElts[ABP_4H.Marks.tr]:SetText("");
+        else
+            local current = currentTanks[ABP_4H.MapPositions.tankdpsTR];
+            local upcoming = upcomingTanks[ABP_4H.MapPositions.tankdpsTR];
+            tankElts[ABP_4H.Marks.tr]:SetText(("|cff00ff00%s%s|r%s\n|cffcccccc%s%s|r%s"):format(
+                current and current.text or "",
+                current and current.count and current.count:format(" ", "") or "",
+                current and current.icon and current.icon:format(0) or "",
+                upcoming and upcoming.text or "",
+                upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
+                upcoming and upcoming.icon and upcoming.icon:format(0) or ""));
+        end
+
+        if currentEncounter.bossDeaths[ABP_4H.Marks.bl] then
+            tankElts[ABP_4H.Marks.bl]:SetText("");
+        else
+            local current = currentTanks[ABP_4H.MapPositions.tankdpsBL];
+            local upcoming = upcomingTanks[ABP_4H.MapPositions.tankdpsBL];
+            tankElts[ABP_4H.Marks.bl]:SetText(("%s|cffcccccc%s%s|r\n%s|cff00ff00%s%s|r"):format(
+                upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
+                upcoming and upcoming.count and upcoming.count:format("", " ") or "",
+                upcoming and upcoming.text or "",
+                current and current.icon and current.icon:format(-16) or "",
+                current and current.count and current.count:format("", " ") or "",
+                current and current.text or ""));
+        end
+
+        if currentEncounter.bossDeaths[ABP_4H.Marks.br] then
+            tankElts[ABP_4H.Marks.br]:SetText("");
+        else
+            local current = currentTanks[ABP_4H.MapPositions.tankdpsBR];
+            local upcoming = upcomingTanks[ABP_4H.MapPositions.tankdpsBR];
+            tankElts[ABP_4H.Marks.br]:SetText(("|cffcccccc%s%s|r%s\n|cff00ff00%s%s|r%s"):format(
+                upcoming and upcoming.text or "",
+                upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
+                upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
+                current and current.text or "",
+                current and current.count and current.count:format(" ", "") or "",
+                current and current.icon and current.icon:format(-16) or ""));
+        end
+    end
+end
+
+local function Refresh()
+    if not activeWindow then return; end
+    local current = activeWindow:GetUserData("current");
+    local upcoming = activeWindow:GetUserData("upcoming");
+    local image = activeWindow:GetUserData("image");
+    local role = activeWindow:GetUserData("role");
+    local tick = activeWindow:GetUserData("tick");
+
+    current:SetVisible(false);
+    upcoming:SetVisible(false);
+
+    if not currentEncounter or currentEncounter.driving then
+        local tickTrigger = activeWindow:GetUserData("tickTrigger");
+        local reset = activeWindow:GetUserData("reset");
+
+        if not role then
+            if reset then
+                reset:SetDisabled(true);
+            end
+            if tickTrigger then
+                tickTrigger:SetDisabled(true);
+                tickTrigger:SetText("Ticks");
+            end
+            return;
+        end
+
+        if reset then
+            reset:SetDisabled(tick == -1);
+        end
+        if tickTrigger then
+            tickTrigger:SetDisabled(false);
+            tickTrigger:SetText(tick == -1 and "Start" or ("Tick (%d)"):format(tick));
+        end
+    end
+
+    if ShouldShowRole(role) then
+        local currentPos, nextPos = GetPositions(role, tick);
+
+        if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
+            local prevPos = GetPositions(role, tick - 1);
+            if prevPos ~= currentPos and lastAlertedMove ~= tick then
+                lastAlertedMove = tick;
+                ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show("Time to move!"); end, 0);
+            end
+        end
+
+        current:SetVisible(true);
+        current:SetUserData("canvas-X", currentPos[1]);
+        current:SetUserData("canvas-Y", currentPos[2]);
+        local size = ABP_4H.SmallPositions[currentPos] and 16 or 24;
+        current:SetWidth(size);
+        current:SetHeight(size);
+
+        if nextPos ~= currentPos then
+            upcoming:SetVisible(true);
+            upcoming:SetUserData("canvas-X", nextPos[1]);
+            upcoming:SetUserData("canvas-Y", nextPos[2]);
+            local size = ABP_4H.SmallPositions[nextPos] and 16 or 24;
+            upcoming:SetWidth(size);
+            upcoming:SetHeight(size);
+
+            if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick and lastAlertedMove ~= tick then
+                lastAlertedPending = tick;
+                ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
+            end
+        end
+        image:DoLayout();
+    end
+
+    local raiders, map = ABP_4H:GetRaiderSlots();
+    RefreshNeighbors(raiders, map);
+    RefreshMarks();
+    RefreshTanks(raiders, map);
 end
 
 function ABP_4H:UIOnGroupJoined()
@@ -350,11 +470,26 @@ function ABP_4H:RefreshMainWindow()
 end
 
 function ABP_4H:OnUITimer()
-    Refresh();
+    if activeWindow then
+        local raiders, map = ABP_4H:GetRaiderSlots();
+        RefreshNeighbors(raiders, map);
+    end
 end
 
-function ABP_4H:UIOnAura()
-    Refresh();
+function ABP_4H:UIOnPlayerAura()
+    if activeWindow then
+        RefreshMarks();
+    end
+end
+
+function ABP_4H:UIOnAura(unit)
+    if activeWindow and currentEncounter then
+        local role = currentEncounter.roles[UnitName(unit)];
+        if role and ABP_4H.RoleCategories[role] == ABP_4H.Categories.tank then
+            local raiders, map = ABP_4H:GetRaiderSlots();
+            RefreshTanks(raiders, map);
+        end
+    end
 end
 
 function ABP_4H:CreateMainWindow()
@@ -652,95 +787,48 @@ function ABP_4H:CreateMainWindow()
         local raiders = ABP_4H:GetRaiderSlots();
 
         if self:Get("showTanks") then
-            local currentTanks, upcomingTanks = {}, {};
-            for _, raider in pairs(raiders) do
-                local role = currentEncounter.roles[raider.name];
-                if self.RoleCategories[role] == self.Categories.tank then
-                    local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks, true);
-                    local playerText = (raider.fake or (UnitIsConnected(raider.name) and not UnitIsDeadOrGhost(raider.name)))
-                        and raider.name
-                        or ("|cffff0000%s|r"):format(raider.name);
-                    local icon = UnitExists(raider.name) and GetRaidTargetIndex(raider.name);
-                    local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                    if pos == self.MapPositions.safe then
-                        upcomingTanks[nextDiff] = { text = playerText, icon = iconText };
-                    else
-                        currentTanks[pos] = { text = playerText, icon = iconText };
-                    end
-                end
-            end
+            local tankElts = {};
+            window:SetUserData("tankElts", tankElts);
 
-            if not currentEncounter.bossDeaths[self.Marks.tl] then
-                local current = currentTanks[self.MapPositions.tankdpsTL];
-                local upcoming = upcomingTanks[self.MapPositions.tankdpsTL];
-                local tankTL = AceGUI:Create("ABPN_Label");
-                tankTL:SetUserData("canvas-fill", true);
-                tankTL:SetUserData("canvas-left", 30);
-                tankTL:SetFont("GameFontHighlightOutline");
-                tankTL:SetWordWrap(true);
-                tankTL:SetJustifyH("LEFT");
-                tankTL:SetJustifyV("TOP");
-                tankTL:SetText(("%s|cff00ff00%s|r\n%s|cffcccccc%s|r"):format(
-                    current and current.icon and current.icon:format(0) or "",
-                    current and current.text or "",
-                    upcoming and upcoming.icon and upcoming.icon:format(0) or "",
-                    upcoming and upcoming.text or ""));
-                image:AddChild(tankTL);
-            end
+            local tankTL = AceGUI:Create("ABPN_Label");
+            tankTL:SetUserData("canvas-fill", true);
+            tankTL:SetUserData("canvas-left", 30);
+            tankTL:SetFont("GameFontHighlightOutline");
+            tankTL:SetWordWrap(true);
+            tankTL:SetJustifyH("LEFT");
+            tankTL:SetJustifyV("TOP");
+            image:AddChild(tankTL);
+            tankElts[self.Marks.tl] = tankTL; -- Blaumeux
 
-            if not currentEncounter.bossDeaths[self.Marks.tr] then
-                local current = currentTanks[self.MapPositions.tankdpsTR];
-                local upcoming = upcomingTanks[self.MapPositions.tankdpsTR];
-                local tankTR = AceGUI:Create("ABPN_Label");
-                tankTR:SetUserData("canvas-fill", true);
-                tankTR:SetUserData("canvas-right", -30);
-                tankTR:SetFont("GameFontHighlightOutline");
-                tankTR:SetWordWrap(true);
-                tankTR:SetJustifyH("RIGHT");
-                tankTR:SetJustifyV("TOP");
-                tankTR:SetText(("|cff00ff00%s|r%s\n|cffcccccc%s|r%s"):format(
-                    current and current.text or "",
-                    current and current.icon and current.icon:format(0) or "",
-                    upcoming and upcoming.text or "",
-                    upcoming and upcoming.icon and upcoming.icon:format(0) or ""));
-                image:AddChild(tankTR);
-            end
+            local tankTR = AceGUI:Create("ABPN_Label");
+            tankTR:SetUserData("canvas-fill", true);
+            tankTR:SetUserData("canvas-right", -30);
+            tankTR:SetFont("GameFontHighlightOutline");
+            tankTR:SetWordWrap(true);
+            tankTR:SetJustifyH("RIGHT");
+            tankTR:SetJustifyV("TOP");
+            image:AddChild(tankTR);
+            tankElts[self.Marks.tr] = tankTR; -- Zeliek
 
-            if not currentEncounter.bossDeaths[self.Marks.bl] then
-                local current = currentTanks[self.MapPositions.tankdpsBL];
-                local upcoming = upcomingTanks[self.MapPositions.tankdpsBL];
-                local tankBL = AceGUI:Create("ABPN_Label");
-                tankBL:SetUserData("canvas-fill", true);
-                tankBL:SetUserData("canvas-left", 30);
-                tankBL:SetFont("GameFontHighlightOutline");
-                tankBL:SetWordWrap(true);
-                tankBL:SetJustifyH("LEFT");
-                tankBL:SetJustifyV("BOTTOM");
-                tankBL:SetText(("%s|cffcccccc%s|r\n%s|cff00ff00%s|r"):format(
-                    upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
-                    upcoming and upcoming.text or "",
-                    current and current.icon and current.icon:format(-16) or "",
-                    current and current.text or ""));
-                image:AddChild(tankBL);
-            end
+            local tankBL = AceGUI:Create("ABPN_Label");
+            tankBL:SetUserData("canvas-fill", true);
+            tankBL:SetUserData("canvas-left", 30);
+            tankBL:SetFont("GameFontHighlightOutline");
+            tankBL:SetWordWrap(true);
+            tankBL:SetJustifyH("LEFT");
+            tankBL:SetJustifyV("BOTTOM");
+            image:AddChild(tankBL);
+            tankElts[self.Marks.bl] = tankBL; -- Korth'azz
 
-            if not currentEncounter.bossDeaths[self.Marks.br] then
-                local current = currentTanks[self.MapPositions.tankdpsBR];
-                local upcoming = upcomingTanks[self.MapPositions.tankdpsBR];
-                local tankBR = AceGUI:Create("ABPN_Label");
-                tankBR:SetUserData("canvas-fill", true);
-                tankBR:SetUserData("canvas-right", -30);
-                tankBR:SetFont("GameFontHighlightOutline");
-                tankBR:SetWordWrap(true);
-                tankBR:SetJustifyH("RIGHT");
-                tankBR:SetJustifyV("BOTTOM");
-                tankBR:SetText(("|cffcccccc%s|r%s\n|cff00ff00%s|r%s"):format(
-                    upcoming and upcoming.text or "",
-                    upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
-                    current and current.text or "",
-                    current and current.icon and current.icon:format(-16) or ""));
-                image:AddChild(tankBR);
-            end
+            local tankBR = AceGUI:Create("ABPN_Label");
+            tankBR:SetUserData("canvas-fill", true);
+            tankBR:SetUserData("canvas-right", -30);
+            tankBR:SetFont("GameFontHighlightOutline");
+            tankBR:SetWordWrap(true);
+            tankBR:SetJustifyH("RIGHT");
+            tankBR:SetJustifyV("BOTTOM");
+            image:AddChild(tankBR);
+            tankElts[self.Marks.br] = tankBR; -- Mograine
         end
 
         if self:Get("showNeighbors") then

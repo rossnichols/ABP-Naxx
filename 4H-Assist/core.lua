@@ -137,7 +137,9 @@ function ABP_4H:OnEnable()
     self:RegisterEvent("UNIT_AURA", function(self, event, ...)
         local unit = ...;
         if UnitIsUnit(unit, "player") then
-            self:UIOnAura(...);
+            self:UIOnPlayerAura(...);
+        else
+            self:UIOnAura(unit);
         end
     end, self);
 
