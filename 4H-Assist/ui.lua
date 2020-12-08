@@ -184,6 +184,7 @@ end
 local function RefreshMarks()
     local role = activeWindow:GetUserData("role");
     local tick = activeWindow:GetUserData("tick");
+    local showingRole = ShouldShowRole(role);
 
     local tomb = {
         [true] = "|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t",
@@ -210,8 +211,16 @@ local function RefreshMarks()
                 if elt then
                     updated[elt] = true;
                     elt:SetText(texts[count]);
-                    if dbmMarkAlert and count >= 4 and debuffCounts[spellID] ~= count and ABP_4H:Get("showMarkAlert") then
+                    if count >= 4 and debuffCounts[spellID] ~= count and dbmMarkAlert and ABP_4H:Get("showMarkAlert") then
                         ABP_4H:ScheduleTimer(function() dbmMarkAlert:Show("TOO MANY MARKS!"); end, 0);
+                    end
+                    if not showingRole then
+                        if count == 3 and debuffCounts[spellID] ~= count and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
+                            ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show("Time to move!"); end, 0);
+                        end
+                        if count == 2 and debuffCounts[spellID] ~= count and dbmPendingAlert and ABP_4H:Get("showAlert") then
+                            ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
+                        end
                     end
                     debuffCounts[spellID] = count;
                 end
