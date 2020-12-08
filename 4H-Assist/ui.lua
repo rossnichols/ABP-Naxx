@@ -212,14 +212,14 @@ local function RefreshMarks()
                     updated[elt] = true;
                     elt:SetText(texts[count]);
                     if count >= 4 and debuffCounts[spellID] ~= count and dbmMarkAlert and ABP_4H:Get("showMarkAlert") then
-                        ABP_4H:ScheduleTimer(function() dbmMarkAlert:Show("TOO MANY MARKS!"); end, 0);
+                        ABP_4H:ScheduleTimer(function() dbmMarkAlert:Show(); end, 0);
                     end
                     if not showingRole then
                         if count == 3 and debuffCounts[spellID] ~= count and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
-                            ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show("Time to move!"); end, 0);
+                            ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show(); end, 0);
                         end
                         if count == 2 and debuffCounts[spellID] ~= count and dbmPendingAlert and ABP_4H:Get("showAlert") then
-                            ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
+                            ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show(); end, 0);
                         end
                     end
                     debuffCounts[spellID] = count;
@@ -381,7 +381,7 @@ local function Refresh()
             local prevPos = GetPositions(role, tick - 1);
             if prevPos ~= currentPos and lastAlertedMove ~= tick then
                 lastAlertedMove = tick;
-                ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show("Time to move!"); end, 0);
+                ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show(); end, 0);
             end
         end
 
@@ -402,7 +402,7 @@ local function Refresh()
 
             if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick and lastAlertedMove ~= tick then
                 lastAlertedPending = tick;
-                ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
+                ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show(); end, 0);
             end
         end
         image:DoLayout();
@@ -430,7 +430,7 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
         if data.started then
             if data.mode ~= ABP_4H.Modes.live and dbmTickAlert and lastAlertedTick ~= data.ticks then
                 lastAlertedTick = data.ticks;
-                self:ScheduleTimer(function() dbmTickAlert:Show(("Mark %d"):format(data.ticks)); end, 0);
+                self:ScheduleTimer(function() dbmTickAlert:Show(data.ticks); end, 0);
             end
         else
             self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
@@ -506,10 +506,10 @@ function ABP_4H:CreateMainWindow()
     if not dbmPendingAlert and _G.DBM and _G.DBM.NewMod then
         local mod = _G.DBM:NewMod("4H Assist");
         _G.DBM:GetModLocalization("4H Assist"):SetGeneralLocalization{ name = "4H Assist" }
-        dbmPendingAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1);
-        dbmMoveAlert = mod:NewSpecialWarning("%s ", nil, nil, nil, 1);
-        dbmMarkAlert = mod:NewSpecialWarning("%s  ", nil, nil, nil, 3);
-        dbmTickAlert = mod:NewAnnounce("%s", 1, "136172");
+        dbmPendingAlert = mod:NewSpecialWarning("Move after next mark!", nil, nil, nil, 1);
+        dbmMoveAlert = mod:NewSpecialWarning("Time to move!", nil, nil, nil, 1);
+        dbmMarkAlert = mod:NewSpecialWarning("TOO MANY MARKS!", nil, nil, nil, 4);
+        dbmTickAlert = mod:NewAnnounce("Mark %d", 1, "136172");
     end
 
     local windowWidth = 400;
