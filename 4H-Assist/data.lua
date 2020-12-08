@@ -3,8 +3,10 @@ local ABP_4H = _G.ABP_4H;
 
 local pos = {
     healerTL = { 40, 25 },
-    healerTR = { 65, 25 },
-    healerBL = { 40, 60 },
+    healerTR1 = { 67, 20 },
+    healerTR2 = { 64, 30 },
+    healerTR3 = { 67, 40 },
+    healerBL = { 29, 69 },
     healerBR = { 65, 60 },
 
     tankdpsTL = { 29, 28 },
@@ -22,9 +24,15 @@ local marks = {
     br = 28834,
 };
 
+local smallPos = {
+    [pos.healerTR1] = true,
+    [pos.healerTR2] = true,
+    [pos.healerTR3] = true
+};
+
 local markPositions = {
     [marks.tl] = { [pos.tankdpsTL] = true, [pos.healerTL] = true },
-    [marks.tr] = { [pos.tankdpsTR] = true, [pos.healerTR] = true },
+    [marks.tr] = { [pos.tankdpsTR] = true, [pos.healerTR1] = true, [pos.healerTR2] = true, [pos.healerTR3] = true },
     [marks.bl] = { [pos.tankdpsBL] = true, [pos.healerBL] = true },
     [marks.br] = { [pos.tankdpsBR] = true, [pos.healerBR] = true },
 };
@@ -378,37 +386,37 @@ local rotations = {
     [roles.ot3] = { [0] = pos.tankdpsTR, [3] = pos.safe, [6] = pos.tankdpsTL, [9] = pos.safe, [12] = pos.tankdpsTR },
     [roles.ot4] = { [0] = pos.safe, [3] = pos.tankdpsTR, [6] = pos.safe, [9] = pos.tankdpsTL, [12] = pos.safe },
 
-    [roles.healer1] = { [0] = pos.healerBL, [1] = pos.healerTL, [4] = pos.healerTR, [7] = pos.healerBR, [10] = pos.healerBL },
-    [roles.healer2] = { [0] = pos.healerBL, [2] = pos.healerTL, [5] = pos.healerTR, [8] = pos.healerBR, [11] = pos.healerBL },
-    [roles.healer3] = { [0] = pos.healerBL, [3] = pos.healerTL, [6] = pos.healerTR, [9] = pos.healerBR, [12] = pos.healerBL },
+    [roles.healer1] = { [0] = pos.healerBL, [1] = pos.healerTL, [4] = pos.healerTR1, [5] = pos.healerTR2, [6] = pos.healerTR3, [7] = pos.healerBR, [10] = pos.healerBL },
+    [roles.healer2] = { [0] = pos.healerBL, [2] = pos.healerTL, [5] = pos.healerTR1, [6] = pos.healerTR2, [7] = pos.healerTR3, [8] = pos.healerBR, [11] = pos.healerBL },
+    [roles.healer3] = { [0] = pos.healerBL, [3] = pos.healerTL, [6] = pos.healerTR1, [7] = pos.healerTR2, [8] = pos.healerTR3, [9] = pos.healerBR, [12] = pos.healerBL },
 
-    [roles.healer4] = { [0] = pos.healerBR, [1] = pos.healerBL, [4] = pos.healerTL, [7] = pos.healerTR, [10] = pos.healerBR },
-    [roles.healer5] = { [0] = pos.healerBR, [2] = pos.healerBL, [5] = pos.healerTL, [8] = pos.healerTR, [11] = pos.healerBR },
-    [roles.healer6] = { [0] = pos.healerBR, [3] = pos.healerBL, [6] = pos.healerTL, [9] = pos.healerTR, [12] = pos.healerBR },
+    [roles.healer4] = { [0] = pos.healerBR, [1] = pos.healerBL, [4] = pos.healerTL, [7] = pos.healerTR1, [8] = pos.healerTR2, [9] = pos.healerTR3, [10] = pos.healerBR },
+    [roles.healer5] = { [0] = pos.healerBR, [2] = pos.healerBL, [5] = pos.healerTL, [8] = pos.healerTR1, [9] = pos.healerTR2, [10] = pos.healerTR3, [11] = pos.healerBR },
+    [roles.healer6] = { [0] = pos.healerBR, [3] = pos.healerBL, [6] = pos.healerTL, [9] = pos.healerTR1, [10] = pos.healerTR2, [11] = pos.healerTR3, [12] = pos.healerBR },
 
-    [roles.healer7] = { [0] = pos.healerTL, [1] = pos.healerTR, [4] = pos.healerBR, [7] = pos.healerBL, [10] = pos.healerTL },
-    [roles.healer8] = { [0] = pos.healerTL, [2] = pos.healerTR, [5] = pos.healerBR, [8] = pos.healerBL, [11] = pos.healerTL },
-    [roles.healer9] = { [0] = pos.healerTL, [3] = pos.healerTR, [6] = pos.healerBR, [9] = pos.healerBL, [12] = pos.healerTL },
+    [roles.healer7] = { [0] = pos.healerTL, [1] = pos.healerTR1, [2] = pos.healerTR2, [3] = pos.healerTR3, [4] = pos.healerBR, [7] = pos.healerBL, [10] = pos.healerTL },
+    [roles.healer8] = { [0] = pos.healerTL, [2] = pos.healerTR1, [3] = pos.healerTR2, [4] = pos.healerTR3, [5] = pos.healerBR, [8] = pos.healerBL, [11] = pos.healerTL },
+    [roles.healer9] = { [0] = pos.healerTL, [3] = pos.healerTR1, [4] = pos.healerTR2, [5] = pos.healerTR3, [6] = pos.healerBR, [9] = pos.healerBL, [12] = pos.healerTL },
 
-    [roles.healer10] = { [0] = pos.healerTR, [1] = pos.healerBR, [4] = pos.healerBL, [7] = pos.healerTL, [10] = pos.healerTR },
-    [roles.healer11] = { [0] = pos.healerTR, [2] = pos.healerBR, [5] = pos.healerBL, [8] = pos.healerTL, [11] = pos.healerTR },
-    [roles.healer12] = { [0] = pos.healerTR, [3] = pos.healerBR, [6] = pos.healerBL, [9] = pos.healerTL, [12] = pos.healerTR },
+    [roles.healer10] = { [0] = pos.healerTR3, [1] = pos.healerBR, [4] = pos.healerBL, [7] = pos.healerTL, [10] = pos.healerTR1, [11] = pos.healerTR2, [12] = pos.healerTR3 },
+    [roles.healer11] = { [0] = pos.healerTR2, [1] = pos.healerTR3, [2] = pos.healerBR, [5] = pos.healerBL, [8] = pos.healerTL, [11] = pos.healerTR1, [12] = pos.healerTR2 },
+    [roles.healer12] = { [0] = pos.healerTR1, [1] = pos.healerTR2, [2] = pos.healerTR3, [3] = pos.healerBR, [6] = pos.healerBL, [9] = pos.healerTL, [12] = pos.healerTR1 },
 
-    [roles.healerccw1] = { [0] = pos.healerBL, [1] = pos.healerBR, [4] = pos.healerTR, [7] = pos.healerTL, [10] = pos.healerBL },
-    [roles.healerccw2] = { [0] = pos.healerBL, [2] = pos.healerBR, [5] = pos.healerTR, [8] = pos.healerTL, [11] = pos.healerBL },
-    [roles.healerccw3] = { [0] = pos.healerBL, [3] = pos.healerBR, [6] = pos.healerTR, [9] = pos.healerTL, [12] = pos.healerBL },
+    [roles.healerccw1] = { [0] = pos.healerBL, [1] = pos.healerBR, [4] = pos.healerTR3, [5] = pos.healerTR2, [6] = pos.healerTR1, [7] = pos.healerTL, [10] = pos.healerBL },
+    [roles.healerccw2] = { [0] = pos.healerBL, [2] = pos.healerBR, [5] = pos.healerTR3, [6] = pos.healerTR2, [7] = pos.healerTR1, [8] = pos.healerTL, [11] = pos.healerBL },
+    [roles.healerccw3] = { [0] = pos.healerBL, [3] = pos.healerBR, [6] = pos.healerTR3, [7] = pos.healerTR2, [8] = pos.healerTR1, [9] = pos.healerTL, [12] = pos.healerBL },
 
-    [roles.healerccw4] = { [0] = pos.healerBR, [1] = pos.healerTR, [4] = pos.healerTL, [7] = pos.healerBL, [10] = pos.healerBR },
-    [roles.healerccw5] = { [0] = pos.healerBR, [2] = pos.healerTR, [5] = pos.healerTL, [8] = pos.healerBL, [11] = pos.healerBR },
-    [roles.healerccw6] = { [0] = pos.healerBR, [3] = pos.healerTR, [6] = pos.healerTL, [9] = pos.healerBL, [12] = pos.healerBR },
+    [roles.healerccw4] = { [0] = pos.healerBR, [1] = pos.healerTR3, [2] = pos.healerTR2, [3] = pos.healerTR1, [4] = pos.healerTL, [7] = pos.healerBL, [10] = pos.healerBR },
+    [roles.healerccw5] = { [0] = pos.healerBR, [2] = pos.healerTR3, [3] = pos.healerTR2, [4] = pos.healerTR1, [5] = pos.healerTL, [8] = pos.healerBL, [11] = pos.healerBR },
+    [roles.healerccw6] = { [0] = pos.healerBR, [3] = pos.healerTR3, [4] = pos.healerTR2, [5] = pos.healerTR1, [6] = pos.healerTL, [9] = pos.healerBL, [12] = pos.healerBR },
 
-    [roles.healerccw7] = { [0] = pos.healerTL, [1] = pos.healerBL, [4] = pos.healerBR, [7] = pos.healerTR, [10] = pos.healerTL },
-    [roles.healerccw8] = { [0] = pos.healerTL, [2] = pos.healerBL, [5] = pos.healerBR, [8] = pos.healerTR, [11] = pos.healerTL },
-    [roles.healerccw9] = { [0] = pos.healerTL, [3] = pos.healerBL, [6] = pos.healerBR, [9] = pos.healerTR, [12] = pos.healerTL },
+    [roles.healerccw7] = { [0] = pos.healerTL, [1] = pos.healerBL, [4] = pos.healerBR, [7] = pos.healerTR3, [8] = pos.healerTR2, [9] = pos.healerTR1, [10] = pos.healerTL },
+    [roles.healerccw8] = { [0] = pos.healerTL, [2] = pos.healerBL, [5] = pos.healerBR, [8] = pos.healerTR3, [9] = pos.healerTR2, [10] = pos.healerTR1, [11] = pos.healerTL },
+    [roles.healerccw9] = { [0] = pos.healerTL, [3] = pos.healerBL, [6] = pos.healerBR, [9] = pos.healerTR3, [10] = pos.healerTR2, [11] = pos.healerTR1, [12] = pos.healerTL },
 
-    [roles.healerccw10] = { [0] = pos.healerTR, [1] = pos.healerTL, [4] = pos.healerBL, [7] = pos.healerBR, [10] = pos.healerTR },
-    [roles.healerccw11] = { [0] = pos.healerTR, [2] = pos.healerTL, [5] = pos.healerBL, [8] = pos.healerBR, [11] = pos.healerTR },
-    [roles.healerccw12] = { [0] = pos.healerTR, [3] = pos.healerTL, [6] = pos.healerBL, [9] = pos.healerBR, [12] = pos.healerTR },
+    [roles.healerccw10] = { [0] = pos.healerTR1, [1] = pos.healerTL, [4] = pos.healerBL, [7] = pos.healerBR, [10] = pos.healerTR3, [11] = pos.healerTR2, [12] = pos.healerTR1 },
+    [roles.healerccw11] = { [0] = pos.healerTR2, [1] = pos.healerTR1, [2] = pos.healerTL, [5] = pos.healerBL, [8] = pos.healerBR, [11] = pos.healerTR3, [12] = pos.healerTR2 },
+    [roles.healerccw12] = { [0] = pos.healerTR3, [1] = pos.healerTR2, [2] = pos.healerTR1, [3] = pos.healerTL, [6] = pos.healerBL, [9] = pos.healerBR, [12] = pos.healerTR3 },
 };
 for _, rotation in pairs(rotations) do
     local pos = rotation[0];
@@ -439,6 +447,7 @@ ABP_4H.RaidRoles = raidRoles;
 ABP_4H.RoleNames = roleNames;
 ABP_4H.RoleNamesColored = roleNamesColored;
 ABP_4H.MapPositions = pos;
+ABP_4H.SmallPositions = smallPos;
 ABP_4H.Rotations = rotations;
 ABP_4H.Modes = modes;
 ABP_4H.ModeNames = modeNames;

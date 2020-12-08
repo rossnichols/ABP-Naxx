@@ -19,7 +19,10 @@ function ABP_4H:InitOptions()
             alpha = 0.9,
             raidLayout = nil,
             healerCCW = false,
-        }
+        },
+        global = {
+            alertedHealerZeliek = false,
+        },
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);
 
@@ -212,6 +215,14 @@ end
 
 function ABP_4H:Set(k, v)
     self.db.char[k] = v;
+end
+
+function ABP_4H:GetGlobal(k)
+    return self.db.global[k];
+end
+
+function ABP_4H:SetGlobal(k, v)
+    self.db.global[k] = v;
 end
 
 function ABP_4H:RefreshOptionsWindow()

@@ -148,13 +148,19 @@ local function Refresh()
         current:SetVisible(true);
         current:SetUserData("canvas-X", currentPos[1]);
         current:SetUserData("canvas-Y", currentPos[2]);
+        local size = ABP_4H.SmallPositions[currentPos] and 16 or 24;
+        current:SetWidth(size);
+        current:SetHeight(size);
 
         if nextPos ~= currentPos then
             upcoming:SetVisible(true);
             upcoming:SetUserData("canvas-X", nextPos[1]);
             upcoming:SetUserData("canvas-Y", nextPos[2]);
+            local size = ABP_4H.SmallPositions[nextPos] and 16 or 24;
+            upcoming:SetWidth(size);
+            upcoming:SetHeight(size);
 
-            if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick then
+            if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick and lastAlertedMove ~= tick then
                 lastAlertedPending = tick;
                 ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show("Move after next mark!"); end, 0);
             end
