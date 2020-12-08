@@ -12,6 +12,7 @@ function ABP_4H:InitOptions()
             debug = false,
             showAlert = true,
             showMoveAlert = true,
+            showMarkAlert = true,
             showTanks = true,
             showNeighbors = true,
             nonHealers = "",
@@ -117,9 +118,17 @@ function ABP_4H:InitOptions()
                             get = function(info) return self.db.char.showMoveAlert; end,
                             set = function(info, v) self.db.char.showMoveAlert = v; end,
                         },
+                        markAlerts = {
+                            name = "Alert 4+ marks",
+                            order = 5,
+                            desc = "Show a DBM alert when you have four or more stacks on a mark.",
+                            type = "toggle",
+                            get = function(info) return self.db.char.showMarkAlert; end,
+                            set = function(info, v) self.db.char.showMarkAlert = v; end,
+                        },
                         tanks = {
                             name = "Show tanks",
-                            order = 5,
+                            order = 6,
                             desc = "Show the current/upcoming tanks for each corner on the map.",
                             type = "toggle",
                             get = function(info) return self.db.char.showTanks; end,
@@ -127,7 +136,7 @@ function ABP_4H:InitOptions()
                         },
                         neighbors = {
                             name = "Show neighbors",
-                            order = 6,
+                            order = 7,
                             desc = "Show a list of players under the map who are supposed to be at your location, colored by range.",
                             type = "toggle",
                             get = function(info) return self.db.char.showNeighbors; end,
@@ -135,7 +144,7 @@ function ABP_4H:InitOptions()
                         },
                         ccw = {
                             name = "CCW Healers",
-                            order = 7,
+                            order = 8,
                             desc = "If checked, healers will rotate counterclockwise instead of clockwise.",
                             type = "toggle",
                             get = function(info) return self.db.char.healerCCW; end,
@@ -143,7 +152,7 @@ function ABP_4H:InitOptions()
                         },
                         alpha = {
                             name = "Map Alpha",
-                            order = 8,
+                            order = 9,
                             desc = "Controls the alpha of the map.",
                             type = "range",
                             min = 0,

@@ -17,8 +17,9 @@ local setmetatable = setmetatable;
 local tostring = tostring;
 
 local activeWindow;
-local dbmPendingAlert, dbmMoveAlert, dbmTickAlert;
+local dbmPendingAlert, dbmMoveAlert, dbmTickAlert, dbmMarkAlert;
 local currentEncounter;
+local debuffCounts = {};
 local lastAlertedPending;
 local lastAlertedMove;
 local lastAlertedTick;
@@ -85,6 +86,16 @@ local function ShouldShowRole(role)
         ABP_4H.TopRoles[role] or
         not currentEncounter.bossDeaths[ABP_4H.Marks.bl] or
         not currentEncounter.bossDeaths[ABP_4H.Marks.br];
+end
+
+local function EndEncounter()
+    currentEncounter = nil;
+    lastAlertedPending = nil;
+    lastAlertedMove = nil;
+    lastAlertedTick = nil;
+    debuffCounts = {};
+
+    if activeWindow then activeWindow:Hide(); end
 end
 
 local function Refresh()
@@ -214,6 +225,10 @@ local function Refresh()
                 if elt then
                     updated[elt] = true;
                     elt:SetText(texts[count]);
+                    if dbmMarkAlert and count >= 4 and debuffCounts[spellID] ~= count and ABP_4H:Get("showMarkAlert") then
+                        ABP_4H:ScheduleTimer(function() dbmMarkAlert:Show("TOO MANY MARKS!"); end, 0);
+                    end
+                    debuffCounts[spellID] = count;
                 end
 
                 i = i + 1;
@@ -225,6 +240,7 @@ local function Refresh()
                     elt:SetText(tomb[ABP_4H:IsClassic()]);
                 elseif not updated[elt] then
                     elt:SetText(texts[0]);
+                    debuffCounts[mark] = 0;
                 end
             end
         else
@@ -268,11 +284,7 @@ function ABP_4H:UIOnGroupJoined()
 end
 
 function ABP_4H:UIOnGroupLeft()
-    currentEncounter = nil;
-    lastAlertedPending = nil;
-    lastAlertedMove = nil;
-    lastAlertedTick = nil;
-    if activeWindow then activeWindow:Hide(); end
+    EndEncounter();
 end
 
 function ABP_4H:UIOnStateSync(data, distribution, sender, version)
@@ -302,10 +314,7 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
             bossDeaths = data.bossDeaths,
         };
     else
-        currentEncounter = nil;
-        lastAlertedPending = nil;
-        lastAlertedMove = nil;
-        lastAlertedTick = nil;
+        EndEncounter();
     end
 
     if activeWindow then activeWindow:Hide(); end
@@ -323,11 +332,7 @@ function ABP_4H:RefreshCurrentEncounter()
     if currentEncounter and currentEncounter.started then
         self:RefreshMainWindow();
     else
-        activeWindow:Hide();
-        currentEncounter = nil;
-        lastAlertedPending = nil;
-        lastAlertedMove = nil;
-        lastAlertedTick = nil;
+        EndEncounter();
     end
 end
 
@@ -352,6 +357,7 @@ function ABP_4H:CreateMainWindow()
         _G.DBM:GetModLocalization("4H Assist"):SetGeneralLocalization{ name = "4H Assist" }
         dbmPendingAlert = mod:NewSpecialWarning("%s", nil, nil, nil, 1);
         dbmMoveAlert = mod:NewSpecialWarning("%s ", nil, nil, nil, 1);
+        dbmMarkAlert = mod:NewSpecialWarning("%s  ", nil, nil, nil, 3);
         dbmTickAlert = mod:NewAnnounce("%s", 1, "136172");
     end
 
