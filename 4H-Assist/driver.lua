@@ -983,8 +983,12 @@ function ABP_4H:CreateStartWindow()
     bottom:SetUserData("table", { columns = { 1.0, 0, 0 }});
     container:AddChild(bottom);
 
-    local spacer = AceGUI:Create("Label");
-    bottom:AddChild(spacer);
+    local info = AceGUI:Create("ABPN_Label");
+    info:SetFont(_G.GameFontHighlightSmall);
+    info:SetFullWidth(true);
+    info:SetText(("%s: leave a comment on CurseForge/WoWInterface, or reach out to %s on reddit."):format(
+        self:ColorizeText("Feedback/support"), self:ColorizeText("ross456")));
+    bottom:AddChild(info);
 
     local vc = AceGUI:Create("Button");
     vc:SetWidth(150);
