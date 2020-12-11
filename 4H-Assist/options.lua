@@ -85,11 +85,23 @@ function ABP_4H:InitOptions()
                     type = "header",
                     name = "General",
                 },
+                desc = {
+                    order = 2,
+                    type = "description",
+                    name = ("Brought to you by %s of <%s>, %s!"):format(
+                        self:ColorizeText("Xanido"), self:ColorizeText("Always Be Pulling"), self:ColorizeText("US-Atiesh (Alliance)")),
+                },
+                desc2 = {
+                    order = 3,
+                    type = "description",
+                    name = ("%s: leave a comment on CurseForge/WoWInterface, or reach out to %s on reddit."):format(
+                        self:ColorizeText("Feedback/support"), self:ColorizeText("ross456")),
+                },
                 settings = {
                     name = " ",
                     type = "group",
                     inline = true,
-                    order = 2,
+                    order = 4,
                     args = {
                         show = {
                             name = "Show Map",
