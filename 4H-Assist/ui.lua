@@ -10,11 +10,17 @@ local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 local UnitDebuff = UnitDebuff;
 local UnitExists = UnitExists;
 local GetRaidTargetIndex = GetRaidTargetIndex;
+local GetNumGroupMembers = GetNumGroupMembers;
+local IsInRaid = IsInRaid;
+local UnitGUID = UnitGUID;
+local UnitIsEnemy = UnitIsEnemy;
 local table = table;
 local pairs = pairs;
 local math = math;
 local setmetatable = setmetatable;
 local tostring = tostring;
+local tonumber = tonumber;
+local select = select;
 
 local activeWindow;
 local dbmPendingAlert, dbmMoveAlert, dbmTickAlert, dbmMarkAlert;
@@ -255,6 +261,29 @@ local function RefreshTanks(raiders, map)
 
     local tankElts = activeWindow:GetUserData("tankElts");
     if tankElts then
+        local bossTargets = {};
+        if currentEncounter.mode == ABP_4H.Modes.live then
+            local groupSize = math.max(GetNumGroupMembers(), 1);
+            for i = 1, groupSize do
+                local unit = "target";
+                if IsInRaid() then
+                    unit = "raid" .. i .. "target";
+                elseif i ~= groupSize then
+                    unit = "party" .. i .. "target";
+                end
+                if UnitExists(unit) and UnitIsEnemy("player", unit) then
+                    local npcID = tonumber((select(6, ("-"):split(UnitGUID(unit)))));
+                    local mark = npcID and ABP_4H.BossMarks[npcID];
+                    if mark then
+                        unit = unit .. "target";
+                        if UnitExists(unit) then
+                            bossTargets[mark] = unit;
+                        end
+                    end
+                end
+            end
+        end
+
         local currentTanks, upcomingTanks = {}, {};
         local markMap = {
             [ABP_4H.MapPositions.tankdpsTL] = ABP_4H.Marks.tl,
@@ -266,17 +295,16 @@ local function RefreshTanks(raiders, map)
             local role = currentEncounter.roles[raider.name];
             if ABP_4H.RoleCategories[role] == ABP_4H.Categories.tank then
                 local pos, _, nextDiff = GetPositions(role, currentEncounter.ticks, true);
-                local playerText = (raider.fake or (UnitIsConnected(raider.name) and not UnitIsDeadOrGhost(raider.name)))
-                    and raider.name
-                    or ("|cffff0000%s|r"):format(raider.name);
+                local alive = raider.fake or (UnitIsConnected(raider.name) and not UnitIsDeadOrGhost(raider.name));
+                local playerText = alive and raider.name or ("|cffff0000%s|r"):format(raider.name);
                 local icon = UnitExists(raider.name) and GetRaidTargetIndex(raider.name);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
                 if pos == ABP_4H.MapPositions.safe then
-                    local count = raider.fake and MakeFakeCount(tick, role, markMap[nextDiff]) or GetMarkCount(raider.name, markMap[nextDiff]);
-                    upcomingTanks[nextDiff] = { text = playerText, icon = iconText, count = ("%%s[%d]%%s"):format(count) };
+                    local count = alive and (raider.fake and MakeFakeCount(tick, role, markMap[nextDiff]) or GetMarkCount(raider.name, markMap[nextDiff]));
+                    upcomingTanks[nextDiff] = { player = raider.name, text = playerText, icon = iconText, count = ("%%s[%d]%%s"):format(count) };
                 else
-                    local count = raider.fake and MakeFakeCount(tick, role, markMap[pos]) or GetMarkCount(raider.name, markMap[pos]);
-                    currentTanks[pos] = { text = playerText, icon = iconText, count = ("%%s[%d]%%s"):format(count) };
+                    local count = alive and (raider.fake and MakeFakeCount(tick, role, markMap[pos]) or GetMarkCount(raider.name, markMap[pos]));
+                    currentTanks[pos] = { player = raider.name, text = playerText, icon = iconText, count = ("%%s[%d]%%s"):format(count) };
                 end
             end
         end
@@ -286,7 +314,21 @@ local function RefreshTanks(raiders, map)
         else
             local current = currentTanks[ABP_4H.MapPositions.tankdpsTL];
             local upcoming = upcomingTanks[ABP_4H.MapPositions.tankdpsTL];
-            tankElts[ABP_4H.Marks.tl]:SetText(("%s|cff00ff00%s%s|r\n%s|cffcccccc%s%s|r"):format(
+
+            local mark = ABP_4H.Marks.tl;
+            local tank = "";
+            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
+                local icon = GetRaidTargetIndex(bossTargets[mark]);
+                local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
+                tank = ("%s|cffffa500%s%s|r\n"):format(
+                    icon and icon:format(0) or "",
+                    count and count:format("", " ") or "",
+                    UnitName(bossTargets[mark]));
+            end
+
+            tankElts[ABP_4H.Marks.tl]:SetText(("%s%s|cff00ff00%s%s|r\n%s|cffcccccc%s%s|r"):format(
+                tank,
                 current and current.icon and current.icon:format(0) or "",
                 current and current.count and current.count:format("", " ") or "",
                 current and current.text or "",
@@ -300,7 +342,21 @@ local function RefreshTanks(raiders, map)
         else
             local current = currentTanks[ABP_4H.MapPositions.tankdpsTR];
             local upcoming = upcomingTanks[ABP_4H.MapPositions.tankdpsTR];
-            tankElts[ABP_4H.Marks.tr]:SetText(("|cff00ff00%s%s|r%s\n|cffcccccc%s%s|r%s"):format(
+
+            local mark = ABP_4H.Marks.tr;
+            local tank = "";
+            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
+                local icon = GetRaidTargetIndex(bossTargets[mark]);
+                local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
+                tank = ("|cffffa500%s%s|r%s\n"):format(
+                    UnitName(bossTargets[mark]),
+                    count and count:format(" ", "") or "",
+                    icon and icon:format(0) or "");
+            end
+
+            tankElts[ABP_4H.Marks.tr]:SetText(("%s|cff00ff00%s%s|r%s\n|cffcccccc%s%s|r%s"):format(
+                tank,
                 current and current.text or "",
                 current and current.count and current.count:format(" ", "") or "",
                 current and current.icon and current.icon:format(0) or "",
@@ -314,13 +370,27 @@ local function RefreshTanks(raiders, map)
         else
             local current = currentTanks[ABP_4H.MapPositions.tankdpsBL];
             local upcoming = upcomingTanks[ABP_4H.MapPositions.tankdpsBL];
-            tankElts[ABP_4H.Marks.bl]:SetText(("%s|cffcccccc%s%s|r\n%s|cff00ff00%s%s|r"):format(
+
+            local mark = ABP_4H.Marks.bl;
+            local tank = "";
+            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
+                local icon = GetRaidTargetIndex(bossTargets[mark]);
+                local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
+                tank = ("\n%s|cffffa500%s%s|r"):format(
+                    icon and icon:format(-16) or "",
+                    count and count:format("", " ") or "",
+                    UnitName(bossTargets[mark]));
+            end
+
+            tankElts[ABP_4H.Marks.bl]:SetText(("%s|cffcccccc%s%s|r\n%s|cff00ff00%s%s|r%s"):format(
                 upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
                 upcoming and upcoming.count and upcoming.count:format("", " ") or "",
                 upcoming and upcoming.text or "",
                 current and current.icon and current.icon:format(-16) or "",
                 current and current.count and current.count:format("", " ") or "",
-                current and current.text or ""));
+                current and current.text or "",
+                tank));
         end
 
         if currentEncounter.bossDeaths[ABP_4H.Marks.br] then
@@ -328,13 +398,27 @@ local function RefreshTanks(raiders, map)
         else
             local current = currentTanks[ABP_4H.MapPositions.tankdpsBR];
             local upcoming = upcomingTanks[ABP_4H.MapPositions.tankdpsBR];
-            tankElts[ABP_4H.Marks.br]:SetText(("|cffcccccc%s%s|r%s\n|cff00ff00%s%s|r%s"):format(
+
+            local mark = ABP_4H.Marks.br;
+            local tank = "";
+            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
+                local icon = GetRaidTargetIndex(bossTargets[mark]);
+                local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
+                tank = ("\n|cffffa500%s%s|r%s"):format(
+                    UnitName(bossTargets[mark]),
+                    count and count:format(" ", "") or "",
+                    icon and icon:format(-16) or "");
+            end
+
+            tankElts[ABP_4H.Marks.br]:SetText(("|cffcccccc%s%s|r%s\n|cff00ff00%s%s|r%s%s"):format(
                 upcoming and upcoming.text or "",
                 upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
                 upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
                 current and current.text or "",
                 current and current.count and current.count:format(" ", "") or "",
-                current and current.icon and current.icon:format(-16) or ""));
+                current and current.icon and current.icon:format(-16) or "",
+                tank));
         end
     end
 end
@@ -485,6 +569,7 @@ function ABP_4H:OnUITimer()
     if activeWindow then
         local raiders, map = ABP_4H:GetRaiderSlots();
         RefreshNeighbors(raiders, map);
+        RefreshTanks(raiders, map);
     end
 end
 
