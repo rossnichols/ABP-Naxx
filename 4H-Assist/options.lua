@@ -34,13 +34,13 @@ function ABP_4H:InitOptions()
     local options = {
         show = {
             name = "Show",
-            desc = "shows the main window",
+            desc = "shows the map window",
             type = "execute",
             func = function() self:ShowMainWindow(); end
         },
         start = {
             name = "Start",
-            desc = "shows the start window",
+            desc = "shows the raid config window",
             type = "execute",
             func = function() self:ShowStartWindow(); end
         },

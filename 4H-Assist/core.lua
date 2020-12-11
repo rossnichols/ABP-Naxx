@@ -43,8 +43,8 @@ local bit = bit;
 local version = "${ADDON_VERSION}";
 
 _G.BINDING_HEADER_ABP_4H = "4H Assist";
-_G.BINDING_NAME_ABP_4H_OPENMAINWINDOW = "Open the main window";
-_G.BINDING_NAME_ABP_4H_OPENSTARTWINDOW = "Open the start window";
+_G.BINDING_NAME_ABP_4H_OPENMAINWINDOW = "Open the map window";
+_G.BINDING_NAME_ABP_4H_OPENSTARTWINDOW = "Open the raid config window";
 
 local function OnGroupJoined(self)
     self:VersionOnGroupJoined();
