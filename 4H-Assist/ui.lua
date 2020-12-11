@@ -375,7 +375,10 @@ local function Refresh()
     end
 
     if ShouldShowRole(role) then
-        local currentPos, nextPos = GetPositions(role, tick);
+        local currentPos, nextPos, nextDiffPos = GetPositions(role, tick);
+        if currentEncounter and not currentEncounter.started then
+            nextPos = nextDiffPos;
+        end
 
         if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
             local prevPos = GetPositions(role, tick - 1);
