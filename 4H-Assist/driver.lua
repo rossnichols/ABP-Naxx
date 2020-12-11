@@ -983,6 +983,14 @@ function ABP_4H:CreateStartWindow()
     bottom:SetUserData("table", { columns = { 1.0, 0, 0 }});
     container:AddChild(bottom);
 
+    local label = AceGUI:Create("ABPN_Label");
+    label:SetFont(_G.GameFontHighlightSmall);
+    label:SetFullWidth(true);
+    label:SetUserData("cell", { colspan = 3 });
+    label:SetText(("Brought to you by %s of <%s>, %s!"):format(
+        self:ColorizeText("Xanido"), self:ColorizeText("Always Be Pulling"), self:ColorizeText("US-Atiesh (Alliance)")));
+    bottom:AddChild(label);
+
     local info = AceGUI:Create("ABPN_Label");
     info:SetFont(_G.GameFontHighlightSmall);
     info:SetFullWidth(true);
