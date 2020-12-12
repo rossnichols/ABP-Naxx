@@ -137,6 +137,8 @@ function ABP_4H:GetRaiderSlots()
                 [ABP_4H.Categories.healer] = healers,
                 [ABP_4H.Categories.dps] = dps,
             };
+            assignedRoles = assignedRoles or self:Get("raidLayout") or self.tCopy(self.RaidRoles);
+
             for i = 1, #self.RaidRoles do
                 if assignedRoles[i] then
                     local players = pool[ABP_4H.RoleCategories[assignedRoles[i]]];
