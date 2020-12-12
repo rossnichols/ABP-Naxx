@@ -6,7 +6,7 @@ local pos = {
     healerTR1 = { 67, 20 },
     healerTR2 = { 64, 30 },
     healerTR3 = { 67, 40 },
-    healerBL = { 29, 69 },
+    healerBL = { 40, 60 },
     healerBR = { 65, 60 },
 
     tankdpsTL = { 29, 28 },

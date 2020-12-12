@@ -21,7 +21,6 @@ function ABP_4H:InitOptions()
             healerCCW = false,
         },
         global = {
-            alertedHealerZeliek = false,
         },
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);

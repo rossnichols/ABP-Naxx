@@ -566,14 +566,6 @@ function ABP_4H:CreateStartWindow()
         return;
     end
 
-    if not self:GetGlobal("alertedHealerZeliek") then
-        self:SetGlobal("alertedHealerZeliek", true);
-        _G.StaticPopup_Show("ABP_4H_HEALER_ZELIEK");
-        self:Notify("New Zeliek healer positioning - the three healers each have their own position, spaced out to avoid chaining Holy Wrath. Each tick, the healer will be told to move to the next position.");
-        self:Notify("New Korth'azz healer positioning - directly on the tank, for stacking to spread out meteor damage.");
-        self:Notify("Please communicate these changes to your raid!");
-    end
-
     fakePlayers = nil;
     assignedRoles = assignedRoles or self:Get("raidLayout") or self.tCopy(self.RaidRoles);
 
@@ -1059,9 +1051,3 @@ function ABP_4H:ShowStartWindow()
     activeWindow = self:CreateStartWindow();
     Refresh();
 end
-
-StaticPopupDialogs["ABP_4H_HEALER_ZELIEK"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
-    text = "New in this version - Zeliek/Korth'azz healer positioning updates! See more details in your chat window.",
-    button1 = "Got it!",
-    showAlert = true,
-});
