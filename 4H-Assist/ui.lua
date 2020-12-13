@@ -930,7 +930,6 @@ function ABP_4H:CreateMainWindow()
         end
 
         if self:Get("showNeighbors") then
-            local neighbors = GetNeighbors(window, raiders);
             local neighborsElt = AceGUI:Create("ABPN_Label");
             container:AddChild(neighborsElt);
             neighborsElt:SetFont("GameFontHighlightOutline");
@@ -938,7 +937,7 @@ function ABP_4H:CreateMainWindow()
             neighborsElt:SetWordWrap(true);
             neighborsElt:SetJustifyH("LEFT");
             neighborsElt:SetJustifyV("TOP");
-            neighborsElt:SetText(table.concat(neighbors, " "));
+            neighborsElt:SetText("");
             neighborsElt:SetHeight(neighborsElt:GetStringHeight());
             window:SetUserData("neighborsElt", neighborsElt);
             window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 1, self));
@@ -959,13 +958,11 @@ function ABP_4H:CreateMainWindow()
     image.content.height = 0;
     container:DoLayout();
     local height = container.frame:GetHeight() + 50;
-    self:BeginWindowManagement(window, "main", {
-        version = 1,
-        defaultWidth = windowWidth,
-        minWidth = windowWidth - 200,
-        maxWidth = windowWidth + 200,
-        defaultHeight = height,
-    });
+    window:SetHeight(height);
+    local minW = window.frame:GetMinResize();
+    local maxW = window.frame:GetMaxResize();
+    window.frame:SetMinResize(minW, height);
+    window.frame:SetMaxResize(maxW, height);
 
     window.frame:Raise();
     return window;

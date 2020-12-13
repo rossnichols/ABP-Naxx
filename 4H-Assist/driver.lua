@@ -1034,13 +1034,11 @@ function ABP_4H:CreateStartWindow()
 
     container:DoLayout();
     local height = container.frame:GetHeight() + 57;
-    self:BeginWindowManagement(window, "driver", {
-        version = 1,
-        defaultWidth = windowWidth,
-        minWidth = windowWidth - 200,
-        maxWidth = windowWidth + 200,
-        defaultHeight = height,
-    });
+    window:SetHeight(height);
+    local minW = window.frame:GetMinResize();
+    local maxW = window.frame:GetMaxResize();
+    window.frame:SetMinResize(minW, height);
+    window.frame:SetMaxResize(maxW, height);
     window:SetCallback("OnWidthSet", function(widget, event)
         container:DoLayout();
         local height = container.frame:GetHeight() + 57;
