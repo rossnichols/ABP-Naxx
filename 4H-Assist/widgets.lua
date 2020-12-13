@@ -437,6 +437,46 @@ do
     AceGUI:RegisterWidgetType(Type, Constructor, Version)
 end
 
+do
+    local Type, Version = "ABPN_Window", 1;
+
+    --[[-----------------------------------------------------------------------------
+    Methods
+    -------------------------------------------------------------------------------]]
+
+    local methods = {
+        ["OnAcquire"] = function(self)
+            self:WindowOnAcquire();
+        end,
+
+        ["OnWidthSet"] = function(self, width)
+            local oldContentWidth = self.content.width;
+            self:WindowOnWidthSet(width);
+            if self.content.width ~= oldContentWidth then
+                self:Fire("OnWidthSet");
+            end
+        end,
+    }
+
+    --[[-----------------------------------------------------------------------------
+    Constructor
+    -------------------------------------------------------------------------------]]
+    local function Constructor()
+        local elt = AceGUI:Create("Window");
+
+        elt.type = Type;
+        elt.WindowOnAcquire = elt.OnAcquire;
+        elt.WindowOnWidthSet = elt.OnWidthSet;
+        for method, func in pairs(methods) do
+            elt[method] = func;
+        end
+
+        return elt;
+    end
+
+    AceGUI:RegisterWidgetType(Type, Constructor, Version)
+end
+
 local function errorhandler(err)
     return geterrorhandler()(err)
 end

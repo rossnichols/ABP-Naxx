@@ -574,7 +574,7 @@ function ABP_4H:CreateStartWindow()
     mode = self:IsInNaxx() and self.Modes.live or self.Modes.manual;
 
     local windowWidth = 1200;
-    local window = AceGUI:Create("Window");
+    local window = AceGUI:Create("ABPN_Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
     window:SetLayout("Flow");
@@ -1041,6 +1041,15 @@ function ABP_4H:CreateStartWindow()
         maxWidth = windowWidth + 200,
         defaultHeight = height,
     });
+    window:SetCallback("OnWidthSet", function(widget, event)
+        container:DoLayout();
+        local height = container.frame:GetHeight() + 57;
+        window:SetHeight(height);
+        local minW = window.frame:GetMinResize();
+        local maxW = window.frame:GetMaxResize();
+        window.frame:SetMinResize(minW, height);
+        window.frame:SetMaxResize(maxW, height);
+    end);
 
     window.frame:Raise();
     return window;
