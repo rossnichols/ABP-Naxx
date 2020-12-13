@@ -460,7 +460,11 @@ local function Refresh()
 
     if ShouldShowRole(role) then
         local currentPos, nextPos, nextDiffPos = GetPositions(role, tick);
-        if currentEncounter and not currentEncounter.started then
+        local nextPosPreview = false;
+        local liveWaitingForCombat = currentEncounter and currentEncounter.mode == ABP_4H.Modes.live and
+            currentEncounter.ticks == 0 and currentEncounter.tickDuration == 0;
+        if currentEncounter and (not currentEncounter.started or liveWaitingForCombat) then
+            nextPosPreview = true;
             nextPos = nextDiffPos;
         end
 
@@ -487,7 +491,7 @@ local function Refresh()
             upcoming:SetWidth(size);
             upcoming:SetHeight(size);
 
-            if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick and lastAlertedMove ~= tick then
+            if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick and lastAlertedMove ~= tick and not nextPosPreview then
                 lastAlertedPending = tick;
                 ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show(); end, 0);
             end
@@ -646,8 +650,9 @@ function ABP_4H:CreateMainWindow()
         local tickElt = AceGUI:Create("ABPN_Label");
         tickElt:SetFullWidth(true);
         local tickText = currentEncounter.started and ("Marks: %d"):format(currentEncounter.ticks) or "Not Started";
-        if currentEncounter and currentEncounter.mode == ABP_4H.Modes.live and
-           currentEncounter.ticks == 0 and currentEncounter.tickDuration == 0 then
+        local liveWaitingForCombat = currentEncounter and currentEncounter.mode == ABP_4H.Modes.live and
+            currentEncounter.ticks == 0 and currentEncounter.tickDuration == 0;
+        if liveWaitingForCombat then
             tickText = "Waiting";
         end
         tickElt:SetText(tickText);
@@ -703,7 +708,9 @@ function ABP_4H:CreateMainWindow()
             self:AddWidgetTooltip(tickTrigger, "Once started, left-click to add a tick and right-click to remove one.");
         end
 
-        if not currentEncounter or (currentEncounter.mode ~= self.Modes.live or currentEncounter.tickDuration == 0) then
+        local liveWaitingForCombat = currentEncounter and currentEncounter.mode == ABP_4H.Modes.live and
+            currentEncounter.ticks == 0 and currentEncounter.tickDuration == 0;
+        if not currentEncounter or (currentEncounter.started and (currentEncounter.mode ~= self.Modes.live or liveWaitingForCombat)) then
             local reset = AceGUI:Create("Button");
             reset:SetText("Stop");
             reset:SetFullWidth(true);
@@ -719,7 +726,7 @@ function ABP_4H:CreateMainWindow()
             window:SetUserData("reset", reset);
         end
 
-        if currentEncounter and currentEncounter.mode ~= self.Modes.live then
+        if currentEncounter and currentEncounter.mode ~= self.Modes.live and currentEncounter.started then
             local bosses = {
                 [self.Bosses.korthazz] = "Thane Korth'azz (BL)",
                 [self.Bosses.blaumeux] = "Lady Blaumeux (TL)",
