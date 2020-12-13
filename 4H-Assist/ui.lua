@@ -434,7 +434,7 @@ local function Refresh()
     current:SetVisible(false);
     upcoming:SetVisible(false);
 
-    if not currentEncounter or currentEncounter.driving then
+    if not currentEncounter then
         local tickTrigger = activeWindow:GetUserData("tickTrigger");
         local reset = activeWindow:GetUserData("reset");
 
@@ -686,7 +686,7 @@ function ABP_4H:CreateMainWindow()
         mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
         container:AddChild(mainLine);
 
-        if not currentEncounter or (currentEncounter.mode ~= self.Modes.live or not currentEncounter.started) then
+        if not currentEncounter then
             local tickTrigger = AceGUI:Create("ABPN_Button");
             tickTrigger:SetFullWidth(true);
             tickTrigger:SetCallback("OnClick", function(widget, event, button)

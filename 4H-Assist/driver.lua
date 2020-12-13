@@ -327,7 +327,8 @@ local function Refresh()
             readyCount = readyCount + 1;
         end
     end
-    syncElt:SetText(readyCount == count and "Ready!" or "Sync");
+    syncElt:SetText(readyCount == count and "Start" or "Sync");
+    syncElt:SetUserData("ready", readyCount == count);
 
     for i, dropdown in pairs(dropdowns) do
         local mappedIndex = dropdown:GetUserData("mappedIndex");
@@ -554,6 +555,7 @@ end
 function ABP_4H:StopEncounter()
     started = false;
     ticks = 0;
+    tickDuration = 12;
     bossDeaths = {};
 
     if timer then self:CancelTimer(timer); end
@@ -1001,26 +1003,30 @@ function ABP_4H:CreateStartWindow()
     sync:SetWidth(100);
     sync:SetText("Sync");
     sync:SetCallback("OnClick", function(widget, event)
-        window:SetUserData("lastSync", GetTime());
-        window:SetUserData("readyPlayers", {});
-        Refresh();
+        if widget:GetUserData("ready") then
+            self:AdvanceEncounter(true);
+        else
+            window:SetUserData("lastSync", GetTime());
+            window:SetUserData("readyPlayers", {});
+            Refresh();
 
-        SendStateComm(true, "BROADCAST");
+            SendStateComm(true, "BROADCAST");
 
-        local raiders = ABP_4H:GetRaiderSlots();
-        local i, raider = next(raiders);
-        local updateFunc;
-        updateFunc = function()
-            if i then
-                if raider.fake then
-                    self:DriverOnStateSyncAck({ role = assignedRoles[i]--[[ , fake = true ]] }, "WHISPER", raider.name);
+            local raiders = ABP_4H:GetRaiderSlots();
+            local i, raider = next(raiders);
+            local updateFunc;
+            updateFunc = function()
+                if i then
+                    if raider.fake then
+                        self:DriverOnStateSyncAck({ role = assignedRoles[i]--[[ , fake = true ]] }, "WHISPER", raider.name);
+                    end
+
+                    i, raider = next(raiders, i);
+                    self:ScheduleTimer(updateFunc, 0);
                 end
-
-                i, raider = next(raiders, i);
-                self:ScheduleTimer(updateFunc, 0);
             end
+            self:ScheduleTimer(updateFunc, 0);
         end
-        self:ScheduleTimer(updateFunc, 0);
     end);
     bottom:AddChild(sync);
     window:SetUserData("syncElt", sync);
