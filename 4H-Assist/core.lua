@@ -447,6 +447,11 @@ function ABP_4H:IsClassic()
   return _G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC;
 end
 
+function ABP_4H:IsInNaxx()
+    local instanceId = select(8, GetInstanceInfo());
+    return instanceId == 533;
+end
+
 
 --
 -- Static dialog templates

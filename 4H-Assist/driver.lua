@@ -8,7 +8,6 @@ local IsInRaid = IsInRaid;
 local UnitName = UnitName;
 local GetTime = GetTime;
 local GetServerTime = GetServerTime;
-local GetInstanceInfo = GetInstanceInfo;
 local UnitClass = UnitClass;
 local GetSpellInfo = GetSpellInfo;
 local table = table;
@@ -570,10 +569,7 @@ function ABP_4H:CreateStartWindow()
 
     fakePlayers = nil;
     assignedRoles = assignedRoles or self:Get("raidLayout") or self.tCopy(self.RaidRoles);
-
-    -- Default to "live" for Naxx.
-    local instanceId = select(8, GetInstanceInfo());
-    mode = (instanceId == 533) and self.Modes.live or self.Modes.manual;
+    mode = self:IsInNaxx() and self.Modes.live or self.Modes.manual;
 
     local windowWidth = 1200;
     local window = AceGUI:Create("Window");
