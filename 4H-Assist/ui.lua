@@ -299,11 +299,12 @@ local function RefreshTanks(raiders, map)
                 local playerText = alive and raider.name or ("|cffff0000%s|r"):format(raider.name);
                 local icon = UnitExists(raider.name) and GetRaidTargetIndex(raider.name);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
+                local fakeCount = raider.fake or currentEncounter.mode ~= ABP_4H.Modes.live;
                 if pos == ABP_4H.MapPositions.safe then
-                    local count = alive and (raider.fake and MakeFakeCount(tick, role, markMap[nextDiff]) or GetMarkCount(raider.name, markMap[nextDiff]));
+                    local count = alive and (fakeCount and MakeFakeCount(tick, role, markMap[nextDiff]) or GetMarkCount(raider.name, markMap[nextDiff]));
                     upcomingTanks[nextDiff] = { player = raider.name, text = playerText, icon = iconText, count = ("%%s[%d]%%s"):format(count) };
                 else
-                    local count = alive and (raider.fake and MakeFakeCount(tick, role, markMap[pos]) or GetMarkCount(raider.name, markMap[pos]));
+                    local count = alive and (fakeCount and MakeFakeCount(tick, role, markMap[pos]) or GetMarkCount(raider.name, markMap[pos]));
                     currentTanks[pos] = { player = raider.name, text = playerText, icon = iconText, count = ("%%s[%d]%%s"):format(count) };
                 end
             end
@@ -434,7 +435,7 @@ local function Refresh()
     current:SetVisible(false);
     upcoming:SetVisible(false);
 
-    if not currentEncounter then
+    if not currentEncounter or currentEncounter.driving then
         local tickTrigger = activeWindow:GetUserData("tickTrigger");
         local reset = activeWindow:GetUserData("reset");
 
@@ -691,7 +692,7 @@ function ABP_4H:CreateMainWindow()
         mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
         container:AddChild(mainLine);
 
-        if not currentEncounter then
+        if not currentEncounter or (currentEncounter.started and currentEncounter.mode ~= ABP_4H.Modes.live) then
             local tickTrigger = AceGUI:Create("ABPN_Button");
             tickTrigger:SetFullWidth(true);
             tickTrigger:SetCallback("OnClick", function(widget, event, button)
