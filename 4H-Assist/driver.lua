@@ -327,8 +327,8 @@ local function Refresh()
             readyCount = readyCount + 1;
         end
     end
-    syncElt:SetText(readyCount == count and "Start" or "Sync");
-    syncElt:SetUserData("ready", readyCount == count);
+
+    window:GetUserData("countElt"):SetText(("%d / %d players have confirmed their roles."):format(readyCount, count));
 
     for i, dropdown in pairs(dropdowns) do
         local mappedIndex = dropdown:GetUserData("mappedIndex");
@@ -355,6 +355,7 @@ local function Refresh()
     end
 
     syncElt:SetDisabled(not allAssigned);
+    window:GetUserData("startElt"):SetDisabled(window:GetUserData("lastSync") == 0);
 end
 
 function ABP_4H:DriverOnStateSyncAck(data, distribution, sender, version)
@@ -857,6 +858,14 @@ function ABP_4H:CreateStartWindow()
     roleStatus:SetUserData("table", { columns = { 1.0, 1.0, 1.0, 1.0 }});
     container:AddChild(roleStatus);
 
+    local countElt = AceGUI:Create("ABPN_Label");
+    countElt:SetFullWidth(true);
+    countElt:SetHeight(20);
+    countElt:SetJustifyV("TOP");
+    countElt:SetUserData("cell", { colspan = 4 });
+    roleStatus:AddChild(countElt);
+    window:SetUserData("countElt", countElt);
+
     for _, role in ipairs(self.RolesSortedStatus) do
         local roleElt = AceGUI:Create("ABPN_Label");
         roleElt:SetFullWidth(true);
@@ -972,13 +981,13 @@ function ABP_4H:CreateStartWindow()
     local bottom = AceGUI:Create("SimpleGroup");
     bottom:SetFullWidth(true);
     bottom:SetLayout("Table");
-    bottom:SetUserData("table", { columns = { 1.0, 0, 0 }});
+    bottom:SetUserData("table", { columns = { 1.0, 0, 0, 0 }});
     container:AddChild(bottom);
 
     local label = AceGUI:Create("ABPN_Label");
     label:SetFont(_G.GameFontHighlightSmall);
     label:SetFullWidth(true);
-    label:SetUserData("cell", { colspan = 3 });
+    label:SetUserData("cell", { colspan = 4 });
     label:SetText(("Brought to you by %s of <%s>, %s!"):format(
         self:ColorizeText("Xanido"), self:ColorizeText("Always Be Pulling"), self:ColorizeText("US-Atiesh (Alliance)")));
     bottom:AddChild(label);
@@ -1003,34 +1012,40 @@ function ABP_4H:CreateStartWindow()
     sync:SetWidth(100);
     sync:SetText("Sync");
     sync:SetCallback("OnClick", function(widget, event)
-        if widget:GetUserData("ready") then
-            self:AdvanceEncounter(true);
-        else
-            window:SetUserData("lastSync", GetTime());
-            window:SetUserData("readyPlayers", {});
-            Refresh();
+        window:SetUserData("lastSync", GetTime());
+        window:SetUserData("readyPlayers", {});
+        Refresh();
 
-            SendStateComm(true, "BROADCAST");
+        SendStateComm(true, "BROADCAST");
 
-            local raiders = ABP_4H:GetRaiderSlots();
-            local i, raider = next(raiders);
-            local updateFunc;
-            updateFunc = function()
-                if i then
-                    if raider.fake then
-                        self:DriverOnStateSyncAck({ role = assignedRoles[i]--[[ , fake = true ]] }, "WHISPER", raider.name);
-                    end
-
-                    i, raider = next(raiders, i);
-                    self:ScheduleTimer(updateFunc, 0);
+        local raiders = ABP_4H:GetRaiderSlots();
+        local i, raider = next(raiders);
+        local updateFunc;
+        updateFunc = function()
+            if i then
+                if raider.fake then
+                    self:DriverOnStateSyncAck({ role = assignedRoles[i]--[[ , fake = true ]] }, "WHISPER", raider.name);
                 end
+
+                i, raider = next(raiders, i);
+                self:ScheduleTimer(updateFunc, 0);
             end
-            self:ScheduleTimer(updateFunc, 0);
         end
+        self:ScheduleTimer(updateFunc, 0);
     end);
     bottom:AddChild(sync);
     window:SetUserData("syncElt", sync);
     self:AddWidgetTooltip(sync, "Broadcast the current role configuration to the raid.");
+
+    local start = AceGUI:Create("Button");
+    start:SetWidth(100);
+    start:SetText("Start");
+    start:SetCallback("OnClick", function(widget, event)
+        self:AdvanceEncounter(true);
+    end);
+    bottom:AddChild(start);
+    window:SetUserData("startElt", start);
+    self:AddWidgetTooltip(start, "Start the encounter!");
 
     container:DoLayout();
     local height = container.frame:GetHeight() + 57;
