@@ -19,6 +19,7 @@ function ABP_4H:InitOptions()
             alpha = 0.9,
             raidLayout = nil,
             healerCCW = false,
+            outdatedVersion = "popup",
         },
         global = {
         },
@@ -65,7 +66,9 @@ function ABP_4H:InitOptions()
     end
     setupAlias("options", "opt");
     setupAlias("options", "config");
+    setupAlias("versioncheck", "v");
     setupAlias("versioncheck", "vc");
+    setupAlias("versioncheck", "version");
 
     AceConfig:RegisterOptionsTable(self:ColorizeText(addonText), {
         type = "group",
@@ -174,6 +177,19 @@ function ABP_4H:InitOptions()
                             step = 0.05,
                             get = function(info) return self.db.char.alpha; end,
                             set = function(info, v) self.db.char.alpha = v; self:RefreshMainWindow(); end,
+                        },
+                        outdatedversion = {
+                            name = "Outdated Version",
+                            order = 10,
+                            desc = "If your addon is out of date, how would you like to be notified?",
+                            type = "select",
+                            values = {
+                                popup = "Popup",
+                                msg = "Chat Message"
+                            },
+                            style = "dropdown",
+                            get = function(info) return self.db.char.outdatedVersion; end,
+                            set = function(info, v) self.db.char.outdatedVersion = v; self:RefreshMainWindow(); end,
                         },
                     },
                 },

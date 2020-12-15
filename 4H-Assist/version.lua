@@ -82,9 +82,14 @@ local function CompareVersion(versionCmp, sender)
     if not (ABP_4H:ParseVersion(version) and ABP_4H:ParseVersion(versionCmp)) then return; end
 
     if ABP_4H:VersionIsNewer(versionCmp, version) then
-        _G.StaticPopup_Show("ABP_4H_OUTDATED_VERSION",
-            ("You're running an outdated version of %s! Newer version %s discovered from %s, yours is %s. Please upgrade!"):format(
-            ABP_4H:ColorizeText("4H Assist"), ABP_4H:ColorizeText(versionCmp), ABP_4H:ColorizeName(sender), ABP_4H:ColorizeText(version)));
+        if ABP_4H:Get("outdatedVersion") == "popup" then
+            _G.StaticPopup_Show("ABP_4H_OUTDATED_VERSION",
+                ("You're running an outdated version of %s! Newer version %s discovered from %s, yours is %s. Please upgrade!"):format(
+                ABP_4H:ColorizeText("4H Assist"), ABP_4H:ColorizeText(versionCmp), ABP_4H:ColorizeName(sender), ABP_4H:ColorizeText(version)));
+        else
+            ABP_4H:Notify("Version "..versionCmp.." has been released! You are currently using v"..version..". Please update this addon from Curse/WoWInterface.");
+        end
+
         showedNagPopup = true;
     end
 end
