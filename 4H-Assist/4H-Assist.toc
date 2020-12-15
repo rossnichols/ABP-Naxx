@@ -7,6 +7,7 @@
 ## SavedVariables: ABP_4H_DB
 ## X-Curse-Project-ID: 417928
 ## X-WoWI-ID: 25802
+## X-Website: https://github.com/rossnichols/ABP-Naxx
 
 embeds.xml
 bindings.xml
