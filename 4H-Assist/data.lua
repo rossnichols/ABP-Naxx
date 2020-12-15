@@ -94,6 +94,8 @@ local roles = {
     healerccw10 = "healerccw10",
     healerccw11 = "healerccw11",
     healerccw12 = "healerccw12",
+
+    independent = "independent",
 };
 
 local healerMap = {
@@ -112,6 +114,7 @@ local healerMap = {
 };
 
 local rolesSorted = {
+    roles.independent,
     roles.dps1,
     roles.dps2,
     roles.dps3,
@@ -163,15 +166,18 @@ local rolesSortedStatus = {
     roles.dps2,
     roles.dps3,
     roles.dps4,
+    roles.independent,
 };
 
 local categories = {
     healer = "healer",
     tank = "tank",
     dps = "dps",
+    none = "none",
 };
 
 local roleCategories = {
+    [roles.independent] = categories.none,
     [roles.dps1] = categories.dps,
     [roles.dps2] = categories.dps,
     [roles.dps3] = categories.dps,
@@ -288,6 +294,7 @@ local raidRoles = {
 };
 
 local roleNames = {
+    [roles.independent] = "Independent",
     [roles.dps1] = "DPS BL Start",
     [roles.dps2] = "DPS BR Start",
     [roles.dps3] = "DPS BL Safe",
@@ -327,6 +334,7 @@ local roleNames = {
 };
 
 local roleColors = {
+    [roles.independent] = "ffffff",
     [roles.dps1] = "0099cc",
     [roles.dps2] = "0099cc",
     [roles.dps3] = "0099cc",

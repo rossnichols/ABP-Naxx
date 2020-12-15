@@ -16,13 +16,14 @@ local ipairs = ipairs;
 local next = next;
 local select = select;
 local math = math;
+local mod = mod;
 
 local activeWindow;
 
 local assignedRoles;
 local processedRoles;
 local fakePlayers;
-local roleTargets = {};
+local roleTargets = { [ABP_4H.Roles.independent] = 0 };
 for _, role in pairs(ABP_4H.RaidRoles) do
     roleTargets[role] = (roleTargets[role] or 0) + 1;
 end
@@ -135,6 +136,7 @@ function ABP_4H:GetRaiderSlots()
                 [ABP_4H.Categories.tank] = tanks,
                 [ABP_4H.Categories.healer] = healers,
                 [ABP_4H.Categories.dps] = dps,
+                [ABP_4H.Categories.none] = {},
             };
             assignedRoles = assignedRoles or self:Get("raidLayout") or self.tCopy(self.RaidRoles);
 
@@ -224,6 +226,10 @@ local function ChooseCategory(raider)
     return ABP_4H.Categories.dps;
 end
 
+local function CategoryIsMismatched(raider, role)
+    return ABP_4H.RoleCategories[role] ~= ABP_4H.Categories.none and ChooseCategory(raider) ~= ABP_4H.RoleCategories[role];
+end
+
 local function BuildTargets(raiders)
     local currentTargets = {};
     local currentFilledTargets = {};
@@ -232,7 +238,7 @@ local function BuildTargets(raiders)
         currentTargets[role] = (currentTargets[role] or 0) + 1;
         if raiders[i] then
             currentFilledTargets[role] = (currentFilledTargets[role] or 0) + 1;
-            if ChooseCategory(raiders[i]) ~= ABP_4H.RoleCategories[role] then
+            if CategoryIsMismatched(raiders[i], role) then
                 currentMismatchedTargets[role] = (currentMismatchedTargets[role] or 0) + 1;
             end
         end
@@ -252,24 +258,24 @@ local function FormatRoleText(role, currentTargets, currentFilledTargets, curren
     local empty = current - filled;
     local target = roleTargets[role];
 
-    local targetText = function()
-        local formatStr = "%d/%d";
-        if current == target and empty == 0 then
-            formatStr = "|cff00ff00%d/%d|r";
-        elseif current ~= target then
-            formatStr = "|cffff0000%d/%d|r";
-        end
-        return formatStr:format(current, target);
+    local formatStr = "%d/%d";
+    if target == 0 then
+        formatStr = "%d";
+    elseif current == target and empty == 0 then
+        formatStr = "|cff00ff00%d/%d|r";
+    elseif current ~= target then
+        formatStr = "|cffff0000%d/%d|r";
     end
+    local targetText = formatStr:format(current, target);
 
-    if empty == 0 and mismatched == 0 then
-        return ("%s: %s"):format(ABP_4H.RoleNamesColored[role], targetText());
+    if target == 0 or (empty == 0 and mismatched == 0) then
+        return ("%s: %s"):format(ABP_4H.RoleNamesColored[role], targetText);
     elseif empty == 0 then
-        return ("%s: %s |cffff0000(%d mismatched)|r"):format(ABP_4H.RoleNamesColored[role], targetText(), mismatched);
+        return ("%s: %s |cffff0000(%d mismatched)|r"):format(ABP_4H.RoleNamesColored[role], targetText, mismatched);
     elseif mismatched == 0 then
-        return ("%s: %s |cffff0000(%d empty)|r"):format(ABP_4H.RoleNamesColored[role], targetText(), empty);
+        return ("%s: %s |cffff0000(%d empty)|r"):format(ABP_4H.RoleNamesColored[role], targetText, empty);
     else
-        return ("%s: %s |cffff0000(%d empty, %d mismatched)|r"):format(ABP_4H.RoleNamesColored[role], targetText(), empty, mismatched);
+        return ("%s: %s |cffff0000(%d empty, %d mismatched)|r"):format(ABP_4H.RoleNamesColored[role], targetText, empty, mismatched);
     end
 end
 
@@ -285,7 +291,7 @@ local function BuildDropdown(currentRole, raiders, restricted)
         if role ~= currentRole then
             local add = true;
             if restricted then
-                add = (currentTargets[role] < target);
+                add = (currentTargets[role] < target or target == 0);
             end
 
             if add then
@@ -339,7 +345,7 @@ local function Refresh()
 
         local role = assignedRoles[mappedIndex];
         local roleText = role and ABP_4H.RoleNamesColored[role] or "|cffff0000[Unassigned]|r";
-        if raider and role and ChooseCategory(raider) ~= ABP_4H.RoleCategories[role] then
+        if raider and role and CategoryIsMismatched(raider, role) then
             roleText = ("|cffff0000%s|r"):format( ABP_4H.RoleNames[role]);
         end
         dropdown:SetList(BuildDropdown(role, raiders, window:GetUserData("restrictedAssignments")));
@@ -638,7 +644,7 @@ function ABP_4H:CreateStartWindow()
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             local role = assignedRoles[i];
             if role then
-                if not raiders[i] or ChooseCategory(raiders[i]) ~= ABP_4H.RoleCategories[role] then
+                if not raiders[i] or CategoryIsMismatched(raiders[i], role) then
                     assignedRoles[i] = false;
                     table.insert(unassigned, role);
                     window:GetUserData("slotEditTimes")[i] = GetTime();
@@ -871,6 +877,14 @@ function ABP_4H:CreateStartWindow()
         roleElt:SetFullWidth(true);
         roleStatus:AddChild(roleElt);
         roleStatusElts[role] = roleElt;
+    end
+
+    local remainder = mod(#self.RolesSortedStatus, 4);
+    if remainder ~= 0 then
+        for i = 1, 4 - remainder do
+            local roleElt = AceGUI:Create("ABPN_Label");
+            roleStatus:AddChild(roleElt);
+        end
     end
 
     local label = AceGUI:Create("ABPN_Label");

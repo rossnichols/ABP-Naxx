@@ -87,7 +87,9 @@ local function GetNeighbors(window, raiders)
     return neighbors;
 end
 
-local function ShouldShowRole(role)
+local function ShowingIconsForRole(role)
+    if role == ABP_4H.Roles.independent then return false; end
+
     return not currentEncounter or
         ABP_4H.TopRoles[role] or
         not currentEncounter.bossDeaths[ABP_4H.Marks.bl] or
@@ -108,7 +110,7 @@ local function RefreshNeighbors(raiders, map)
     local neighborsElt = activeWindow:GetUserData("neighborsElt");
     if neighborsElt then
         local neighbors = GetNeighbors(activeWindow, raiders);
-        local showingRole = ShouldShowRole(activeWindow:GetUserData("role"));
+        local showingRole = ShowingIconsForRole(activeWindow:GetUserData("role"));
 
         if showingRole then
             neighborsElt:SetText(table.concat(neighbors, " "));
@@ -145,6 +147,8 @@ local function RefreshNeighbors(raiders, map)
 end
 
 local function MakeFakeCount(tick, role, mark)
+    if role == ABP_4H.Roles.independent then return 0; end
+
     local count = 0;
     local oldest = tick - 7;
     local positions = ABP_4H.MarkPositions[mark];
@@ -190,7 +194,7 @@ end
 local function RefreshMarks()
     local role = activeWindow:GetUserData("role");
     local tick = activeWindow:GetUserData("tick");
-    local showingRole = ShouldShowRole(role);
+    local showingRole = ShowingIconsForRole(role);
 
     local tomb = {
         [true] = "|TInterface\\Minimap\\POIIcons.blp:0:0:0:-8:128:128:112:128:0:16|t",
@@ -459,7 +463,7 @@ local function Refresh()
         end
     end
 
-    if ShouldShowRole(role) then
+    if ShowingIconsForRole(role) then
         local currentPos, nextPos, nextDiffPos = GetPositions(role, tick);
         local nextPosPreview = false;
         local liveWaitingForCombat = currentEncounter and currentEncounter.mode == ABP_4H.Modes.live and
@@ -956,17 +960,6 @@ function ABP_4H:CreateMainWindow()
             window:SetUserData("neighborsElt", neighborsElt);
             window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 1, self));
         end
-    else
-        -- local neighborsElt = AceGUI:Create("ABPN_Label");
-        -- container:AddChild(neighborsElt);
-        -- neighborsElt:SetFont("GameFontHighlightOutline");
-        -- neighborsElt:SetFullWidth(true);
-        -- neighborsElt:SetWordWrap(true);
-        -- neighborsElt:SetJustifyH("LEFT");
-        -- neighborsElt:SetJustifyV("TOP");
-        -- neighborsElt:SetText("");
-        -- neighborsElt:SetHeight(neighborsElt:GetStringHeight());
-        -- window:SetUserData("neighborsElt", neighborsElt);
     end
 
     image.content.height = 0;
