@@ -87,7 +87,8 @@ local function CompareVersion(versionCmp, sender)
                 ("You're running an outdated version of %s! Newer version %s discovered from %s, yours is %s. Please upgrade!"):format(
                 ABP_4H:ColorizeText("4H Assist"), ABP_4H:ColorizeText(versionCmp), ABP_4H:ColorizeName(sender), ABP_4H:ColorizeText(version)));
         else
-            ABP_4H:Notify("Version "..versionCmp.." has been released! You are currently using v"..version..". Please update this addon from Curse/WoWInterface.");
+            ABP_4H:Notify("You're running an outdated version! Newer version %s discovered from %s, yours is %s. Please upgrade!",
+                ABP_4H:ColorizeText(versionCmp), ABP_4H:ColorizeName(sender), ABP_4H:ColorizeText(version));
         end
 
         showedNagPopup = true;

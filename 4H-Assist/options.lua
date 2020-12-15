@@ -181,7 +181,7 @@ function ABP_4H:InitOptions()
                         outdatedversion = {
                             name = "Outdated Version",
                             order = 10,
-                            desc = "If your addon is out of date, how would you like to be notified?",
+                            desc = "Choose how you'll be notified about newer versions of the addon.",
                             type = "select",
                             values = {
                                 popup = "Popup",
@@ -189,7 +189,7 @@ function ABP_4H:InitOptions()
                             },
                             style = "dropdown",
                             get = function(info) return self.db.char.outdatedVersion; end,
-                            set = function(info, v) self.db.char.outdatedVersion = v; self:RefreshMainWindow(); end,
+                            set = function(info, v) self.db.char.outdatedVersion = v; end,
                         },
                     },
                 },
