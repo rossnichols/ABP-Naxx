@@ -1074,6 +1074,16 @@ function ABP_4H:ShowStartWindow()
         return;
     end
 
+    if not self:CanOpenWindow() then
+        _G.StaticPopup_Show("ABP_4H_START_BLOCKED");
+        return;
+    end
+
     activeWindow = self:CreateStartWindow();
     Refresh();
 end
+
+StaticPopupDialogs["ABP_4H_START_BLOCKED"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
+    text = "Opening the raid config window is restricted to raid lead/assists when in Naxxramas!",
+    button1 = "Ok",
+});

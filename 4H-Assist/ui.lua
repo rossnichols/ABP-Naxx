@@ -988,7 +988,7 @@ function ABP_4H:ShowMainWindow()
         return;
     end
 
-    if not currentEncounter and self:IsInNaxx() then
+    if not currentEncounter and not self:CanOpenWindow() then
         _G.StaticPopup_Show("ABP_4H_MAP_BLOCKED");
         return;
     end
@@ -998,6 +998,6 @@ function ABP_4H:ShowMainWindow()
 end
 
 StaticPopupDialogs["ABP_4H_MAP_BLOCKED"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
-    text = "Opening the map window directly is blocked when in Naxxramas! It will open automatically when you're assigned a role.",
+    text = "Opening the map window directly is restricted to raid lead/assists when in Naxxramas! It will open automatically when you're assigned a role.",
     button1 = "Ok",
 });

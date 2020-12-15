@@ -19,10 +19,12 @@ local C_GuildInfo = C_GuildInfo;
 local GetAddOnMetadata = GetAddOnMetadata;
 local GetServerTime = GetServerTime;
 local UnitIsGroupLeader = UnitIsGroupLeader;
+local UnitIsGroupAssistant = UnitIsGroupAssistant;
 local IsEquippableItem = IsEquippableItem;
 local IsAltKeyDown = IsAltKeyDown;
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
 local UnitIsUnit = UnitIsUnit;
+local IsInRaid = IsInRaid;
 local GetClassColor = GetClassColor;
 local EasyMenu = EasyMenu;
 local ToggleDropDownMenu = ToggleDropDownMenu;
@@ -453,6 +455,10 @@ end
 function ABP_4H:IsInNaxx()
     local instanceId = select(8, GetInstanceInfo());
     return instanceId == 533;
+end
+
+function ABP_4H:CanOpenWindow()
+    return not self:IsInNaxx() or not IsInRaid() or UnitIsGroupLeader("player") or UnitIsGroupAssistant("player");
 end
 
 
