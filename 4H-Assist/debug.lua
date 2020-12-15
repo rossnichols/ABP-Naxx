@@ -13,11 +13,11 @@ local debugOpts = {
 };
 
 function ABP_4H:GetDebugOpt(key)
-    return self:Get("debug") and (not key or debugOpts[key]);
+    return self:GetGlobal("debug") and (not key or debugOpts[key]);
 end
 
 function ABP_4H:SetDebug(enable)
-    self:Set("debug", enable);
+    self:SetGlobal("debug", enable);
 end
 
 ABP_4H.VersionOverride = "0.8.2";

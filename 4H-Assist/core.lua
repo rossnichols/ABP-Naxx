@@ -110,6 +110,7 @@ function ABP_4H:OnEnable()
     end, self);
     self:RegisterEvent("PLAYER_LOGOUT", function(self, event, ...)
         self:DriverOnLogout();
+        self:UIOnLogout();
     end, self);
     self:RegisterEvent("ENCOUNTER_START", function(self, event, ...)
         self:DriverOnEncounterStart(...);
@@ -294,11 +295,11 @@ end
 -- Support for maintaining window positions/sizes across reloads/relogs
 --
 
-_G.ABP_4H_WindowManagement = {};
-
 function ABP_4H:BeginWindowManagement(window, name, defaults)
-    _G.ABP_4H_WindowManagement[name] = _G.ABP_4H_WindowManagement[name] or {};
-    local saved = _G.ABP_4H_WindowManagement[name];
+    local wm = self.db.char.windowManagement;
+
+    wm[name] = wm[name] or {};
+    local saved = wm[name];
     if not defaults.version or saved.version ~= defaults.version then
         table.wipe(saved);
         saved.version = defaults.version;
@@ -347,10 +348,12 @@ function ABP_4H:BeginWindowManagement(window, name, defaults)
 end
 
 function ABP_4H:EndWindowManagement(window)
+    local wm = self.db.char.windowManagement;
+
     local management = window:GetUserData("windowManagement");
     local name = management.name;
-    _G.ABP_4H_WindowManagement[name] = _G.ABP_4H_WindowManagement[name] or {};
-    local saved = _G.ABP_4H_WindowManagement[name];
+    wm[name] = wm[name] or {};
+    local saved = wm[name];
 
     saved.left = window.frame:GetLeft();
     saved.top = window.frame:GetTop();

@@ -4,7 +4,7 @@
 ## Author: Xanido <Always Be Pulling>
 ## Version: ${ADDON_VERSION}
 ## OptionalDeps: DBM-Core
-## SavedVariables: ABP_4H_DB, ABP_4H_WindowManagement
+## SavedVariables: ABP_4H_DB
 ## X-Curse-Project-ID: 417928
 ## X-WoWI-ID: 25802
 

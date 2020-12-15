@@ -82,7 +82,7 @@ local function CompareVersion(versionCmp, sender)
     if not (ABP_4H:ParseVersion(version) and ABP_4H:ParseVersion(versionCmp)) then return; end
 
     if ABP_4H:VersionIsNewer(versionCmp, version) then
-        if ABP_4H:Get("outdatedVersion") == "popup" then
+        if ABP_4H:GetGlobal("outdatedVersion") == "popup" then
             _G.StaticPopup_Show("ABP_4H_OUTDATED_VERSION",
                 ("You're running an outdated version of %s! Newer version %s discovered from %s, yours is %s. Please upgrade!"):format(
                 ABP_4H:ColorizeText("4H Assist"), ABP_4H:ColorizeText(versionCmp), ABP_4H:ColorizeName(sender), ABP_4H:ColorizeText(version)));

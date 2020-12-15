@@ -9,7 +9,6 @@ local pairs = pairs;
 function ABP_4H:InitOptions()
     local defaults = {
         char = {
-            debug = false,
             showAlert = true,
             showMoveAlert = true,
             showMarkAlert = true,
@@ -19,9 +18,11 @@ function ABP_4H:InitOptions()
             alpha = 0.9,
             raidLayout = nil,
             healerCCW = false,
-            outdatedVersion = "popup",
+            windowManagement = {},
         },
         global = {
+            outdatedVersion = "popup",
+            debug = false,
         },
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);
@@ -188,8 +189,8 @@ function ABP_4H:InitOptions()
                                 msg = "Chat Message"
                             },
                             style = "dropdown",
-                            get = function(info) return self.db.char.outdatedVersion; end,
-                            set = function(info, v) self.db.char.outdatedVersion = v; end,
+                            get = function(info) return self.db.global.outdatedVersion; end,
+                            set = function(info, v) self.db.global.outdatedVersion = v; end,
                         },
                     },
                 },

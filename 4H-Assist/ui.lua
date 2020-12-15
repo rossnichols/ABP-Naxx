@@ -595,6 +595,12 @@ function ABP_4H:UIOnAura(unit)
     end
 end
 
+function ABP_4H:UIOnLogout()
+    if activeWindow then
+        activeWindow:Hide();
+    end
+end
+
 function ABP_4H:CreateMainWindow()
     if not dbmPendingAlert and _G.DBM and _G.DBM.NewMod then
         local mod = _G.DBM:NewMod("4H Assist");
@@ -605,7 +611,7 @@ function ABP_4H:CreateMainWindow()
         dbmTickAlert = mod:NewAnnounce("Mark %d", 1, "136172");
     end
 
-    local windowWidth = 400;
+    local windowWidth = 320;
     local window = AceGUI:Create("ABPN_TransparentWindow");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
