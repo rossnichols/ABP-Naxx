@@ -33,7 +33,7 @@ local smallPos = {
 
 local markPositions = {
     [marks.tl] = { [pos.tankdpsTL] = true, [pos.healerTL] = true },
-    [marks.tr] = { [pos.tankdpsTR] = true, [pos.healerTR1] = true, [pos.healerTR2] = true, [pos.healerTR3] = true },
+    [marks.tr] = { [pos.tankdpsTR] = true, [pos.healerTR] = true, [pos.healerTR1] = true, [pos.healerTR2] = true, [pos.healerTR3] = true },
     [marks.bl] = { [pos.tankdpsBL] = true, [pos.healerBL] = true },
     [marks.br] = { [pos.tankdpsBR] = true, [pos.healerBR] = true },
 };
