@@ -18,7 +18,7 @@ function ABP_4H:InitOptions()
             nonHealers = "",
             alpha = 0.9,
             raidLayout = nil,
-            selectedRaidLayout = 1,
+            selectedRaidLayout = 2,
             healerCCW = false,
             windowManagement = {},
         },
