@@ -289,7 +289,7 @@ function ABP_4H:GetLayouts()
 end
 
 function ABP_4H:LoadCurrentLayout()
-    local setting = self:Get("selectedRaidLayout");
+    local setting = self:GetCurrentLayout();
     local layout;
 
     if setting == 1 then
