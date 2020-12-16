@@ -5,6 +5,7 @@ local AceConfigDialog = _G.LibStub("AceConfigDialog-3.0");
 local AceDB = _G.LibStub("AceDB-3.0");
 
 local pairs = pairs;
+local type = type;
 
 function ABP_4H:InitOptions()
     local defaults = {
@@ -17,12 +18,14 @@ function ABP_4H:InitOptions()
             nonHealers = "",
             alpha = 0.9,
             raidLayout = nil,
+            selectedRaidLayout = 1,
             healerCCW = false,
             windowManagement = {},
         },
         global = {
             outdatedVersion = "popup",
             debug = false,
+            raidLayouts = {},
         },
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);
@@ -257,4 +260,60 @@ function ABP_4H:RefreshOptionsWindow()
     if self.OptionsFrame:IsVisible() then
         AceConfigDialog:Open("ABP_4H", self.OptionsFrame.obj);
     end
+end
+
+function ABP_4H:GetCurrentLayout()
+    local setting = self:Get("selectedRaidLayout");
+    local layouts = self:GetGlobal("raidLayouts");
+    if type(setting) == "string" and not layouts[setting] then
+        setting = 1;
+    elseif setting == 2 and not self:Get("raidLayout") then
+        setting = 1;
+    end
+
+    return setting;
+end
+
+function ABP_4H:GetLayouts()
+    local layouts = { [1] = "|cff00ff00Default|r" };
+    if self:Get("raidLayout") then
+        layouts[2] = "|cff00ff00Legacy Saved (Per-Char)";
+    end
+
+    local saved = self:GetGlobal("raidLayouts");
+    for name in pairs(saved) do
+        layouts[name] = name;
+    end
+
+    return layouts;
+end
+
+function ABP_4H:LoadCurrentLayout()
+    local setting = self:Get("selectedRaidLayout");
+    local layout;
+
+    if setting == 1 then
+        layout = self.RaidRoles;
+    elseif setting == 2 then
+        layout = self:Get("raidLayout");
+    else
+        local layouts = self:GetGlobal("raidLayouts");
+        layout = layouts[setting];
+    end
+
+    return layout and self.tCopy(layout);
+end
+
+function ABP_4H:DeleteLayout(name)
+    if name == 2 then
+        self:Set("raidLayout", nil);
+    elseif type(name) == "string" then
+        local layouts = self:GetGlobal("raidLayouts");
+        layouts[name] = nil;
+    end
+end
+
+function ABP_4H:SaveLayout(name, layout)
+    local layouts = self:GetGlobal("raidLayouts");
+    layouts[name] = layout;
 end

@@ -17,6 +17,7 @@ local next = next;
 local select = select;
 local math = math;
 local mod = mod;
+local type = type;
 
 local activeWindow;
 
@@ -138,7 +139,7 @@ function ABP_4H:GetRaiderSlots()
                 [ABP_4H.Categories.dps] = dps,
                 [ABP_4H.Categories.none] = {},
             };
-            assignedRoles = assignedRoles or self:Get("raidLayout") or self.tCopy(self.RaidRoles);
+            assignedRoles = assignedRoles or self:LoadCurrentLayout();
 
             for i = 1, #self.RaidRoles do
                 if assignedRoles[i] then
@@ -577,10 +578,10 @@ function ABP_4H:CreateStartWindow()
     end
 
     fakePlayers = nil;
-    assignedRoles = assignedRoles or self:Get("raidLayout") or self.tCopy(self.RaidRoles);
+    assignedRoles = assignedRoles or self:LoadCurrentLayout();
     mode = self:IsInNaxx() and self.Modes.live or self.Modes.manual;
 
-    local windowWidth = 1200;
+    local windowWidth = 1100;
     local window = AceGUI:Create("ABPN_Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
@@ -588,7 +589,7 @@ function ABP_4H:CreateStartWindow()
     self:BeginWindowManagement(window, "driver", {
         version = 1,
         defaultWidth = windowWidth,
-        minWidth = windowWidth - 200,
+        minWidth = windowWidth - 100,
         maxWidth = windowWidth + 200,
         defaultHeight = 400,
     });
@@ -904,13 +905,26 @@ function ABP_4H:CreateStartWindow()
     local options = AceGUI:Create("InlineGroup");
     options:SetTitle("Options");
     options:SetFullWidth(true);
-    options:SetLayout("Flow");
+    options:SetLayout("ABPN_Table");
+    options:SetUserData("table", { columns = { 0, 0, 0, 0, 0 }});
     container:AddChild(options);
+
+    local nonHealers = AceGUI:Create("MultiLineEditBox");
+    nonHealers:SetLabel("Non-Healer Overrides");
+    nonHealers:SetText(self:Get("nonHealers"));
+    nonHealers:SetCallback("OnEnterPressed", function(widget, event, value)
+        self:Set("nonHealers", value);
+        Refresh();
+    end);
+    nonHealers:SetUserData("cell", { rowspan = 2 });
+    options:AddChild(nonHealers);
+    self:AddWidgetTooltip(nonHealers, "List druids/priests/paladins/shaman that should not be considered as healers.");
 
     local modeElt = AceGUI:Create("Dropdown");
     modeElt:SetLabel("Tick Mode");
     modeElt:SetList(self.ModeNames);
     modeElt:SetValue(mode);
+    modeElt:SetUserData("cell", { paddingH = 10, align = "CENTER" });
     modeElt:SetCallback("OnValueChanged", function(widget, event, value)
         mode = value;
         window:SetUserData("readyPlayers", {});
@@ -927,6 +941,7 @@ function ABP_4H:CreateStartWindow()
     tickDurationElt:SetSliderValues(3, 60, 3);
     tickDurationElt:SetValue(tickDuration);
     tickDurationElt:SetLabel("Tick Duration");
+    tickDurationElt:SetUserData("cell", { paddingH = 10, align = "CENTER" });
     tickDurationElt:SetCallback("OnValueChanged", function(widget, event, value)
         tickDuration = value;
         window:SetUserData("readyPlayers", {});
@@ -941,6 +956,7 @@ function ABP_4H:CreateStartWindow()
     restricted:SetWidth(180);
     restricted:SetLabel("Capped Assignments");
     restricted:SetValue(true);
+    restricted:SetUserData("cell", { paddingH = 10 });
     window:SetUserData("restrictedAssignments", true);
     restricted:SetCallback("OnValueChanged", function(widget, event, value)
         window:SetUserData("restrictedAssignments", value);
@@ -950,9 +966,10 @@ function ABP_4H:CreateStartWindow()
     self:AddWidgetTooltip(restricted, "If assignments are capped, you cannot assign a role to more slots than it was originally allocated in the base configuration.");
 
     local ccw = AceGUI:Create("CheckBox");
-    ccw:SetWidth(125);
+    ccw:SetWidth(140);
     ccw:SetLabel("CCW Healers");
     ccw:SetValue(self:Get("healerCCW"));
+    ccw:SetUserData("cell", { paddingH = 10 });
     ccw:SetCallback("OnValueChanged", function(widget, event, value)
         self:Set("healerCCW", value);
         window:SetUserData("readyPlayers", {});
@@ -962,35 +979,43 @@ function ABP_4H:CreateStartWindow()
     options:AddChild(ccw);
     self:AddWidgetTooltip(ccw, "If checked, healers will rotate counterclockwise instead of clockwise.");
 
+    local loadLayout = AceGUI:Create("Dropdown");
+    loadLayout:SetLabel("Load Layout");
+    loadLayout:SetList(self:GetLayouts());
+    loadLayout:SetValue(self:GetCurrentLayout());
+    loadLayout:SetUserData("cell", { paddingH = 10, align = "CENTER" });
+    loadLayout:SetCallback("OnValueChanged", function(widget, event, value)
+        self:Set("selectedRaidLayout", value);
+        assignedRoles = self:LoadCurrentLayout();
+        Refresh();
+    end);
+    options:AddChild(loadLayout);
+    self:AddWidgetTooltip(loadLayout, "Load a saved layout of raid roles.");
+
     local save = AceGUI:Create("Button");
     save:SetWidth(150);
     save:SetText("Save Layout");
+    save:SetUserData("cell", { paddingH = 10, align = "CENTER" });
     save:SetCallback("OnClick", function(widget, event)
-        self:Set("raidLayout", assignedRoles);
+        local layout = self:GetCurrentLayout();
+        if type(layout) ~= "string" then layout = nil; end
+        _G.StaticPopup_Show("ABP_4H_SAVE_LAYOUT", nil, nil, { initialText = layout });
     end);
     options:AddChild(save);
-    self:AddWidgetTooltip(save, "Save the current layout of raid roles as the new default.");
+    self:AddWidgetTooltip(save, "Save the current layout of raid roles.");
 
-    local restore = AceGUI:Create("Button");
-    restore:SetWidth(150);
-    restore:SetText("Original Layout");
-    restore:SetCallback("OnClick", function(widget, event)
-        self:Set("raidLayout", nil);
-        assignedRoles = self.tCopy(self.RaidRoles);
-        Refresh();
+    local delete = AceGUI:Create("Button");
+    delete:SetWidth(150);
+    delete:SetText("Delete Layout");
+    delete:SetUserData("cell", { paddingH = 10, align = "CENTER" });
+    delete:SetCallback("OnClick", function(widget, event)
+        self:DeleteLayout(self:GetCurrentLayout());
+        assignedRoles = self:LoadCurrentLayout();
+        self:Set("selectedRaidLayout", 1);
+        self:ShowStartWindow(true);
     end);
-    options:AddChild(restore);
-    self:AddWidgetTooltip(restore, "Restore the original layout for raid roles.");
-
-    local nonHealers = AceGUI:Create("MultiLineEditBox");
-    nonHealers:SetLabel("Non-Healer Overrides");
-    nonHealers:SetText(self:Get("nonHealers"));
-    nonHealers:SetCallback("OnEnterPressed", function(widget, event, value)
-        self:Set("nonHealers", value);
-        Refresh();
-    end);
-    options:AddChild(nonHealers);
-    self:AddWidgetTooltip(nonHealers, "List druids/priests/paladins/shaman that should not be considered as healers.");
+    options:AddChild(delete);
+    self:AddWidgetTooltip(delete, "Delete the current layout.");
 
     local bottom = AceGUI:Create("SimpleGroup");
     bottom:SetFullWidth(true);
@@ -1082,10 +1107,10 @@ function ABP_4H:CreateStartWindow()
     return window;
 end
 
-function ABP_4H:ShowStartWindow()
+function ABP_4H:ShowStartWindow(reopen)
     if activeWindow then
         activeWindow:Hide();
-        return;
+        if not reopen then return; end
     end
 
     if not self:CanOpenWindow() then
@@ -1100,4 +1125,14 @@ end
 StaticPopupDialogs["ABP_4H_START_BLOCKED"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
     text = "Opening the raid config window is restricted to raid lead/assists when in Naxxramas!",
     button1 = "Ok",
+});
+StaticPopupDialogs["ABP_4H_SAVE_LAYOUT"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.EDIT_BOX, {
+    text = "Enter a name for the layout:",
+    button1 = "Save",
+    button2 = "Cancel",
+    Commit = function(text, data)
+        ABP_4H:SaveLayout(text, assignedRoles);
+        ABP_4H:Set("selectedRaidLayout", text);
+        ABP_4H:ShowStartWindow(true);
+    end,
 });

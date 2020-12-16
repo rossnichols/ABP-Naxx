@@ -506,6 +506,9 @@ function ABP_4H:StaticDialogTemplate(template, t)
         end;
         t.OnShow = function(self, data)
             self.editBox:SetAutoFocus(false);
+            if data and data.initialText then
+                self.editBox:SetText(data.initialText);
+            end
             if t.Validate then
                 self.button1:Disable();
             end
