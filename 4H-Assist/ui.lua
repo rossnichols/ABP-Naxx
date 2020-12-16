@@ -31,6 +31,8 @@ local lastAlertedMove;
 local lastAlertedTick;
 
 local function GetPositions(role, tick, onlyOriginal)
+    if role == ABP_4H.Roles.independent then return; end
+
     local rotation = ABP_4H.Rotations[role];
     local currentPos, nextPos, nextDifferentPos;
     if tick == -1 then
