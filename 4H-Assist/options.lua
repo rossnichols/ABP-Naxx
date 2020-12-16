@@ -183,7 +183,7 @@ function ABP_4H:InitOptions()
                             set = function(info, v) self.db.char.alpha = v; self:RefreshMainWindow(); end,
                         },
                         outdatedversion = {
-                            name = "Outdated Version",
+                            name = "Version Warning",
                             order = 10,
                             desc = "Choose how you'll be notified about newer versions of the addon.",
                             type = "select",
