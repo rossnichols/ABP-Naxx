@@ -20,6 +20,7 @@ function ABP_4H:InitOptions()
             raidLayout = nil,
             selectedRaidLayout = 2,
             healerCCW = false,
+            healerZeliak = true,
             windowManagement = {},
         },
         global = {
@@ -164,12 +165,14 @@ function ABP_4H:InitOptions()
                             set = function(info, v) self.db.char.showNeighbors = v; self:RefreshMainWindow(); end,
                         },
                         ccw = {
-                            name = "CCW Healers",
+                            name = "Healer Opts",
                             order = 8,
-                            desc = "If checked, healers will rotate counterclockwise instead of clockwise.",
-                            type = "toggle",
-                            get = function(info) return self.db.char.healerCCW; end,
-                            set = function(info, v) self.db.char.healerCCW = v; self:RefreshMainWindow(); end,
+                            desc = "|cff00ff00Counter-clockwise|r: If checked, healers will rotate counterclockwise instead of clockwise.\n\n" ..
+                                   "|cff00ff00Staggered Zeliak|r: If checked, healer positions in Zeliak's corner will be staggered, with the healer moving each mark.",
+                            type = "multiselect",
+                            values = { healerCCW = "Counter-clockwise", healerZeliak = "Staggered Zeliak" },
+                            get = function(info, k) return self.db.char[k]; end,
+                            set = function(info, k, v) self.db.char[k] = v; self:RefreshMainWindow(); end,
                         },
                         alpha = {
                             name = "Map Alpha",
@@ -316,4 +319,16 @@ end
 function ABP_4H:SaveLayout(name, layout)
     local layouts = self:GetGlobal("raidLayouts");
     layouts[name] = layout;
+end
+
+function ABP_4H:GetHealerSetup()
+    -- 0: no zeliak breakout, clockwise
+    -- 1: zeliak breakout, clockwise
+    -- 2: no zeliak breakout, counterclockwise
+    -- 3: zeliak breakout, counterclockwise
+
+    local ccw = ABP_4H:Get("healerCCW") and 2 or 0;
+    local z = ABP_4H:Get("healerZeliak") and 1 or 0;
+
+    return ccw + z;
 end

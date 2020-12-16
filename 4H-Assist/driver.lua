@@ -179,11 +179,11 @@ local function SendStateComm(active, dist, target)
         if dist == "BROADCAST" then
             local _, map = ABP_4H:GetRaiderSlots();
             processedRoles = {};
-            local ccw = ABP_4H:Get("healerCCW");
+            local healerSetup = ABP_4H:GetHealerSetup();
             for player, slot in pairs(map) do
                 local role = assignedRoles[slot];
-                if ccw and ABP_4H.RoleCategories[role] == ABP_4H.Categories.healer then
-                    role = ABP_4H.HealerMap[role];
+                if ABP_4H.RoleCategories[role] == ABP_4H.Categories.healer then
+                    role = ABP_4H.HealerMap[healerSetup][role];
                 end
                 processedRoles[player] = role;
             end
@@ -965,19 +965,26 @@ function ABP_4H:CreateStartWindow()
     options:AddChild(restricted);
     self:AddWidgetTooltip(restricted, "If assignments are capped, you cannot assign a role to more slots than it was originally allocated in the base configuration.");
 
-    local ccw = AceGUI:Create("CheckBox");
-    ccw:SetWidth(140);
-    ccw:SetLabel("CCW Healers");
-    ccw:SetValue(self:Get("healerCCW"));
-    ccw:SetUserData("cell", { paddingH = 10 });
-    ccw:SetCallback("OnValueChanged", function(widget, event, value)
-        self:Set("healerCCW", value);
+    local healerOpts = { healerCCW = "Counter-clockwise", healerZeliak = "Staggered Zeliak" };
+    local healerOptsElt = AceGUI:Create("Dropdown");
+    healerOptsElt:SetFullWidth(true);
+    healerOptsElt:SetUserData("cell", { paddingH = 10 });
+    healerOptsElt:SetMultiselect(true);
+    healerOptsElt:SetList(healerOpts);
+    healerOptsElt:SetItemValue()
+    for k in pairs(healerOpts) do
+        healerOptsElt:SetItemValue(k, self:Get(k));
+    end
+    healerOptsElt:SetLabel("Healer Opts");
+    healerOptsElt:SetCallback("OnValueChanged", function(widget, event, value, checked)
+        self:Set(value, checked);
         window:SetUserData("readyPlayers", {});
         window:SetUserData("lastSync", 0);
         Refresh();
     end);
-    options:AddChild(ccw);
-    self:AddWidgetTooltip(ccw, "If checked, healers will rotate counterclockwise instead of clockwise.");
+    options:AddChild(healerOptsElt);
+    self:AddWidgetTooltip(healerOptsElt, "|cff00ff00Counter-clockwise|r: If checked, healers will rotate counterclockwise instead of clockwise.\n\n" ..
+        "|cff00ff00Staggered Zeliak|r: If checked, healer positions in Zeliak's corner will be staggered, with the healer moving each mark.");
 
     local loadLayout = AceGUI:Create("Dropdown");
     loadLayout:SetLabel("Load Layout");

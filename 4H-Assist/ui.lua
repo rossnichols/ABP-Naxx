@@ -687,8 +687,9 @@ function ABP_4H:CreateMainWindow()
         roleSelector:SetFullWidth(true);
         roleSelector:SetList(self.RoleNamesColored, self.RolesSorted);
         roleSelector:SetCallback("OnValueChanged", function(widget, event, value)
-            if self:Get("healerCCW") and self.RoleCategories[value] == self.Categories.healer then
-                value = self.HealerMap[value];
+            local healerSetup = ABP_4H:GetHealerSetup();
+            if self.RoleCategories[value] == self.Categories.healer then
+                value = self.HealerMap[healerSetup][value];
             end
             window:SetUserData("role", value);
             window:SetUserData("tick", -1);
