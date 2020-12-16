@@ -70,7 +70,7 @@ function ABP_4H:VersionIsNewer(versionCmp, version, allowPrerelease)
     end
 end
 
-local function CompareVersion(versionCmp, sender)
+local function CompareVersion(versionCmp, sender, forceCheck)
     -- See if we've already told the user to upgrade
     if showedNagPopup then return; end
 
@@ -82,7 +82,7 @@ local function CompareVersion(versionCmp, sender)
     if not (ABP_4H:ParseVersion(version) and ABP_4H:ParseVersion(versionCmp)) then return; end
 
     if ABP_4H:VersionIsNewer(versionCmp, version) then
-        if ABP_4H:GetGlobal("outdatedVersion") == "popup" then
+        if forceCheck or ABP_4H:GetGlobal("outdatedVersion") == "popup" then
             _G.StaticPopup_Show("ABP_4H_OUTDATED_VERSION",
                 ("You're running an outdated version of %s! Newer version %s discovered from %s, yours is %s. Please upgrade!"):format(
                 ABP_4H:ColorizeText("4H Assist"), ABP_4H:ColorizeText(versionCmp), ABP_4H:ColorizeName(sender), ABP_4H:ColorizeText(version)));
@@ -114,7 +114,7 @@ function ABP_4H:OnVersionRequest(data, distribution, sender)
         }, "WHISPER", sender);
     end
 
-    CompareVersion(data.version, sender);
+    CompareVersion(data.version, sender, data.reset);
 end
 
 function ABP_4H:OnVersionResponse(data, distribution, sender)
