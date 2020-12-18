@@ -793,7 +793,7 @@ function ABP_4H:CreateMainWindow()
     container:AddChild(image);
     window:SetUserData("image", image);
     image:SetCallback("OnWidthSet", function(widget, event, value)
-        if widget.content.height ~= value then
+        if math.floor(widget.content.height + 0.5) ~= math.floor(value + 0.5) then
             widget:SetHeight(value);
             local neighborsElt = window:GetUserData("neighborsElt");
             if neighborsElt then
