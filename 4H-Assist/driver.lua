@@ -280,7 +280,7 @@ local function FormatRoleText(role, currentTargets, currentFilledTargets, curren
     end
 end
 
-local function BuildDropdown(currentRole, raiders, restricted)
+local function BuildDropdown(currentRole, raiders, restricted, ignoreZeroTarget)
     local list = { [false] = "|cffff0000Unassign|r" };
     local currentTargets, currentFilledTargets = BuildTargets(raiders);
 
@@ -292,7 +292,7 @@ local function BuildDropdown(currentRole, raiders, restricted)
         if role ~= currentRole then
             local add = true;
             if restricted then
-                add = (currentTargets[role] < target or target == 0);
+                add = (currentTargets[role] < target or (target == 0 and not ignoreZeroTarget));
             end
 
             if add then
@@ -691,7 +691,7 @@ function ABP_4H:CreateStartWindow()
         -- Pass 4: if any raiders don't have a role, try to assign from available roles that defaulted to the same group.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             if raiders[i] and not assignedRoles[i] then
-                local available = BuildDropdown(false, raiders, true);
+                local available = BuildDropdown(false, raiders, true, true);
                 for availableRole in pairs(available) do
                     if availableRole and ChooseCategory(raiders[i]) == ABP_4H.RoleCategories[availableRole] then
                         local originalGroup = 0;
@@ -716,7 +716,7 @@ function ABP_4H:CreateStartWindow()
         -- Pass 5: if any raiders don't have a role, try to assign from all available.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             if raiders[i] and not assignedRoles[i] then
-                local available = BuildDropdown(false, raiders, true);
+                local available = BuildDropdown(false, raiders, true, true);
                 for availableRole in pairs(available) do
                     if availableRole and ChooseCategory(raiders[i]) == ABP_4H.RoleCategories[availableRole] then
                         assignedRoles[i] = availableRole;
@@ -733,7 +733,7 @@ function ABP_4H:CreateStartWindow()
             -- Pass 6: if any slots don't have a role, try to assign from all available.
             for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
                 if not assignedRoles[i] then
-                    local available = BuildDropdown(false, raiders, true);
+                    local available = BuildDropdown(false, raiders, true, true);
                     for availableRole in pairs(available) do
                         if availableRole then
                             assignedRoles[i] = availableRole;
