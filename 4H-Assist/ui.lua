@@ -195,8 +195,22 @@ local function GetMarkCount(unit, mark)
     return 0;
 end
 
+local function CheckUnit(unit, bossUnits, bossTargets)
+    if UnitExists(unit) and UnitIsEnemy("player", unit) then
+        local npcID = tonumber((select(6, ("-"):split(UnitGUID(unit)))));
+        local mark = npcID and ABP_4H.BossMarks[npcID];
+        if mark then
+            bossUnits[mark] = unit;
+            unit = unit .. "target";
+            if UnitExists(unit) then
+                bossTargets[mark] = unit;
+            end
+        end
+    end
+end
+
 local function GetBossUnits()
-    local bossUnits = {};
+    local bossUnits, bossTargets = {}, {};
     if currentEncounter.mode == ABP_4H.Modes.live then
         local groupSize = math.max(GetNumGroupMembers(), 1);
         for i = 1, groupSize do
@@ -206,20 +220,17 @@ local function GetBossUnits()
             elseif i ~= groupSize then
                 unit = "party" .. i .. "target";
             end
-            if UnitExists(unit) and UnitIsEnemy("player", unit) then
-                local npcID = tonumber((select(6, ("-"):split(UnitGUID(unit)))));
-                local mark = npcID and ABP_4H.BossMarks[npcID];
-                if mark then
-                    unit = unit .. "target";
-                    if UnitExists(unit) then
-                        bossUnits[mark] = unit;
-                    end
-                end
-            end
+            CheckUnit(unit, bossUnits, bossTargets);
+        end
+
+        local i = 1;
+        while UnitExists("boss" .. i) do
+            CheckUnit("boss" .. i, bossUnits, bossTargets);
+            i = i + 1;
         end
     end
 
-    return bossUnits;
+    return bossUnits, bossTargets;
 end
 
 local function RefreshMarks()
@@ -306,7 +317,7 @@ local function RefreshTanks(raiders, map)
 
     local tankElts = activeWindow:GetUserData("tankElts");
     if tankElts then
-        local bossUnits = GetBossUnits();
+        local _, bossTargets = GetBossUnits();
 
         local currentTanks, upcomingTanks = {}, {};
         local markMap = {
@@ -342,14 +353,14 @@ local function RefreshTanks(raiders, map)
 
             local mark = ABP_4H.Marks.tl;
             local tank = "";
-            if bossUnits[mark] and (not current or current.player ~= UnitName(bossUnits[mark])) then
-                local icon = GetRaidTargetIndex(bossUnits[mark]);
+            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
+                local icon = GetRaidTargetIndex(bossTargets[mark]);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossUnits[mark], mark));
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
                 tank = ("%s|cffffa500%s%s|r\n"):format(
                     icon and icon:format(0) or "",
                     count and count:format("", " ") or "",
-                    UnitName(bossUnits[mark]));
+                    UnitName(bossTargets[mark]));
             end
 
             tankElts[ABP_4H.Marks.tl]:SetText(("%s%s|cff00ff00%s%s|r\n%s|cffcccccc%s%s|r"):format(
@@ -370,12 +381,12 @@ local function RefreshTanks(raiders, map)
 
             local mark = ABP_4H.Marks.tr;
             local tank = "";
-            if bossUnits[mark] and (not current or current.player ~= UnitName(bossUnits[mark])) then
-                local icon = GetRaidTargetIndex(bossUnits[mark]);
+            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
+                local icon = GetRaidTargetIndex(bossTargets[mark]);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossUnits[mark], mark));
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
                 tank = ("|cffffa500%s%s|r%s\n"):format(
-                    UnitName(bossUnits[mark]),
+                    UnitName(bossTargets[mark]),
                     count and count:format(" ", "") or "",
                     icon and icon:format(0) or "");
             end
@@ -398,14 +409,14 @@ local function RefreshTanks(raiders, map)
 
             local mark = ABP_4H.Marks.bl;
             local tank = "";
-            if bossUnits[mark] and (not current or current.player ~= UnitName(bossUnits[mark])) then
-                local icon = GetRaidTargetIndex(bossUnits[mark]);
+            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
+                local icon = GetRaidTargetIndex(bossTargets[mark]);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossUnits[mark], mark));
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
                 tank = ("\n%s|cffffa500%s%s|r"):format(
                     icon and icon:format(-16) or "",
                     count and count:format("", " ") or "",
-                    UnitName(bossUnits[mark]));
+                    UnitName(bossTargets[mark]));
             end
 
             tankElts[ABP_4H.Marks.bl]:SetText(("%s|cffcccccc%s%s|r\n%s|cff00ff00%s%s|r%s"):format(
@@ -426,12 +437,12 @@ local function RefreshTanks(raiders, map)
 
             local mark = ABP_4H.Marks.br;
             local tank = "";
-            if bossUnits[mark] and (not current or current.player ~= UnitName(bossUnits[mark])) then
-                local icon = GetRaidTargetIndex(bossUnits[mark]);
+            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
+                local icon = GetRaidTargetIndex(bossTargets[mark]);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossUnits[mark], mark));
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
                 tank = ("\n|cffffa500%s%s|r%s"):format(
-                    UnitName(bossUnits[mark]),
+                    UnitName(bossTargets[mark]),
                     count and count:format(" ", "") or "",
                     icon and icon:format(-16) or "");
             end
