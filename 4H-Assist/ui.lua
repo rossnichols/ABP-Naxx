@@ -14,6 +14,8 @@ local GetNumGroupMembers = GetNumGroupMembers;
 local IsInRaid = IsInRaid;
 local UnitGUID = UnitGUID;
 local UnitIsEnemy = UnitIsEnemy;
+local UnitHealth = UnitHealth;
+local UnitHealthMax = UnitHealthMax;
 local table = table;
 local pairs = pairs;
 local math = math;
@@ -193,6 +195,33 @@ local function GetMarkCount(unit, mark)
     return 0;
 end
 
+local function GetBossUnits()
+    local bossUnits = {};
+    if currentEncounter.mode == ABP_4H.Modes.live then
+        local groupSize = math.max(GetNumGroupMembers(), 1);
+        for i = 1, groupSize do
+            local unit = "target";
+            if IsInRaid() then
+                unit = "raid" .. i .. "target";
+            elseif i ~= groupSize then
+                unit = "party" .. i .. "target";
+            end
+            if UnitExists(unit) and UnitIsEnemy("player", unit) then
+                local npcID = tonumber((select(6, ("-"):split(UnitGUID(unit)))));
+                local mark = npcID and ABP_4H.BossMarks[npcID];
+                if mark then
+                    unit = unit .. "target";
+                    if UnitExists(unit) then
+                        bossUnits[mark] = unit;
+                    end
+                end
+            end
+        end
+    end
+
+    return bossUnits;
+end
+
 local function RefreshMarks()
     local role = activeWindow:GetUserData("role");
     local tick = activeWindow:GetUserData("tick");
@@ -204,6 +233,7 @@ local function RefreshMarks()
     };
 
     local markElts = activeWindow:GetUserData("markElts");
+    local bossElts = activeWindow:GetUserData("bossElts");
     if markElts then
         local texts = setmetatable({
             [0] = "|cff00ff000|r",
@@ -215,6 +245,10 @@ local function RefreshMarks()
             return ("|cffff0000%s|r"):format(tostring(k));
         end});
         if currentEncounter and currentEncounter.mode == ABP_4H.Modes.live then
+            local bossUnits = GetBossUnits();
+            for mark, unit in pairs(bossUnits) do
+                bossUnits[mark] = ("|cffffffff%d|r"):format(UnitHealth(unit) * 100 / UnitHealthMax(unit));
+            end
             local updated = {};
             local i = 1;
             local name, _, count, _, _, _, _, _, _, spellID = UnitDebuff("player", i);
@@ -223,15 +257,16 @@ local function RefreshMarks()
                 if elt then
                     updated[elt] = true;
                     elt:SetText(texts[count]);
+                    bossElts[spellID]:SetText(bossUnits[spellID] or "");
                     if count >= 4 and debuffCounts[spellID] ~= count and dbmMarkAlert and ABP_4H:Get("showMarkAlert") then
-                        ABP_4H:ScheduleTimer(function() dbmMarkAlert:Show(); end, 0);
+                        dbmMarkAlert:Show();
                     end
                     if not showingRole then
                         if count == 3 and debuffCounts[spellID] ~= count and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
-                            ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show(); end, 0);
+                            dbmMoveAlert:Show();
                         end
                         if count == 2 and debuffCounts[spellID] ~= count and dbmPendingAlert and ABP_4H:Get("showAlert") then
-                            ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show(); end, 0);
+                            dbmPendingAlert:Show();
                         end
                     end
                     debuffCounts[spellID] = count;
@@ -244,8 +279,10 @@ local function RefreshMarks()
             for mark, elt in pairs(markElts) do
                 if currentEncounter.bossDeaths[mark] then
                     elt:SetText(tomb[ABP_4H:IsClassic()]);
+                    bossElts[mark]:SetText("");
                 elseif not updated[elt] then
                     elt:SetText(texts[0]);
+                    bossElts[mark]:SetText(bossUnits[mark] or "");
                     debuffCounts[mark] = 0;
                 end
             end
@@ -267,28 +304,7 @@ local function RefreshTanks(raiders, map)
 
     local tankElts = activeWindow:GetUserData("tankElts");
     if tankElts then
-        local bossTargets = {};
-        if currentEncounter.mode == ABP_4H.Modes.live then
-            local groupSize = math.max(GetNumGroupMembers(), 1);
-            for i = 1, groupSize do
-                local unit = "target";
-                if IsInRaid() then
-                    unit = "raid" .. i .. "target";
-                elseif i ~= groupSize then
-                    unit = "party" .. i .. "target";
-                end
-                if UnitExists(unit) and UnitIsEnemy("player", unit) then
-                    local npcID = tonumber((select(6, ("-"):split(UnitGUID(unit)))));
-                    local mark = npcID and ABP_4H.BossMarks[npcID];
-                    if mark then
-                        unit = unit .. "target";
-                        if UnitExists(unit) then
-                            bossTargets[mark] = unit;
-                        end
-                    end
-                end
-            end
-        end
+        local bossUnits = GetBossUnits();
 
         local currentTanks, upcomingTanks = {}, {};
         local markMap = {
@@ -324,14 +340,14 @@ local function RefreshTanks(raiders, map)
 
             local mark = ABP_4H.Marks.tl;
             local tank = "";
-            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
-                local icon = GetRaidTargetIndex(bossTargets[mark]);
+            if bossUnits[mark] and (not current or current.player ~= UnitName(bossUnits[mark])) then
+                local icon = GetRaidTargetIndex(bossUnits[mark]);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossUnits[mark], mark));
                 tank = ("%s|cffffa500%s%s|r\n"):format(
                     icon and icon:format(0) or "",
                     count and count:format("", " ") or "",
-                    UnitName(bossTargets[mark]));
+                    UnitName(bossUnits[mark]));
             end
 
             tankElts[ABP_4H.Marks.tl]:SetText(("%s%s|cff00ff00%s%s|r\n%s|cffcccccc%s%s|r"):format(
@@ -352,12 +368,12 @@ local function RefreshTanks(raiders, map)
 
             local mark = ABP_4H.Marks.tr;
             local tank = "";
-            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
-                local icon = GetRaidTargetIndex(bossTargets[mark]);
+            if bossUnits[mark] and (not current or current.player ~= UnitName(bossUnits[mark])) then
+                local icon = GetRaidTargetIndex(bossUnits[mark]);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossUnits[mark], mark));
                 tank = ("|cffffa500%s%s|r%s\n"):format(
-                    UnitName(bossTargets[mark]),
+                    UnitName(bossUnits[mark]),
                     count and count:format(" ", "") or "",
                     icon and icon:format(0) or "");
             end
@@ -380,14 +396,14 @@ local function RefreshTanks(raiders, map)
 
             local mark = ABP_4H.Marks.bl;
             local tank = "";
-            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
-                local icon = GetRaidTargetIndex(bossTargets[mark]);
+            if bossUnits[mark] and (not current or current.player ~= UnitName(bossUnits[mark])) then
+                local icon = GetRaidTargetIndex(bossUnits[mark]);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossUnits[mark], mark));
                 tank = ("\n%s|cffffa500%s%s|r"):format(
                     icon and icon:format(-16) or "",
                     count and count:format("", " ") or "",
-                    UnitName(bossTargets[mark]));
+                    UnitName(bossUnits[mark]));
             end
 
             tankElts[ABP_4H.Marks.bl]:SetText(("%s|cffcccccc%s%s|r\n%s|cff00ff00%s%s|r%s"):format(
@@ -408,12 +424,12 @@ local function RefreshTanks(raiders, map)
 
             local mark = ABP_4H.Marks.br;
             local tank = "";
-            if bossTargets[mark] and (not current or current.player ~= UnitName(bossTargets[mark])) then
-                local icon = GetRaidTargetIndex(bossTargets[mark]);
+            if bossUnits[mark] and (not current or current.player ~= UnitName(bossUnits[mark])) then
+                local icon = GetRaidTargetIndex(bossUnits[mark]);
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
-                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
+                local count = ("%%s[%d]%%s"):format(GetMarkCount(bossUnits[mark], mark));
                 tank = ("\n|cffffa500%s%s|r%s"):format(
-                    UnitName(bossTargets[mark]),
+                    UnitName(bossUnits[mark]),
                     count and count:format(" ", "") or "",
                     icon and icon:format(-16) or "");
             end
@@ -479,7 +495,7 @@ local function Refresh()
             local prevPos = GetPositions(role, tick - 1);
             if prevPos ~= currentPos and lastAlertedMove ~= tick then
                 lastAlertedMove = tick;
-                ABP_4H:ScheduleTimer(function() dbmMoveAlert:Show(); end, 0);
+                dbmMoveAlert:Show();
             end
         end
 
@@ -500,7 +516,7 @@ local function Refresh()
 
             if currentEncounter and dbmPendingAlert and ABP_4H:Get("showAlert") and lastAlertedPending ~= tick and lastAlertedMove ~= tick and not nextPosPreview then
                 lastAlertedPending = tick;
-                ABP_4H:ScheduleTimer(function() dbmPendingAlert:Show(); end, 0);
+                dbmPendingAlert:Show();
             end
         end
         image:DoLayout();
@@ -528,7 +544,7 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
         if data.started then
             if data.mode ~= ABP_4H.Modes.live and dbmTickAlert and lastAlertedTick ~= data.ticks then
                 lastAlertedTick = data.ticks;
-                self:ScheduleTimer(function() dbmTickAlert:Show(data.ticks); end, 0);
+                dbmTickAlert:Show(data.ticks);
             end
         else
             self:SendComm(self.CommTypes.STATE_SYNC_ACK, {
@@ -581,6 +597,7 @@ function ABP_4H:OnUITimer()
         local raiders, map = ABP_4H:GetRaiderSlots();
         RefreshNeighbors(raiders, map);
         RefreshTanks(raiders, map);
+        RefreshMarks();
     end
 end
 
@@ -809,6 +826,8 @@ function ABP_4H:CreateMainWindow()
 
     local markElts = {};
     window:SetUserData("markElts", markElts);
+    local bossElts = {};
+    window:SetUserData("bossElts", bossElts);
 
     local markTL = AceGUI:Create("ABPN_Label");
     markTL:SetUserData("canvas-fill", true);
@@ -833,6 +852,16 @@ function ABP_4H:CreateMainWindow()
     image:AddChild(markTL);
     self:AddWidgetTooltip(markTL, "Lady Blaumeux");
 
+    local markTL = AceGUI:Create("ABPN_Label");
+    markTL:SetUserData("canvas-fill", true);
+    markTL:SetFont("GameFontNormalOutline");
+    markTL:SetWordWrap(true);
+    markTL:SetJustifyH("LEFT");
+    markTL:SetJustifyV("TOP");
+    markTL:SetUserData("canvas-top", -26);
+    image:AddChild(markTL);
+    bossElts[self.Marks.tl] = markTL;
+
     local markTR = AceGUI:Create("ABPN_Label");
     markTR:SetUserData("canvas-fill", true);
     markTR:SetFont("GameFontNormalHuge3Outline");
@@ -855,6 +884,16 @@ function ABP_4H:CreateMainWindow()
     markTR:SetUserData("canvas-bottom", 50);
     image:AddChild(markTR);
     self:AddWidgetTooltip(markTR, "Sir Zeliek");
+
+    local markTR = AceGUI:Create("ABPN_Label");
+    markTR:SetUserData("canvas-fill", true);
+    markTR:SetFont("GameFontNormalOutline");
+    markTR:SetWordWrap(true);
+    markTR:SetJustifyH("RIGHT");
+    markTR:SetJustifyV("TOP");
+    markTR:SetUserData("canvas-top", -26);
+    image:AddChild(markTR);
+    bossElts[self.Marks.tr] = markTR;
 
     local markBL = AceGUI:Create("ABPN_Label");
     markBL:SetUserData("canvas-fill", true);
@@ -879,6 +918,16 @@ function ABP_4H:CreateMainWindow()
     image:AddChild(markBL);
     self:AddWidgetTooltip(markBL, "Thane Korth'azz");
 
+    local markBL = AceGUI:Create("ABPN_Label");
+    markBL:SetUserData("canvas-fill", true);
+    markBL:SetFont("GameFontNormalOutline");
+    markBL:SetWordWrap(true);
+    markBL:SetJustifyH("LEFT");
+    markBL:SetJustifyV("BOTTOM");
+    markBL:SetUserData("canvas-bottom", 26);
+    image:AddChild(markBL);
+    bossElts[self.Marks.bl] = markBL;
+
     local markBR = AceGUI:Create("ABPN_Label");
     markBR:SetUserData("canvas-fill", true);
     markBR:SetFont("GameFontNormalHuge3Outline");
@@ -901,6 +950,16 @@ function ABP_4H:CreateMainWindow()
     markBR:SetUserData("canvas-bottom", 5);
     image:AddChild(markBR);
     self:AddWidgetTooltip(markBR, "Highlord Mograine");
+
+    local markBR = AceGUI:Create("ABPN_Label");
+    markBR:SetUserData("canvas-fill", true);
+    markBR:SetFont("GameFontNormalOutline");
+    markBR:SetWordWrap(true);
+    markBR:SetJustifyH("RIGHT");
+    markBR:SetJustifyV("BOTTOM");
+    markBR:SetUserData("canvas-bottom", 26);
+    image:AddChild(markBR);
+    bossElts[self.Marks.br] = markBR;
 
     if currentEncounter then
         local raiders = ABP_4H:GetRaiderSlots();
@@ -961,7 +1020,7 @@ function ABP_4H:CreateMainWindow()
             neighborsElt:SetText("");
             neighborsElt:SetHeight(neighborsElt:GetStringHeight());
             window:SetUserData("neighborsElt", neighborsElt);
-            window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 1, self));
+            window:SetUserData("timer", self:ScheduleRepeatingTimer(self.OnUITimer, 0.5, self));
         end
     end
 
