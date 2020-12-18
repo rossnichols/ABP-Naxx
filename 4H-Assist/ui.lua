@@ -245,6 +245,7 @@ local function RefreshMarks()
             return ("|cffff0000%s|r"):format(tostring(k));
         end});
         if currentEncounter and currentEncounter.mode == ABP_4H.Modes.live then
+            local showedMarkAlert = false;
             local bossUnits = GetBossUnits();
             for mark, unit in pairs(bossUnits) do
                 bossUnits[mark] = ("|cffffffff%d|r"):format(UnitHealth(unit) * 100 / UnitHealthMax(unit));
@@ -258,8 +259,9 @@ local function RefreshMarks()
                     updated[elt] = true;
                     elt:SetText(texts[count]);
                     bossElts[spellID]:SetText(bossUnits[spellID] or "");
-                    if count >= 4 and debuffCounts[spellID] ~= count and dbmMarkAlert and ABP_4H:Get("showMarkAlert") then
+                    if not showedMarkAlert and count >= 4 and debuffCounts[spellID] ~= count and dbmMarkAlert and ABP_4H:Get("showMarkAlert") then
                         dbmMarkAlert:Show();
+                        showedMarkAlert = true;
                     end
                     if not showingRole then
                         if count == 3 and debuffCounts[spellID] ~= count and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
