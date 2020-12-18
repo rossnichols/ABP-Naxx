@@ -585,7 +585,7 @@ function ABP_4H:OnUITimer()
 end
 
 function ABP_4H:UIOnPlayerAura()
-    if activeWindow then
+    if activeWindow and activeWindow:GetUserData("tick") then
         RefreshMarks();
         self:UIOnAura("player");
     end
