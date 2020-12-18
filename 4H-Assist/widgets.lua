@@ -513,17 +513,28 @@ AceGUI:RegisterLayout("ABPN_Canvas", function (content, children)
     for i, child in ipairs(children) do
         local frame = child.frame;
         frame:ClearAllPoints();
-        if child:GetUserData("canvas-fill") then
+        local canvas = child:GetUserData("canvas");
+        if canvas == "fill" or child:GetUserData("canvas-fill") then
             frame:SetPoint("LEFT", content, "LEFT", child:GetUserData("canvas-left") or 0, 0);
             frame:SetPoint("TOP", content, "TOP", 0, child:GetUserData("canvas-top") or 0);
             frame:SetPoint("RIGHT", content, "RIGHT", child:GetUserData("canvas-right") or 0, 0);
             frame:SetPoint("BOTTOM", content, "BOTTOM", 0, child:GetUserData("canvas-bottom") or 0);
-        elseif child:GetUserData("canvas-fill-scaled") then
+        elseif canvas == "outside-left" or child:GetUserData("canvas-outside-left") then
+            frame:SetPoint("LEFT", _G.UIParent, "LEFT", 0, 0);
+            frame:SetPoint("TOP", content, "TOP", 0, child:GetUserData("canvas-top") or 0);
+            frame:SetPoint("RIGHT", content, "LEFT", child:GetUserData("canvas-right") or 0, 0);
+            frame:SetPoint("BOTTOM", content, "BOTTOM", 0, child:GetUserData("canvas-bottom") or 0);
+        elseif canvas == "outside-right" or child:GetUserData("canvas-outside-right") then
+            frame:SetPoint("LEFT", content, "RIGHT", child:GetUserData("canvas-left") or 0, 0);
+            frame:SetPoint("TOP", content, "TOP", 0, child:GetUserData("canvas-top") or 0);
+            frame:SetPoint("RIGHT", _G.UIParent, "RIGHT", 0, 0);
+            frame:SetPoint("BOTTOM", content, "BOTTOM", 0, child:GetUserData("canvas-bottom") or 0);
+        elseif canvas == "fill-scaled" or child:GetUserData("canvas-fill-scaled") then
             frame:SetPoint("LEFT", content, "LEFT", (child:GetUserData("canvas-left") or 0) * totalH / 100, 0);
             frame:SetPoint("TOP", content, "TOP", 0, (child:GetUserData("canvas-top") or 0) * totalV / 100);
             frame:SetPoint("RIGHT", content, "RIGHT", (child:GetUserData("canvas-right") or 0) * totalH / 100, 0);
             frame:SetPoint("BOTTOM", content, "BOTTOM", 0, (child:GetUserData("canvas-bottom") * totalV / 100 or 0));
-        else
+        elseif child:GetUserData("canvas-X") or child:GetUserData("canvas-Y") then
             local x, y = child:GetUserData("canvas-X") or 0, child:GetUserData("canvas-Y") or 0;
             frame:SetPoint("CENTER", content, "TOPLEFT", x * totalH / 100 / scale, -y * totalV / 100 / scale);
             frame:SetScale(scale);

@@ -800,6 +800,45 @@ function ABP_4H:CreateMainWindow()
                 neighborsElt:SetHeight(neighborsElt:GetStringHeight());
             end
 
+            local tankElts = window:GetUserData("tankElts");
+            if tankElts then
+                if value <= 250 then
+                    tankElts[self.Marks.tl]:SetUserData("canvas", "outside-left");
+                    tankElts[self.Marks.tl]:SetUserData("canvas-left", 0);
+                    tankElts[self.Marks.tl]:SetUserData("canvas-right", -5);
+                    tankElts[self.Marks.tl]:SetJustifyH("RIGHT");
+                    tankElts[self.Marks.tr]:SetUserData("canvas", "outside-right");
+                    tankElts[self.Marks.tr]:SetUserData("canvas-left", 10);
+                    tankElts[self.Marks.tr]:SetUserData("canvas-right", 0);
+                    tankElts[self.Marks.tr]:SetJustifyH("LEFT");
+                    tankElts[self.Marks.bl]:SetUserData("canvas", "outside-left");
+                    tankElts[self.Marks.bl]:SetUserData("canvas-left", 0);
+                    tankElts[self.Marks.bl]:SetUserData("canvas-right", -5);
+                    tankElts[self.Marks.bl]:SetJustifyH("RIGHT");
+                    tankElts[self.Marks.br]:SetUserData("canvas", "outside-right");
+                    tankElts[self.Marks.br]:SetUserData("canvas-left", 10);
+                    tankElts[self.Marks.br]:SetUserData("canvas-right", 0);
+                    tankElts[self.Marks.br]:SetJustifyH("LEFT");
+                else
+                    tankElts[self.Marks.tl]:SetUserData("canvas", "fill");
+                    tankElts[self.Marks.tl]:SetUserData("canvas-left", 30);
+                    tankElts[self.Marks.tl]:SetUserData("canvas-right", 0);
+                    tankElts[self.Marks.tl]:SetJustifyH("LEFT");
+                    tankElts[self.Marks.tr]:SetUserData("canvas", "fill");
+                    tankElts[self.Marks.tr]:SetUserData("canvas-left", 0);
+                    tankElts[self.Marks.tr]:SetUserData("canvas-right", -30);
+                    tankElts[self.Marks.tr]:SetJustifyH("RIGHT");
+                    tankElts[self.Marks.bl]:SetUserData("canvas", "fill");
+                    tankElts[self.Marks.bl]:SetUserData("canvas-left", 30);
+                    tankElts[self.Marks.bl]:SetUserData("canvas-right", 0);
+                    tankElts[self.Marks.bl]:SetJustifyH("LEFT");
+                    tankElts[self.Marks.br]:SetUserData("canvas", "fill");
+                    tankElts[self.Marks.br]:SetUserData("canvas-left", 0);
+                    tankElts[self.Marks.br]:SetUserData("canvas-right", -30);
+                    tankElts[self.Marks.br]:SetJustifyH("RIGHT");
+                end
+            end
+
             container:DoLayout();
             local height = container.frame:GetHeight() + 50;
             window:SetHeight(height);
@@ -969,41 +1008,29 @@ function ABP_4H:CreateMainWindow()
             window:SetUserData("tankElts", tankElts);
 
             local tankTL = AceGUI:Create("ABPN_Label");
-            tankTL:SetUserData("canvas-fill", true);
-            tankTL:SetUserData("canvas-left", 30);
             tankTL:SetFont("GameFontHighlightOutline");
             tankTL:SetWordWrap(true);
-            tankTL:SetJustifyH("LEFT");
             tankTL:SetJustifyV("TOP");
             image:AddChild(tankTL);
             tankElts[self.Marks.tl] = tankTL; -- Blaumeux
 
             local tankTR = AceGUI:Create("ABPN_Label");
-            tankTR:SetUserData("canvas-fill", true);
-            tankTR:SetUserData("canvas-right", -30);
             tankTR:SetFont("GameFontHighlightOutline");
             tankTR:SetWordWrap(true);
-            tankTR:SetJustifyH("RIGHT");
             tankTR:SetJustifyV("TOP");
             image:AddChild(tankTR);
             tankElts[self.Marks.tr] = tankTR; -- Zeliek
 
             local tankBL = AceGUI:Create("ABPN_Label");
-            tankBL:SetUserData("canvas-fill", true);
-            tankBL:SetUserData("canvas-left", 30);
             tankBL:SetFont("GameFontHighlightOutline");
             tankBL:SetWordWrap(true);
-            tankBL:SetJustifyH("LEFT");
             tankBL:SetJustifyV("BOTTOM");
             image:AddChild(tankBL);
             tankElts[self.Marks.bl] = tankBL; -- Korth'azz
 
             local tankBR = AceGUI:Create("ABPN_Label");
-            tankBR:SetUserData("canvas-fill", true);
-            tankBR:SetUserData("canvas-right", -30);
             tankBR:SetFont("GameFontHighlightOutline");
             tankBR:SetWordWrap(true);
-            tankBR:SetJustifyH("RIGHT");
             tankBR:SetJustifyV("BOTTOM");
             image:AddChild(tankBR);
             tankElts[self.Marks.br] = tankBR; -- Mograine
