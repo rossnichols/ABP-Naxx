@@ -177,15 +177,17 @@ local function SendStateComm(active, dist, target)
         -- a map based on player names. When sending a direct comm,
         -- the last map will be sent, in case the roster has shifted.
         if dist == "BROADCAST" then
-            local _, map = ABP_4H:GetRaiderSlots();
+            local raiders = ABP_4H:GetRaiderSlots();
             processedRoles = {};
+            local previousRoles = { [false] = ABP_4H:Get("previousRoles"), [true] = ABP_4H:Get("previousRolesFake") };
             local healerSetup = ABP_4H:GetHealerSetup();
-            for player, slot in pairs(map) do
+            for slot, raider in pairs(raiders) do
                 local role = assignedRoles[slot];
+                previousRoles[raider.fake and true or false][raider.name] = role;
                 if ABP_4H.RoleCategories[role] == ABP_4H.Categories.healer then
                     role = ABP_4H.HealerMap[healerSetup][role];
                 end
-                processedRoles[player] = role;
+                processedRoles[raider.name] = role;
             end
         end
 
@@ -639,13 +641,66 @@ function ABP_4H:CreateStartWindow()
         local raiders = ABP_4H:GetRaiderSlots();
         local group = widget:GetUserData("group");
         local dropdowns = window:GetUserData("dropdowns");
+        local previousRoles = { [false] = ABP_4H:Get("previousRoles"), [true] = ABP_4H:Get("previousRolesFake") };
         local unassigned = {};
 
-        -- Pass 1: unassign roles with no raider or an unmatching category.
+        -- If the previous role for a player is present in the group or unassigned, give it to them.
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            local prevRole = raiders[i] and previousRoles[raiders[i].fake and true or false][raiders[i].name];
+            if prevRole and assignedRoles[i] ~= prevRole then
+                for j = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+                    local role = assignedRoles[j];
+                    if role == prevRole then
+                        assignedRoles[j] = false;
+                        window:GetUserData("slotEditTimes")[j] = GetTime();
+                        window:GetUserData("readyPlayers")[j] = nil;
+                        dropdowns[dropdownMapReversed[j]]:SetValue(false);
+
+                        if assignedRoles[i] then
+                            table.insert(unassigned, assignedRoles[i]);
+                        end
+                        assignedRoles[i] = role;
+                        window:GetUserData("slotEditTimes")[i] = GetTime();
+                        window:GetUserData("readyPlayers")[i] = nil;
+                        dropdowns[dropdownMapReversed[i]]:SetValue(role);
+                        break;
+                    end
+                end
+
+                if assignedRoles[i] ~= prevRole then
+                    for oldI, oldRole in ipairs(unassigned) do
+                        if oldRole == prevRole then
+                            assignedRoles[i] = oldRole;
+                            table.remove(unassigned, oldI);
+                            window:GetUserData("slotEditTimes")[i] = GetTime();
+                            window:GetUserData("readyPlayers")[i] = nil;
+                            dropdowns[dropdownMapReversed[i]]:SetValue(oldRole);
+                            break;
+                        end
+                    end
+                end
+
+                if assignedRoles[i] ~= prevRole then
+                    local available = BuildDropdown(false, raiders, true, true);
+                    for availableRole in pairs(available) do
+                        if availableRole and availableRole == prevRole then
+                            assignedRoles[i] = availableRole;
+                            window:GetUserData("slotEditTimes")[i] = GetTime();
+                            window:GetUserData("readyPlayers")[i] = nil;
+                            dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                            break;
+                        end
+                    end
+                end
+            end
+        end
+
+        -- Unassign roles with no raider or an unmatching category.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             local role = assignedRoles[i];
             if role then
-                if not raiders[i] or CategoryIsMismatched(raiders[i], role) then
+                local prevRole = raiders[i] and previousRoles[raiders[i].fake and true or false][raiders[i].name];
+                if not raiders[i] or (role ~= prevRole and CategoryIsMismatched(raiders[i], role)) then
                     assignedRoles[i] = false;
                     table.insert(unassigned, role);
                     window:GetUserData("slotEditTimes")[i] = GetTime();
@@ -655,7 +710,7 @@ function ABP_4H:CreateStartWindow()
             end
         end
 
-        -- Pass 2: reallocate above roles to raiders matching the category.
+        -- Reallocate above roles to raiders matching the category.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             local role = assignedRoles[i];
             if raiders[i] and not role then
@@ -673,7 +728,7 @@ function ABP_4H:CreateStartWindow()
         end
 
         if not skipEmptySlots then
-            -- Pass 3: if any roles are left, try to reallocate to an empty slot.
+            -- If any roles are left, try to reallocate to an empty slot.
             for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
                 if not raiders[i] and not assignedRoles[i] then
                     local oldI, oldRole = next(unassigned);
@@ -688,7 +743,7 @@ function ABP_4H:CreateStartWindow()
             end
         end
 
-        -- Pass 4: if any raiders don't have a role, try to assign from available roles that defaulted to the same group.
+        -- If any raiders don't have a role, try to assign from available roles that defaulted to the same group.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             if raiders[i] and not assignedRoles[i] then
                 local available = BuildDropdown(false, raiders, true, true);
@@ -713,7 +768,7 @@ function ABP_4H:CreateStartWindow()
             end
         end
 
-        -- Pass 5: if any raiders don't have a role, try to assign from all available.
+        -- If any raiders don't have a role, try to assign from all available.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             if raiders[i] and not assignedRoles[i] then
                 local available = BuildDropdown(false, raiders, true, true);
@@ -730,7 +785,7 @@ function ABP_4H:CreateStartWindow()
         end
 
         if not skipEmptySlots then
-            -- Pass 6: if any slots don't have a role, try to assign from all available.
+            -- If any slots don't have a role, try to assign from all available.
             for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
                 if not assignedRoles[i] then
                     local available = BuildDropdown(false, raiders, true, true);

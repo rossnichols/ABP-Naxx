@@ -23,6 +23,8 @@ function ABP_4H:InitOptions()
             healerZeliak = true,
             windowManagement = {},
             confirmClose = true,
+            previousRoles = {},
+            previousRolesFake = {},
         },
         global = {
             outdatedVersion = "popup",
