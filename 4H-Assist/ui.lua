@@ -23,6 +23,7 @@ local setmetatable = setmetatable;
 local tostring = tostring;
 local tonumber = tonumber;
 local select = select;
+local next = next;
 
 local activeWindow;
 local dbmPendingAlert, dbmMoveAlert, dbmTickAlert, dbmMarkAlert;
@@ -195,11 +196,16 @@ local function GetMarkCount(unit, mark)
     return 0;
 end
 
-local function CheckUnit(unit, bossUnits, bossTargets)
+
+local cachedUnits = {};
+
+local function CheckUnit(unit, bossUnits, bossTargets, searching)
     if UnitExists(unit) and UnitIsEnemy("player", unit) then
         local npcID = tonumber((select(6, ("-"):split(UnitGUID(unit)))));
         local mark = npcID and ABP_4H.BossMarks[npcID];
-        if mark then
+        if mark and searching[mark] then
+            searching[mark] = nil;
+            cachedUnits[unit] = true;
             bossUnits[mark] = unit;
             unit = unit .. "target";
             if UnitExists(unit) then
@@ -212,21 +218,33 @@ end
 local function GetBossUnits()
     local bossUnits, bossTargets = {}, {};
     if currentEncounter.mode == ABP_4H.Modes.live then
+        local searching = {
+            [ABP_4H.Marks.tl] = true,
+            [ABP_4H.Marks.tr] = true,
+            [ABP_4H.Marks.bl] = true,
+            [ABP_4H.Marks.br] = true,
+        };
+        for unit in pairs(cachedUnits) do
+            CheckUnit(unit, bossUnits, bossTargets, searching);
+        end
+
+        local i = 1;
+        while UnitExists("boss" .. i) do
+            if not next(searching) then break; end
+            CheckUnit("boss" .. i, bossUnits, bossTargets, searching);
+            i = i + 1;
+        end
+
         local groupSize = math.max(GetNumGroupMembers(), 1);
         for i = 1, groupSize do
+            if not next(searching) then break; end
             local unit = "target";
             if IsInRaid() then
                 unit = "raid" .. i .. "target";
             elseif i ~= groupSize then
                 unit = "party" .. i .. "target";
             end
-            CheckUnit(unit, bossUnits, bossTargets);
-        end
-
-        local i = 1;
-        while UnitExists("boss" .. i) do
-            CheckUnit("boss" .. i, bossUnits, bossTargets);
-            i = i + 1;
+            CheckUnit(unit, bossUnits, bossTargets, searching);
         end
     end
 
