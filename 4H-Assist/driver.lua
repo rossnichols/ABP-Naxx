@@ -880,6 +880,11 @@ function ABP_4H:CreateStartWindow()
         self:AddWidgetTooltip(smart, "Smart-assign all roles in this group, based on the player's category (tank/healer/dps). Roles currently assigned in the same group will be prioritized first, then unassigned roles.");
     end
 
+    local label = AceGUI:Create("ABPN_Label");
+    label:SetFullWidth(true);
+    label:SetText("Smart assignment remembers past decisions. Once raiders are in the proper group, smart-assign the raid to apply it.");
+    container:AddChild(label);
+
     local unassign = AceGUI:Create("Button");
     unassign:SetText("Unassign All");
     unassign:SetWidth(150);
