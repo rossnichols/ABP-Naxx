@@ -882,7 +882,7 @@ function ABP_4H:CreateStartWindow()
 
     local label = AceGUI:Create("ABPN_Label");
     label:SetFullWidth(true);
-    label:SetText("Smart assignment remembers past decisions. Once raiders are in the proper group, smart-assign the raid to apply it.");
+    label:SetText("Smart assignment remembers past syncs. Once raiders are in the proper group, smart-assign the raid to apply it.");
     container:AddChild(label);
 
     local unassign = AceGUI:Create("Button");
