@@ -277,11 +277,16 @@ local function RefreshMarks()
             -- return tomb[ABP_4H:IsClassic()];
             return ("|cffff0000%s|r"):format(tostring(k));
         end});
+        local health = setmetatable({}, { __index = function(t, k)
+            if k < 21 then return ("|cffff0000%d|r"):format(k); end
+            if k < 71 then return ("|cffffff00%d|r"):format(k); end
+            return ("|cff00ff00%d|r"):format(k);
+        end});
         if currentEncounter and currentEncounter.mode == ABP_4H.Modes.live then
             local showedMarkAlert = false;
             local bossUnits = GetBossUnits();
             for mark, unit in pairs(bossUnits) do
-                bossUnits[mark] = ("|cffffffff%d|r"):format(UnitHealth(unit) * 100 / UnitHealthMax(unit));
+                bossUnits[mark] = health[math.ceil(UnitHealth(unit) * 100 / UnitHealthMax(unit))];
             end
             local updated = {};
             local i = 1;
