@@ -16,6 +16,7 @@ local UnitGUID = UnitGUID;
 local UnitIsEnemy = UnitIsEnemy;
 local UnitHealth = UnitHealth;
 local UnitHealthMax = UnitHealthMax;
+local IsShiftKeyDown = IsShiftKeyDown;
 local table = table;
 local pairs = pairs;
 local math = math;
@@ -108,7 +109,10 @@ local function EndEncounter()
     lastAlertedTick = nil;
     debuffCounts = {};
 
-    if activeWindow then activeWindow:Hide(); end
+    if activeWindow then
+        activeWindow:SetUserData("closeConfirmed", true);
+        activeWindow:Hide();
+    end
 end
 
 local function RefreshNeighbors(raiders, map)
@@ -597,7 +601,10 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
         EndEncounter();
     end
 
-    if activeWindow then activeWindow:Hide(); end
+    if activeWindow then
+        activeWindow:SetUserData("closeConfirmed", true);
+        activeWindow:Hide();
+    end
 
     if currentEncounter then
         self:ShowMainWindow();
@@ -618,6 +625,7 @@ end
 
 function ABP_4H:RefreshMainWindow()
     if activeWindow then
+        activeWindow:SetUserData("closeConfirmed", true);
         activeWindow:Hide();
         self:ShowMainWindow();
     end
@@ -651,6 +659,7 @@ end
 
 function ABP_4H:UIOnLogout()
     if activeWindow then
+        activeWindow:SetUserData("closeConfirmed", true);
         activeWindow:Hide();
     end
 end
@@ -678,11 +687,17 @@ function ABP_4H:CreateMainWindow()
         defaultHeight = 400,
     });
     window:SetCallback("OnClose", function(widget)
-        self:EndWindowManagement(widget);
-        local timer = widget:GetUserData("timer");
-        if timer then self:CancelTimer(timer); end
-        AceGUI:Release(widget);
-        activeWindow = nil;
+        if not currentEncounter or widget:GetUserData("closeConfirmed") or IsShiftKeyDown() or not self:Get("confirmClose") then
+            self:EndWindowManagement(widget);
+            local timer = widget:GetUserData("timer");
+            if timer then self:CancelTimer(timer); end
+            AceGUI:Release(widget);
+            activeWindow = nil;
+            _G.StaticPopup_Hide("ABP_4H_CONFIRM_CLOSE");
+        else
+            _G.StaticPopup_Show("ABP_4H_CONFIRM_CLOSE");
+            widget:Show();
+        end
     end);
 
     local container = AceGUI:Create("ABPN_TransparentGroup");
@@ -1097,6 +1112,7 @@ end
 
 function ABP_4H:ShowMainWindow()
     if activeWindow then
+        activeWindow:SetUserData("closeConfirmed", true);
         activeWindow:Hide();
         return;
     end
@@ -1113,4 +1129,17 @@ end
 StaticPopupDialogs["ABP_4H_MAP_BLOCKED"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
     text = "Opening the map window directly is restricted to raid lead/assists when in Naxxramas! It will open automatically when you're assigned a role.",
     button1 = "Ok",
+});
+
+StaticPopupDialogs["ABP_4H_CONFIRM_CLOSE"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
+    text = "Close the map? You can reopen via |cff00ff00/fh show|r or binding a key. |cffaaaaaaBypass this confirmation by holding <shift> or disabling in settings.|r",
+    button1 = "Close",
+    button2 = "Cancel",
+    showAlert = true,
+    OnAccept = function(self, data)
+        if activeWindow then
+            activeWindow:SetUserData("closeConfirmed", true);
+            activeWindow:Hide();
+        end
+    end,
 });

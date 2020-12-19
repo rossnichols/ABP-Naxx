@@ -22,6 +22,7 @@ function ABP_4H:InitOptions()
             healerCCW = false,
             healerZeliak = true,
             windowManagement = {},
+            confirmClose = true,
         },
         global = {
             outdatedVersion = "popup",
@@ -164,9 +165,17 @@ function ABP_4H:InitOptions()
                             get = function(info) return self.db.char.showNeighbors; end,
                             set = function(info, v) self.db.char.showNeighbors = v; self:RefreshMainWindow(); end,
                         },
+                        neighbors = {
+                            name = "Confirm map close",
+                            order = 8,
+                            desc = "If enabled, you'll be prompted when closing the map while an encounter is in progress, unless you're holding the shift key.",
+                            type = "toggle",
+                            get = function(info) return self.db.char.confirmClose; end,
+                            set = function(info, v) self.db.char.confirmClose = v; end,
+                        },
                         ccw = {
                             name = "Healer Opts",
-                            order = 8,
+                            order = 9,
                             desc = "|cff00ff00Counter-clockwise|r: If checked, healers will rotate counterclockwise instead of clockwise.\n\n" ..
                                    "|cff00ff00Staggered Zeliak|r: If checked, healer positions in Zeliak's corner will be staggered, with the healer moving each mark.",
                             type = "multiselect",
@@ -176,7 +185,7 @@ function ABP_4H:InitOptions()
                         },
                         alpha = {
                             name = "Map Alpha",
-                            order = 9,
+                            order = 10,
                             desc = "Controls the alpha of the map.",
                             type = "range",
                             min = 0,
@@ -187,7 +196,7 @@ function ABP_4H:InitOptions()
                         },
                         outdatedversion = {
                             name = "Version Warning",
-                            order = 10,
+                            order = 11,
                             desc = "Choose how you'll be notified about newer versions of the addon.",
                             type = "select",
                             values = {
