@@ -390,14 +390,25 @@ local function RefreshTanks(raiders, map)
                     UnitName(bossTargets[mark]));
             end
 
-            tankElts[ABP_4H.Marks.tl]:SetText(("%s%s|cff00ff00%s%s|r\n%s|cffcccccc%s%s|r"):format(
-                tank,
-                current and current.icon and current.icon:format(0) or "",
-                current and current.count and current.count:format("", " ") or "",
-                current and current.text or "",
-                upcoming and upcoming.icon and upcoming.icon:format(0) or "",
-                upcoming and upcoming.count and upcoming.count:format("", " ") or "",
-                upcoming and upcoming.text or ""));
+            if tankElts[ABP_4H.Marks.tl]:GetUserData("canvas") == "fill" then
+                tankElts[ABP_4H.Marks.tl]:SetText(("%s%s|cff00ff00%s%s|r\n%s|cffcccccc%s%s|r"):format(
+                    tank,
+                    current and current.icon and current.icon:format(0) or "",
+                    current and current.count and current.count:format("", " ") or "",
+                    current and current.text or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(0) or "",
+                    upcoming and upcoming.count and upcoming.count:format("", " ") or "",
+                    upcoming and upcoming.text or ""));
+            else
+                tankElts[ABP_4H.Marks.tl]:SetText(("%s|cff00ff00%s%s|r%s\n|cffcccccc%s%s|r%s"):format(
+                    tank,
+                    current and current.text or "",
+                    current and current.count and current.count:format(" ", "") or "",
+                    current and current.icon and current.icon:format(0) or "",
+                    upcoming and upcoming.text or "",
+                    upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(0) or ""));
+            end
         end
 
         if currentEncounter.bossDeaths[ABP_4H.Marks.tr] then
@@ -418,14 +429,25 @@ local function RefreshTanks(raiders, map)
                     icon and icon:format(0) or "");
             end
 
-            tankElts[ABP_4H.Marks.tr]:SetText(("%s|cff00ff00%s%s|r%s\n|cffcccccc%s%s|r%s"):format(
-                tank,
-                current and current.text or "",
-                current and current.count and current.count:format(" ", "") or "",
-                current and current.icon and current.icon:format(0) or "",
-                upcoming and upcoming.text or "",
-                upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
-                upcoming and upcoming.icon and upcoming.icon:format(0) or ""));
+            if tankElts[ABP_4H.Marks.tr]:GetUserData("canvas") == "fill" then
+                tankElts[ABP_4H.Marks.tr]:SetText(("%s|cff00ff00%s%s|r%s\n|cffcccccc%s%s|r%s"):format(
+                    tank,
+                    current and current.text or "",
+                    current and current.count and current.count:format(" ", "") or "",
+                    current and current.icon and current.icon:format(0) or "",
+                    upcoming and upcoming.text or "",
+                    upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(0) or ""));
+            else
+                tankElts[ABP_4H.Marks.tr]:SetText(("%s%s|cff00ff00%s%s|r\n%s|cffcccccc%s%s|r"):format(
+                    tank,
+                    current and current.icon and current.icon:format(0) or "",
+                    current and current.count and current.count:format("", " ") or "",
+                    current and current.text or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(0) or "",
+                    upcoming and upcoming.count and upcoming.count:format("", " ") or "",
+                    upcoming and upcoming.text or ""));
+            end
         end
 
         if currentEncounter.bossDeaths[ABP_4H.Marks.bl] then
@@ -446,14 +468,25 @@ local function RefreshTanks(raiders, map)
                     UnitName(bossTargets[mark]));
             end
 
-            tankElts[ABP_4H.Marks.bl]:SetText(("%s|cffcccccc%s%s|r\n%s|cff00ff00%s%s|r%s"):format(
-                upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
-                upcoming and upcoming.count and upcoming.count:format("", " ") or "",
-                upcoming and upcoming.text or "",
-                current and current.icon and current.icon:format(-16) or "",
-                current and current.count and current.count:format("", " ") or "",
-                current and current.text or "",
-                tank));
+            if tankElts[ABP_4H.Marks.bl]:GetUserData("canvas") == "fill" then
+                tankElts[ABP_4H.Marks.bl]:SetText(("%s|cffcccccc%s%s|r\n%s|cff00ff00%s%s|r%s"):format(
+                    upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
+                    upcoming and upcoming.count and upcoming.count:format("", " ") or "",
+                    upcoming and upcoming.text or "",
+                    current and current.icon and current.icon:format(-16) or "",
+                    current and current.count and current.count:format("", " ") or "",
+                    current and current.text or "",
+                    tank));
+            else
+                tankElts[ABP_4H.Marks.bl]:SetText(("|cffcccccc%s%s|r%s\n|cff00ff00%s%s|r%s%s"):format(
+                    upcoming and upcoming.text or "",
+                    upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
+                    current and current.text or "",
+                    current and current.count and current.count:format(" ", "") or "",
+                    current and current.icon and current.icon:format(-16) or "",
+                    tank));
+            end
         end
 
         if currentEncounter.bossDeaths[ABP_4H.Marks.br] then
@@ -474,14 +507,25 @@ local function RefreshTanks(raiders, map)
                     icon and icon:format(-16) or "");
             end
 
-            tankElts[ABP_4H.Marks.br]:SetText(("|cffcccccc%s%s|r%s\n|cff00ff00%s%s|r%s%s"):format(
-                upcoming and upcoming.text or "",
-                upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
-                upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
-                current and current.text or "",
-                current and current.count and current.count:format(" ", "") or "",
-                current and current.icon and current.icon:format(-16) or "",
-                tank));
+            if tankElts[ABP_4H.Marks.br]:GetUserData("canvas") == "fill" then
+                tankElts[ABP_4H.Marks.br]:SetText(("|cffcccccc%s%s|r%s\n|cff00ff00%s%s|r%s%s"):format(
+                    upcoming and upcoming.text or "",
+                    upcoming and upcoming.count and upcoming.count:format(" ", "") or "",
+                    upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
+                    current and current.text or "",
+                    current and current.count and current.count:format(" ", "") or "",
+                    current and current.icon and current.icon:format(-16) or "",
+                    tank));
+            else
+                tankElts[ABP_4H.Marks.br]:SetText(("%s|cffcccccc%s%s|r\n%s|cff00ff00%s%s|r%s"):format(
+                    upcoming and upcoming.icon and upcoming.icon:format(-16) or "",
+                    upcoming and upcoming.count and upcoming.count:format("", " ") or "",
+                    upcoming and upcoming.text or "",
+                    current and current.icon and current.icon:format(-16) or "",
+                    current and current.count and current.count:format("", " ") or "",
+                    current and current.text or "",
+                    tank));
+            end
         end
     end
 end
@@ -853,40 +897,47 @@ function ABP_4H:CreateMainWindow()
 
             local tankElts = window:GetUserData("tankElts");
             if tankElts then
-                if value <= 250 then
-                    tankElts[self.Marks.tl]:SetUserData("canvas", "outside-left");
-                    tankElts[self.Marks.tl]:SetUserData("canvas-left", 0);
-                    tankElts[self.Marks.tl]:SetUserData("canvas-right", -5);
-                    tankElts[self.Marks.tl]:SetJustifyH("RIGHT");
-                    tankElts[self.Marks.tr]:SetUserData("canvas", "outside-right");
-                    tankElts[self.Marks.tr]:SetUserData("canvas-left", 10);
-                    tankElts[self.Marks.tr]:SetUserData("canvas-right", 0);
-                    tankElts[self.Marks.tr]:SetJustifyH("LEFT");
-                    tankElts[self.Marks.bl]:SetUserData("canvas", "outside-left");
-                    tankElts[self.Marks.bl]:SetUserData("canvas-left", 0);
-                    tankElts[self.Marks.bl]:SetUserData("canvas-right", -5);
-                    tankElts[self.Marks.bl]:SetJustifyH("RIGHT");
-                    tankElts[self.Marks.br]:SetUserData("canvas", "outside-right");
-                    tankElts[self.Marks.br]:SetUserData("canvas-left", 10);
-                    tankElts[self.Marks.br]:SetUserData("canvas-right", 0);
-                    tankElts[self.Marks.br]:SetJustifyH("LEFT");
-                else
-                    tankElts[self.Marks.tl]:SetUserData("canvas", "fill");
-                    tankElts[self.Marks.tl]:SetUserData("canvas-left", 30);
-                    tankElts[self.Marks.tl]:SetUserData("canvas-right", 0);
-                    tankElts[self.Marks.tl]:SetJustifyH("LEFT");
-                    tankElts[self.Marks.tr]:SetUserData("canvas", "fill");
-                    tankElts[self.Marks.tr]:SetUserData("canvas-left", 0);
-                    tankElts[self.Marks.tr]:SetUserData("canvas-right", -30);
-                    tankElts[self.Marks.tr]:SetJustifyH("RIGHT");
-                    tankElts[self.Marks.bl]:SetUserData("canvas", "fill");
-                    tankElts[self.Marks.bl]:SetUserData("canvas-left", 30);
-                    tankElts[self.Marks.bl]:SetUserData("canvas-right", 0);
-                    tankElts[self.Marks.bl]:SetJustifyH("LEFT");
-                    tankElts[self.Marks.br]:SetUserData("canvas", "fill");
-                    tankElts[self.Marks.br]:SetUserData("canvas-left", 0);
-                    tankElts[self.Marks.br]:SetUserData("canvas-right", -30);
-                    tankElts[self.Marks.br]:SetJustifyH("RIGHT");
+                local shouldBeFill = (value > 250);
+                local isFill = (tankElts[self.Marks.tl]:GetUserData("canvas") == "fill");
+                if shouldBeFill ~= isFill then
+                    if shouldBeFill then
+                        tankElts[self.Marks.tl]:SetUserData("canvas", "fill");
+                        tankElts[self.Marks.tl]:SetUserData("canvas-left", 30);
+                        tankElts[self.Marks.tl]:SetUserData("canvas-right", 0);
+                        tankElts[self.Marks.tl]:SetJustifyH("LEFT");
+                        tankElts[self.Marks.tr]:SetUserData("canvas", "fill");
+                        tankElts[self.Marks.tr]:SetUserData("canvas-left", 0);
+                        tankElts[self.Marks.tr]:SetUserData("canvas-right", -30);
+                        tankElts[self.Marks.tr]:SetJustifyH("RIGHT");
+                        tankElts[self.Marks.bl]:SetUserData("canvas", "fill");
+                        tankElts[self.Marks.bl]:SetUserData("canvas-left", 30);
+                        tankElts[self.Marks.bl]:SetUserData("canvas-right", 0);
+                        tankElts[self.Marks.bl]:SetJustifyH("LEFT");
+                        tankElts[self.Marks.br]:SetUserData("canvas", "fill");
+                        tankElts[self.Marks.br]:SetUserData("canvas-left", 0);
+                        tankElts[self.Marks.br]:SetUserData("canvas-right", -30);
+                        tankElts[self.Marks.br]:SetJustifyH("RIGHT");
+                    else
+                        tankElts[self.Marks.tl]:SetUserData("canvas", "outside-left");
+                        tankElts[self.Marks.tl]:SetUserData("canvas-left", 0);
+                        tankElts[self.Marks.tl]:SetUserData("canvas-right", -5);
+                        tankElts[self.Marks.tl]:SetJustifyH("RIGHT");
+                        tankElts[self.Marks.tr]:SetUserData("canvas", "outside-right");
+                        tankElts[self.Marks.tr]:SetUserData("canvas-left", 10);
+                        tankElts[self.Marks.tr]:SetUserData("canvas-right", 0);
+                        tankElts[self.Marks.tr]:SetJustifyH("LEFT");
+                        tankElts[self.Marks.bl]:SetUserData("canvas", "outside-left");
+                        tankElts[self.Marks.bl]:SetUserData("canvas-left", 0);
+                        tankElts[self.Marks.bl]:SetUserData("canvas-right", -5);
+                        tankElts[self.Marks.bl]:SetJustifyH("RIGHT");
+                        tankElts[self.Marks.br]:SetUserData("canvas", "outside-right");
+                        tankElts[self.Marks.br]:SetUserData("canvas-left", 10);
+                        tankElts[self.Marks.br]:SetUserData("canvas-right", 0);
+                        tankElts[self.Marks.br]:SetJustifyH("LEFT");
+                    end
+
+                    local raiders, map = ABP_4H:GetRaiderSlots();
+                    RefreshTanks(raiders, map);
                 end
             end
 
