@@ -337,7 +337,10 @@ local function Refresh()
         end
     end
 
-    window:GetUserData("countElt"):SetText(("%d / %d players have confirmed their roles."):format(readyCount, count));
+    local textColor = "ffff00";
+    if readyCount == 0 then textColor = "ff0000"; end
+    if readyCount == count then textColor = "00ff00"; end
+    window:GetUserData("countElt"):SetText(("|cff%s%d / %d|r players have confirmed their roles."):format(textColor, readyCount, count));
 
     for i, dropdown in pairs(dropdowns) do
         local mappedIndex = dropdown:GetUserData("mappedIndex");
