@@ -606,10 +606,12 @@ local function Refresh()
         image:DoLayout();
     end
 
-    local raiders, map = ABP_4H:GetRaiderSlots();
-    RefreshNeighbors(raiders, map);
     RefreshMarks();
-    RefreshTanks(raiders, map);
+    if currentEncounter then
+        local raiders, map = ABP_4H:GetRaiderSlots();
+        RefreshNeighbors(raiders, map);
+        RefreshTanks(raiders, map);
+    end
 end
 
 function ABP_4H:UIOnGroupJoined()
@@ -682,10 +684,12 @@ end
 
 function ABP_4H:OnUITimer()
     if activeWindow then
-        local raiders, map = ABP_4H:GetRaiderSlots();
-        RefreshNeighbors(raiders, map);
-        RefreshTanks(raiders, map);
         RefreshMarks();
+        if currentEncounter then
+            local raiders, map = ABP_4H:GetRaiderSlots();
+            RefreshNeighbors(raiders, map);
+            RefreshTanks(raiders, map);
+        end
     end
 end
 
@@ -937,7 +941,7 @@ function ABP_4H:CreateMainWindow()
                         tankElts[self.Marks.br]:SetJustifyH("LEFT");
                     end
 
-                    if activeWindow then
+                    if activeWindow and currentEncounter then
                         local raiders, map = ABP_4H:GetRaiderSlots();
                         RefreshTanks(raiders, map);
                     end
