@@ -562,7 +562,7 @@ function ABP_4H:CreateStartWindow()
     local scroll = AceGUI:Create("ScrollFrame");
     scroll:SetFullWidth(true);
     scroll:SetFullHeight(true);
-    scroll:SetLayout("List");
+    scroll:SetLayout("Flow");
     container:AddChild(scroll);
 
     if GetNumGroupMembers() == 0 then
