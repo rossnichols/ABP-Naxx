@@ -707,11 +707,11 @@ function ABP_4H:CreateStartWindow()
                 if prevRole then
                     local available = BuildDropdown(false, raiders, true, true);
                     for availableRole in pairs(available) do
-                        if availableRole == prevRole then
-                            assignedRoles[i] = availableRole;
+                        if availableRole == prevRole or prevRole == self.Roles.independent then
+                            assignedRoles[i] = prevRole;
                             window:GetUserData("slotEditTimes")[i] = GetTime();
                             window:GetUserData("readyPlayers")[i] = nil;
-                            dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                            dropdowns[dropdownMapReversed[i]]:SetValue(prevRole);
                             break;
                         end
                     end
