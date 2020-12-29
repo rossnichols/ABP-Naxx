@@ -1104,7 +1104,7 @@ function ABP_4H:CreateStartWindow()
     local info = AceGUI:Create("ABPN_Label");
     info:SetFont(_G.GameFontHighlightSmall);
     info:SetFullWidth(true);
-    info:SetText(("%s: leave a comment on CurseForge/WoWInterface, or reach out to %s on reddit."):format(
+    info:SetText(("%s: leave a comment on CurseForge/WoWInterface/GitHub, or reach out to %s on reddit."):format(
         self:ColorizeText("Feedback/support"), self:ColorizeText("ross456")));
     bottom:AddChild(info);
 

@@ -106,7 +106,7 @@ function ABP_4H:InitOptions()
                 desc2 = {
                     order = 3,
                     type = "description",
-                    name = ("%s: leave a comment on CurseForge/WoWInterface, or reach out to %s on reddit."):format(
+                    name = ("%s: leave a comment on CurseForge/WoWInterface/GitHub, or reach out to %s on reddit."):format(
                         self:ColorizeText("Feedback/support"), self:ColorizeText("ross456")),
                 },
                 settings = {
