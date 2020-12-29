@@ -898,8 +898,9 @@ function ABP_4H:CreateMainWindow()
             local tankElts = window:GetUserData("tankElts");
             if tankElts then
                 local shouldBeFill = (value > 250);
-                local isFill = (tankElts[self.Marks.tl]:GetUserData("canvas") == "fill");
-                if shouldBeFill ~= isFill then
+                local canvasData = tankElts[self.Marks.tl]:GetUserData("canvas");
+                local isFill = (canvasData == "fill");
+                if canvasData == nil or shouldBeFill ~= isFill then
                     if shouldBeFill then
                         tankElts[self.Marks.tl]:SetUserData("canvas", "fill");
                         tankElts[self.Marks.tl]:SetUserData("canvas-left", 30);
@@ -936,8 +937,10 @@ function ABP_4H:CreateMainWindow()
                         tankElts[self.Marks.br]:SetJustifyH("LEFT");
                     end
 
-                    local raiders, map = ABP_4H:GetRaiderSlots();
-                    RefreshTanks(raiders, map);
+                    if activeWindow then
+                        local raiders, map = ABP_4H:GetRaiderSlots();
+                        RefreshTanks(raiders, map);
+                    end
                 end
             end
 
