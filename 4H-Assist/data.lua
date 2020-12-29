@@ -189,7 +189,6 @@ local healerMap = {
 };
 
 local rolesSorted = {
-    roles.independent,
     roles.dps1,
     roles.dps2,
     roles.dps3,
@@ -214,6 +213,7 @@ local rolesSorted = {
     roles.healer10,
     roles.healer11,
     roles.healer12,
+    roles.independent,
 };
 
 local rolesSortedStatus = {
