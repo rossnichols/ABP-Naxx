@@ -225,31 +225,6 @@ end
 
 
 --
--- Helpers for privilege checks
---
-
-function ABP_4H:IsPrivileged()
-    -- Check officer status by looking for the privilege to speak in officer chat.
-    local isOfficer = C_GuildInfo.GuildControlGetRankFlags(C_GuildInfo.GetGuildRankOrder(UnitGUID("player")))[4];
-    return isOfficer or self:GetDebugOpt();
-end
-
-function ABP_4H:CanEditPublicNotes()
-    return C_GuildInfo.GuildControlGetRankFlags(C_GuildInfo.GetGuildRankOrder(UnitGUID("player")))[10];
-end
-
-function ABP_4H:CanEditOfficerNotes(player)
-    local guid = UnitGUID("player");
-    if player then
-        local guildInfo = self:GetGuildInfo(player);
-        if not guildInfo then return false; end
-        guid = guildInfo[17];
-    end
-    return C_GuildInfo.GuildControlGetRankFlags(C_GuildInfo.GetGuildRankOrder(guid))[12];
-end
-
-
---
 -- Hook for CloseSpecialWindows to allow our UI windows to close on Escape.
 --
 
@@ -457,8 +432,12 @@ function ABP_4H:IsInNaxx()
     return instanceId == 533;
 end
 
+function ABP_4H:IsPrivileged()
+    return not IsInRaid() or UnitIsGroupLeader("player") or UnitIsGroupAssistant("player");
+end
+
 function ABP_4H:CanOpenWindow()
-    return not self:IsInNaxx() or not IsInRaid() or UnitIsGroupLeader("player") or UnitIsGroupAssistant("player");
+    return not self:IsInNaxx() or self:IsPrivileged();
 end
 
 

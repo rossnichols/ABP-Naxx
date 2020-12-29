@@ -62,6 +62,8 @@ function ABP_4H:InitOptions()
             name = "Version Check",
             desc = "checks the raid for an outdated or missing addon versions (alias: vc)",
             type = "execute",
+            hidden = function() return not self:IsPrivileged(); end,
+            validate = function() if not self:IsPrivileged() then return "|cffff0000not privileged|r"; end end,
             func = function() self:PerformVersionCheck(); end
         },
     };
@@ -213,33 +215,6 @@ function ABP_4H:InitOptions()
                 },
             },
         },
-        -- officer = {
-        --     name = "",
-        --     type = "group",
-        --     inline = true,
-        --     order = 5,
-        --     hidden = function() return not self:CanEditOfficerNotes(); end,
-        --     args = {
-        --         header = {
-        --             order = 1,
-        --             type = "header",
-        --             name = "Officer",
-        --         },
-        --         desc = {
-        --             order = 2,
-        --             type = "description",
-        --             name = "Special settings for officers.",
-        --         },
-        --         settings = {
-        --             name = " ",
-        --             type = "group",
-        --             inline = true,
-        --             order = 3,
-        --             args = {
-        --             },
-        --         },
-        --     },
-        -- },
     };
     AceConfig:RegisterOptionsTable("4H Assist", {
         name = self:ColorizeText(addonText) .. " Options",
