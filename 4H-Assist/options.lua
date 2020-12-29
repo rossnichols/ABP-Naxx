@@ -23,13 +23,13 @@ function ABP_4H:InitOptions()
             healerZeliak = true,
             windowManagement = {},
             confirmClose = true,
-            previousRoles = {},
-            previousRolesFake = {},
         },
         global = {
             outdatedVersion = "popup",
             debug = false,
             raidLayouts = {},
+            previousRoles = {},
+            fakeRaiders = "",
         },
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);
@@ -300,11 +300,21 @@ function ABP_4H:DeleteLayout(name)
         local layouts = self:GetGlobal("raidLayouts");
         layouts[name] = nil;
     end
+
+    local roles = self:GetGlobal("previousRoles");
+    roles[name] = nil;
 end
 
 function ABP_4H:SaveLayout(name, layout)
     local layouts = self:GetGlobal("raidLayouts");
-    layouts[name] = layout;
+    layouts[name] = self.tCopy(layout);
+end
+
+function ABP_4H:GetPrevRoles()
+    local roles = self:GetGlobal("previousRoles");
+    local setting = self:GetCurrentLayout();
+    roles[setting] = roles[setting] or {};
+    return roles[setting];
 end
 
 function ABP_4H:GetHealerSetup()

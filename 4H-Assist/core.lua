@@ -208,6 +208,7 @@ end
 function ABP_4H:ColorizeName(name, class)
     if not class then
         if UnitExists(name) then
+            name = UnitName(name);
             local _, className = UnitClass(name);
             class = className;
         end
@@ -215,6 +216,7 @@ function ABP_4H:ColorizeName(name, class)
     if not class then
         local guildInfo = self:GetGuildInfo(name);
         if guildInfo then
+            name = guildInfo.player;
             class = guildInfo[11];
         end
     end

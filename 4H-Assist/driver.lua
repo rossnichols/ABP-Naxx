@@ -87,77 +87,15 @@ function ABP_4H:GetRaiderSlots()
     else
         if not fakePlayers then
             fakePlayers = {};
-            local tanks = {
-                { name = "Arrowcard", class = "WARRIOR", wowRole = "maintank", fake = true },
-                { name = "Avalanchion", class = "WARRIOR", wowRole = "maintank", fake = true },
-                { name = "Coop", class = "WARRIOR", wowRole = "maintank", fake = true },
-                { name = "Executi", class = "WARRIOR", wowRole = "maintank", fake = true },
-                { name = "Jearom", class = "WARRIOR", wowRole = "maintank", fake = true },
-                { name = "Klisk", class = "WARRIOR", wowRole = "maintank", fake = true },
-                { name = "Kxw", class = "WARRIOR", wowRole = "maintank", fake = true },
-                { name = "Rumhammer", class = "WARRIOR", wowRole = "maintank", fake = true },
-            };
-            local healers = {
-                { name = "Bakedpancake", class = "PRIEST", wowRole = "", fake = true },
-                { name = "Consuela", class = "PRIEST", wowRole = "", fake = true },
-                { name = "Endestroy", class = "PRIEST", wowRole = "", fake = true },
-                { name = "Groggy", class = "PALADIN", wowRole = "", fake = true },
-                { name = "Lago", class = "PRIEST", wowRole = "", fake = true },
-                { name = "Nadrell", class = "PALADIN", wowRole = "", fake = true },
-                { name = "Peachapple", class = "PRIEST", wowRole = "", fake = true },
-                { name = "Starlight", class = "DRUID", wowRole = "", fake = true },
-                { name = "Quellia", class = "DRUID", wowRole = "", fake = true },
-                { name = "Righteous", class = "PALADIN", wowRole = "", fake = true },
-                { name = "Rplix", class = "PALADIN", wowRole = "", fake = true },
-                { name = "Soggybottom", class = "PRIEST", wowRole = "", fake = true },
-            };
-            local dps = {
-                { name = player, class = select(2, UnitClass("player")), wowRole = "" },
-                { name = "Therrook", class = "WARRIOR", wowRole = "", fake = true },
-                { name = "Tracer", class = "WARRIOR", wowRole = "", fake = true },
-                { name = "Azuj", class = "ROGUE", wowRole = "", fake = true },
-                { name = "Basherslice", class = "HUNTER", wowRole = "", fake = true },
-                { name = "Cmdk", class = "MAGE", wowRole = "", fake = true },
-                { name = "Deconstruct", class = "WARLOCK", wowRole = "", fake = true },
-                { name = "Ezekkiel", class = "MAGE", wowRole = "", fake = true },
-                { name = "Friend", class = "WARLOCK", wowRole = "", fake = true },
-                { name = "Gyda", class = "ROGUE", wowRole = "", fake = true },
-                { name = "Hawkeye", class = "HUNTER", wowRole = "", fake = true },
-                { name = "Klue", class = "WARLOCK", wowRole = "", fake = true },
-                { name = "Krustytop", class = "WARLOCK", wowRole = "", fake = true },
-                { name = "Lunamar", class = "MAGE", wowRole = "", fake = true },
-                { name = "Magivagi", class = "MAGE", wowRole = "", fake = true },
-                { name = "Perol", class = "ROGUE", wowRole = "", fake = true },
-                { name = "Rangda", class = "ROGUE", wowRole = "", fake = true },
-                { name = "Saccrilege", class = "WARLOCK", wowRole = "", fake = true },
-                { name = "Shindizzle", class = "HUNTER", wowRole = "", fake = true },
-                { name = "Spacca", class = "MAGE", wowRole = "", fake = true },
-            };
-            local pool = {
-                [ABP_4H.Categories.tank] = tanks,
-                [ABP_4H.Categories.healer] = healers,
-                [ABP_4H.Categories.dps] = dps,
-                [ABP_4H.Categories.none] = {},
-            };
-            assignedRoles = assignedRoles or self:LoadCurrentLayout();
-
-            for i = 1, #self.RaidRoles do
-                if assignedRoles[i] then
-                    local players = pool[ABP_4H.RoleCategories[assignedRoles[i]]];
-                    if players[1] then
-                        fakePlayers[i] = table.remove(players, 1);
-                    end
+            local raidersText = ABP_4H:GetGlobal("fakeRaiders");
+            for fakeRaider in raidersText:gmatch("%S+") do
+                local class;
+                local guildInfo = self:GetGuildInfo(fakeRaider);
+                if guildInfo then
+                    fakeRaider = guildInfo.player;
+                    class = guildInfo[11];
                 end
-            end
-            for i = 1, #self.RaidRoles do
-                if not fakePlayers[i] then
-                    for _, players in pairs(pool) do
-                        if players[1] then
-                            fakePlayers[i] = table.remove(players, 1);
-                            break;
-                        end
-                    end
-                end
+                table.insert(fakePlayers, { name = fakeRaider, class = class, fake = true } );
             end
         end
 
@@ -179,11 +117,11 @@ local function SendStateComm(active, dist, target)
         if dist == "BROADCAST" then
             local raiders = ABP_4H:GetRaiderSlots();
             processedRoles = {};
-            local previousRoles = { [false] = ABP_4H:Get("previousRoles"), [true] = ABP_4H:Get("previousRolesFake") };
+            local previousRoles = ABP_4H:GetPrevRoles();
             local healerSetup = ABP_4H:GetHealerSetup();
             for slot, raider in pairs(raiders) do
                 local role = assignedRoles[slot];
-                previousRoles[raider.fake and true or false][raider.name] = role;
+                previousRoles[raider.name:lower()] = role;
                 if ABP_4H.RoleCategories[role] == ABP_4H.Categories.healer then
                     role = ABP_4H.HealerMap[healerSetup][role];
                 end
@@ -374,6 +312,8 @@ function ABP_4H:DriverOnStateSyncAck(data, distribution, sender, version)
     if not activeWindow then return; end
 
     local _, map = ABP_4H:GetRaiderSlots();
+    if not map[sender] then return; end
+
     if data.role == assignedRoles[map[sender]] then
         activeWindow:GetUserData("readyPlayers")[map[sender]] = sender;
     else
@@ -586,7 +526,7 @@ function ABP_4H:CreateStartWindow()
     assignedRoles = assignedRoles or self:LoadCurrentLayout();
     mode = self:IsInNaxx() and self.Modes.live or self.Modes.manual;
 
-    local windowWidth = 1100;
+    local windowWidth = 1200;
     local window = AceGUI:Create("ABPN_Window");
     window.frame:SetFrameStrata("MEDIUM");
     window:SetTitle(("%s v%s"):format(self:ColorizeText("4H Assist"), self:GetVersion()));
@@ -618,6 +558,13 @@ function ABP_4H:CreateStartWindow()
     container:SetLayout("Flow");
     window:AddChild(container);
 
+    if GetNumGroupMembers() == 0 then
+        local label = AceGUI:Create("ABPN_Label");
+        label:SetFullWidth(true);
+        label:SetText("Simulate a raid group using the \"Raiders\" edit box below. If you sync, assignments will be remembered (for the current layout) when they're actually grouped with you.");
+        container:AddChild(label);
+    end
+
     local raidRoles = AceGUI:Create("InlineGroup");
     raidRoles:SetTitle("Raid Roles");
     raidRoles:SetFullWidth(true);
@@ -644,12 +591,12 @@ function ABP_4H:CreateStartWindow()
         local raiders = ABP_4H:GetRaiderSlots();
         local group = widget:GetUserData("group");
         local dropdowns = window:GetUserData("dropdowns");
-        local previousRoles = { [false] = ABP_4H:Get("previousRoles"), [true] = ABP_4H:Get("previousRolesFake") };
+        local previousRoles = ABP_4H:GetPrevRoles();
         local unassigned = {};
 
         -- If the previous role for a player is present in the group or unassigned, give it to them.
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
-            local prevRole = raiders[i] and previousRoles[raiders[i].fake and true or false][raiders[i].name];
+            local prevRole = raiders[i] and previousRoles[raiders[i].name:lower()];
             if prevRole and assignedRoles[i] ~= prevRole then
                 for j = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
                     local role = assignedRoles[j];
@@ -702,7 +649,7 @@ function ABP_4H:CreateStartWindow()
         for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
             local role = assignedRoles[i];
             if role then
-                local prevRole = raiders[i] and previousRoles[raiders[i].fake and true or false][raiders[i].name];
+                local prevRole = raiders[i] and previousRoles[raiders[i].name:lower()];
                 if not raiders[i] or (role ~= prevRole and CategoryIsMismatched(raiders[i], role)) then
                     assignedRoles[i] = false;
                     table.insert(unassigned, role);
@@ -741,6 +688,25 @@ function ABP_4H:CreateStartWindow()
                         window:GetUserData("slotEditTimes")[i] = GetTime();
                         window:GetUserData("readyPlayers")[i] = nil;
                         dropdowns[dropdownMapReversed[i]]:SetValue(oldRole);
+                    end
+                end
+            end
+        end
+
+        -- If any raiders don't have a role, see if their previous role is available.
+        for i = (group - 1) * 5 + 1, (group - 1) * 5 + 5 do
+            if raiders[i] and not assignedRoles[i] then
+                local prevRole = previousRoles[raiders[i].name:lower()];
+                if prevRole then
+                    local available = BuildDropdown(false, raiders, true, true);
+                    for availableRole in pairs(available) do
+                        if availableRole == prevRole then
+                            assignedRoles[i] = availableRole;
+                            window:GetUserData("slotEditTimes")[i] = GetTime();
+                            window:GetUserData("readyPlayers")[i] = nil;
+                            dropdowns[dropdownMapReversed[i]]:SetValue(availableRole);
+                            break;
+                        end
                     end
                 end
             end
@@ -885,7 +851,7 @@ function ABP_4H:CreateStartWindow()
 
     local label = AceGUI:Create("ABPN_Label");
     label:SetFullWidth(true);
-    label:SetText("Smart assignment remembers past syncs. Once raiders are in the proper group, smart-assign the raid to apply it.");
+    label:SetText("Smart assignment remembers past syncs on a per-layout basis. Once raiders are in the proper group, smart-assign the raid to apply it.");
     container:AddChild(label);
 
     local unassign = AceGUI:Create("Button");
@@ -972,14 +938,29 @@ function ABP_4H:CreateStartWindow()
     options:SetUserData("table", { columns = { 0, 0, 0, 0, 0 }});
     container:AddChild(options);
 
+    local names = AceGUI:Create("MultiLineEditBox");
+    names:SetLabel("Raiders");
+    names:SetFullHeight(true);
+    names:SetText(self:GetGlobal("fakeRaiders"));
+    names:SetCallback("OnEnterPressed", function(widget, event, value)
+        self:SetGlobal("fakeRaiders", value);
+        fakePlayers = {};
+        self:ShowStartWindow(true);
+    end);
+    names:SetUserData("cell", { rowspan = 3, paddingBottom = 3 });
+    options:AddChild(names);
+    self:AddWidgetTooltip(names, "List raiders that will populate the window when you're ungrouped. If you sync, assignments will be remembered (for the current layout) when they're actually grouped with you.");
+    names:SetDisabled(GetNumGroupMembers() > 0);
+
     local nonHealers = AceGUI:Create("MultiLineEditBox");
     nonHealers:SetLabel("Non-Healer Overrides");
+    nonHealers:SetFullHeight(true);
     nonHealers:SetText(self:Get("nonHealers"));
     nonHealers:SetCallback("OnEnterPressed", function(widget, event, value)
         self:Set("nonHealers", value);
         Refresh();
     end);
-    nonHealers:SetUserData("cell", { rowspan = 2 });
+    nonHealers:SetUserData("cell", { rowspan = 3, paddingBottom = 3 });
     options:AddChild(nonHealers);
     self:AddWidgetTooltip(nonHealers, "List druids/priests/paladins/shaman that should not be considered as healers.");
 
@@ -1028,6 +1009,44 @@ function ABP_4H:CreateStartWindow()
     options:AddChild(restricted);
     self:AddWidgetTooltip(restricted, "If assignments are capped, you cannot assign a role to more slots than it was originally allocated in the base configuration.");
 
+    local loadLayout = AceGUI:Create("Dropdown");
+    loadLayout:SetLabel("Load Layout");
+    loadLayout:SetList(self:GetLayouts());
+    loadLayout:SetValue(self:GetCurrentLayout());
+    loadLayout:SetUserData("cell", { paddingH = 10, align = "CENTER" });
+    loadLayout:SetCallback("OnValueChanged", function(widget, event, value)
+        self:Set("selectedRaidLayout", value);
+        assignedRoles = self:LoadCurrentLayout();
+        Refresh();
+    end);
+    options:AddChild(loadLayout);
+    self:AddWidgetTooltip(loadLayout, "Load a saved layout of raid roles.");
+
+    local save = AceGUI:Create("Button");
+    save:SetWidth(150);
+    save:SetText("Save Layout");
+    save:SetUserData("cell", { paddingH = 10, paddingBottom = 5, align = "BOTTOM" });
+    save:SetCallback("OnClick", function(widget, event)
+        local layout = self:GetCurrentLayout();
+        if type(layout) ~= "string" then layout = nil; end
+        _G.StaticPopup_Show("ABP_4H_SAVE_LAYOUT", nil, nil, { initialText = layout });
+    end);
+    options:AddChild(save);
+    self:AddWidgetTooltip(save, "Save the current layout of raid roles.");
+
+    local delete = AceGUI:Create("Button");
+    delete:SetWidth(150);
+    delete:SetText("Delete Layout");
+    delete:SetDisabled(self:GetCurrentLayout() == 1);
+    delete:SetUserData("cell", { paddingH = 10, paddingBottom = 5, align = "BOTTOM" });
+    delete:SetCallback("OnClick", function(widget, event)
+        local layout = self:GetCurrentLayout();
+        if layout == 2 then layout = "Legacy Saved (Per-Char)"; end
+        _G.StaticPopup_Show("ABP_4H_DELETE_LAYOUT", self:ColorizeText(layout));
+    end);
+    options:AddChild(delete);
+    self:AddWidgetTooltip(delete, "Delete the current layout.");
+
     local healerOpts = { healerCCW = "Counter-clockwise", healerZeliak = "Staggered Zeliak" };
     local healerOptsElt = AceGUI:Create("Dropdown");
     healerOptsElt:SetFullWidth(true);
@@ -1048,44 +1067,6 @@ function ABP_4H:CreateStartWindow()
     options:AddChild(healerOptsElt);
     self:AddWidgetTooltip(healerOptsElt, "|cff00ff00Counter-clockwise|r: If checked, healers will rotate counterclockwise instead of clockwise.\n\n" ..
         "|cff00ff00Staggered Zeliak|r: If checked, healer positions in Zeliak's corner will be staggered, with the healer moving each mark.");
-
-    local loadLayout = AceGUI:Create("Dropdown");
-    loadLayout:SetLabel("Load Layout");
-    loadLayout:SetList(self:GetLayouts());
-    loadLayout:SetValue(self:GetCurrentLayout());
-    loadLayout:SetUserData("cell", { paddingH = 10, align = "CENTER" });
-    loadLayout:SetCallback("OnValueChanged", function(widget, event, value)
-        self:Set("selectedRaidLayout", value);
-        assignedRoles = self:LoadCurrentLayout();
-        Refresh();
-    end);
-    options:AddChild(loadLayout);
-    self:AddWidgetTooltip(loadLayout, "Load a saved layout of raid roles.");
-
-    local save = AceGUI:Create("Button");
-    save:SetWidth(150);
-    save:SetText("Save Layout");
-    save:SetUserData("cell", { paddingH = 10, align = "CENTER" });
-    save:SetCallback("OnClick", function(widget, event)
-        local layout = self:GetCurrentLayout();
-        if type(layout) ~= "string" then layout = nil; end
-        _G.StaticPopup_Show("ABP_4H_SAVE_LAYOUT", nil, nil, { initialText = layout });
-    end);
-    options:AddChild(save);
-    self:AddWidgetTooltip(save, "Save the current layout of raid roles.");
-
-    local delete = AceGUI:Create("Button");
-    delete:SetWidth(150);
-    delete:SetText("Delete Layout");
-    delete:SetUserData("cell", { paddingH = 10, align = "CENTER" });
-    delete:SetCallback("OnClick", function(widget, event)
-        self:DeleteLayout(self:GetCurrentLayout());
-        assignedRoles = self:LoadCurrentLayout();
-        self:Set("selectedRaidLayout", 1);
-        self:ShowStartWindow(true);
-    end);
-    options:AddChild(delete);
-    self:AddWidgetTooltip(delete, "Delete the current layout.");
 
     local bottom = AceGUI:Create("SimpleGroup");
     bottom:SetFullWidth(true);
@@ -1163,15 +1144,6 @@ function ABP_4H:CreateStartWindow()
     local maxW = window.frame:GetMaxResize();
     window.frame:SetMinResize(minW, height);
     window.frame:SetMaxResize(maxW, height);
-    window:SetCallback("OnWidthSet", function(widget, event)
-        container:DoLayout();
-        local height = container.frame:GetHeight() + 57;
-        window:SetHeight(height);
-        local minW = window.frame:GetMinResize();
-        local maxW = window.frame:GetMaxResize();
-        window.frame:SetMinResize(minW, height);
-        window.frame:SetMaxResize(maxW, height);
-    end);
 
     window.frame:Raise();
     return window;
@@ -1203,6 +1175,17 @@ StaticPopupDialogs["ABP_4H_SAVE_LAYOUT"] = ABP_4H:StaticDialogTemplate(ABP_4H.St
     Commit = function(text, data)
         ABP_4H:SaveLayout(text, assignedRoles);
         ABP_4H:Set("selectedRaidLayout", text);
+        ABP_4H:ShowStartWindow(true);
+    end,
+});
+StaticPopupDialogs["ABP_4H_DELETE_LAYOUT"] = ABP_4H:StaticDialogTemplate(ABP_4H.StaticDialogTemplates.JUST_BUTTONS, {
+    text = "Delete the %s layout?",
+    button1 = "Delete",
+    button2 = "Cancel",
+    OnAccept = function(text, data)
+        ABP_4H:DeleteLayout(ABP_4H:GetCurrentLayout());
+        assignedRoles = ABP_4H:LoadCurrentLayout();
+        ABP_4H:Set("selectedRaidLayout", 1);
         ABP_4H:ShowStartWindow(true);
     end,
 });

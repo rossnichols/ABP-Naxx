@@ -16,7 +16,7 @@ function ABP_4H:RebuildGuildInfo()
         if data[1] then
             data.player = Ambiguate(data[1], "short");
             data.index = i;
-            guildInfo[data.player] = data;
+            guildInfo[data.player:lower()] = data;
         else
             -- Seen this API fail before. If that happens,
             -- request another guild roster update.
@@ -26,6 +26,6 @@ function ABP_4H:RebuildGuildInfo()
 end
 
 function ABP_4H:GetGuildInfo(player)
-    if player then return guildInfo[player]; end
+    if player then return guildInfo[player:lower()]; end
     return guildInfo;
 end

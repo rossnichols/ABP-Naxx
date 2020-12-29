@@ -626,6 +626,9 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
     if data.active then
         local player = UnitName("player");
         local role = data.roles[player];
+        if not role and GetNumGroupMembers() == 0 then
+            role = self.Roles.independent;
+        end
 
         if data.started then
             if data.mode ~= ABP_4H.Modes.live and dbmTickAlert and lastAlertedTick ~= data.ticks then
