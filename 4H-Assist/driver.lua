@@ -555,14 +555,21 @@ function ABP_4H:CreateStartWindow()
 
     local container = AceGUI:Create("SimpleGroup");
     container:SetFullWidth(true);
+    container:SetFullHeight(true);
     container:SetLayout("Flow");
     window:AddChild(container);
+
+    local scroll = AceGUI:Create("ScrollFrame");
+    scroll:SetFullWidth(true);
+    scroll:SetFullHeight(true);
+    scroll:SetLayout("List");
+    container:AddChild(scroll);
 
     if GetNumGroupMembers() == 0 then
         local label = AceGUI:Create("ABPN_Label");
         label:SetFullWidth(true);
         label:SetText("Simulate a raid group using the \"Raiders\" edit box below. If you sync, assignments will be remembered (for the current layout) when they're actually grouped with you.");
-        container:AddChild(label);
+        scroll:AddChild(label);
     end
 
     local raidRoles = AceGUI:Create("InlineGroup");
@@ -570,7 +577,7 @@ function ABP_4H:CreateStartWindow()
     raidRoles:SetFullWidth(true);
     raidRoles:SetLayout("Table");
     raidRoles:SetUserData("table", { columns = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 }});
-    container:AddChild(raidRoles);
+    scroll:AddChild(raidRoles);
 
     local dropdowns = {};
     window:SetUserData("dropdowns", dropdowns);
@@ -852,7 +859,7 @@ function ABP_4H:CreateStartWindow()
     local label = AceGUI:Create("ABPN_Label");
     label:SetFullWidth(true);
     label:SetText("Smart assignment remembers past syncs on a per-layout basis. Once raiders are in the proper group, smart-assign the raid to apply it.");
-    container:AddChild(label);
+    scroll:AddChild(label);
 
     local unassign = AceGUI:Create("Button");
     unassign:SetText("Unassign All");
@@ -863,7 +870,7 @@ function ABP_4H:CreateStartWindow()
             unassignFunc(widget, event, value);
         end
     end);
-    container:AddChild(unassign);
+    scroll:AddChild(unassign);
     self:AddWidgetTooltip(unassign, "Unassign all roles in the raid.");
 
     local smart = AceGUI:Create("Button");
@@ -881,7 +888,7 @@ function ABP_4H:CreateStartWindow()
             smartFunc(widget, event, value, false);
         end
     end);
-    container:AddChild(smart);
+    scroll:AddChild(smart);
     self:AddWidgetTooltip(smart, "Smart-assign all roles in the raid, based on the player's category (tank/healer/dps). Roles currently assigned in the same group will be prioritized first, then unassigned roles.");
 
     local roleStatusElts = {};
@@ -892,7 +899,7 @@ function ABP_4H:CreateStartWindow()
     roleStatus:SetFullWidth(true);
     roleStatus:SetLayout("Table");
     roleStatus:SetUserData("table", { columns = { 1.0, 1.0, 1.0, 1.0 }});
-    container:AddChild(roleStatus);
+    scroll:AddChild(roleStatus);
 
     local countElt = AceGUI:Create("ABPN_Label");
     countElt:SetFullWidth(true);
@@ -936,7 +943,7 @@ function ABP_4H:CreateStartWindow()
     options:SetFullWidth(true);
     options:SetLayout("ABPN_Table");
     options:SetUserData("table", { columns = { 0, 0, 0, 0, 0 }});
-    container:AddChild(options);
+    scroll:AddChild(options);
 
     local names = AceGUI:Create("MultiLineEditBox");
     names:SetLabel("Raiders");
@@ -1072,7 +1079,7 @@ function ABP_4H:CreateStartWindow()
     bottom:SetFullWidth(true);
     bottom:SetLayout("Table");
     bottom:SetUserData("table", { columns = { 1.0, 0, 0, 0 }});
-    container:AddChild(bottom);
+    scroll:AddChild(bottom);
 
     local label = AceGUI:Create("ABPN_Label");
     label:SetFont(_G.GameFontHighlightSmall);
@@ -1138,11 +1145,11 @@ function ABP_4H:CreateStartWindow()
     self:AddWidgetTooltip(start, "Start the encounter!");
 
     container:DoLayout();
-    local height = container.frame:GetHeight() + 57;
+    local height = math.min(_G.UIParent:GetHeight(), scroll.content:GetHeight() + 57);
     window:SetHeight(height);
     local minW = window.frame:GetMinResize();
     local maxW = window.frame:GetMaxResize();
-    window.frame:SetMinResize(minW, height);
+    window.frame:SetMinResize(minW, height - 400);
     window.frame:SetMaxResize(maxW, height);
 
     window.frame:Raise();
