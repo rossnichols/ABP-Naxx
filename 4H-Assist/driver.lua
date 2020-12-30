@@ -955,7 +955,7 @@ function ABP_4H:CreateStartWindow()
         fakePlayers = {};
         self:ShowStartWindow(true);
     end);
-    names:SetUserData("cell", { rowspan = 3, paddingBottom = 3 });
+    names:SetUserData("cell", { rowspan = 3, paddingBottom = 3, paddingH = 2 });
     options:AddChild(names);
     self:AddWidgetTooltip(names, "List raiders that will populate the window when you're ungrouped. If you sync, assignments will be remembered (for the current layout) when they're actually grouped with you.");
     names:SetDisabled(GetNumGroupMembers() > 0);
@@ -968,7 +968,7 @@ function ABP_4H:CreateStartWindow()
         self:Set("nonHealers", value);
         Refresh();
     end);
-    nonHealers:SetUserData("cell", { rowspan = 3, paddingBottom = 3 });
+    nonHealers:SetUserData("cell", { rowspan = 3, paddingBottom = 3, paddingH = 2 });
     options:AddChild(nonHealers);
     self:AddWidgetTooltip(nonHealers, "List druids/priests/paladins/shaman that should not be considered as healers.");
 
