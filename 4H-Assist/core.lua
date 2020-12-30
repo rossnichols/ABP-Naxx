@@ -124,12 +124,15 @@ function ABP_4H:OnEnable()
         self:DriverOnLoadingScreen(...);
     end, self);
     self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", function(self, event, ...)
-        local _, event, _, _, _, sourceFlags, _, dest, destName, destFlags, _, spellID, spellName = CombatLogGetCurrentEventInfo();
+        local _, event, _, source, _, sourceFlags, _, dest, destName, destFlags, _, spellID, spellName = CombatLogGetCurrentEventInfo();
         local expected = bit.bor(COMBATLOG_OBJECT_TYPE_NPC, COMBATLOG_OBJECT_REACTION_HOSTILE);
 
         -- print(table.concat({tostringall(CombatLogGetCurrentEventInfo())}, "||"));
         if event == "SPELL_CAST_SUCCESS" and bit.band(sourceFlags, expected) == expected then
-            self:DriverOnSpellCast(spellID, spellName);
+            local npcID = tonumber((select(6, ("-"):split(source))));
+            if npcID then
+                self:DriverOnSpellCast(spellID, spellName, npcID);
+            end
         elseif event == "UNIT_DIED" and bit.band(destFlags, expected) == expected then
             local npcID = tonumber((select(6, ("-"):split(dest))));
             if npcID then

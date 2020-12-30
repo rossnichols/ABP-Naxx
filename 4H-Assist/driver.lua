@@ -438,9 +438,10 @@ local function OnNewMark(now, sendComm, newTickCount)
     end
 end
 
-function ABP_4H:DriverOnSpellCast(spellID, spellName)
+function ABP_4H:DriverOnSpellCast(spellID, spellName, npcID)
     -- self:LogDebug("%s %d", spellName, spellID);
     if not (markSpellIds[spellID] or markSpellNames[spellName]) then return; end
+    if not self.BossMarks[npcID] then return; end
 
     OnNewMark(GetServerTime(), true);
 end
