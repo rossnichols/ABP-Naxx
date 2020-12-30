@@ -264,7 +264,7 @@ do
 
     local methods = {
         ["OnAcquire"] = function(self)
-            self:SimpleGroupOnAcquire();
+            self:TGOnAcquire();
             self:SetImageAlpha(1);
         end,
 
@@ -277,7 +277,7 @@ do
         end,
 
         ["OnWidthSet"] = function(self, width)
-            self:SimpleGroupOnWidthSet(width);
+            self:TGOnWidthSet(width);
             self:Fire("OnWidthSet", width);
         end,
     }
@@ -294,8 +294,8 @@ do
         image:SetAllPoints();
 
         elt.type = Type;
-        elt.SimpleGroupOnAcquire = elt.OnAcquire;
-        elt.SimpleGroupOnWidthSet = elt.OnWidthSet;
+        elt.TGOnAcquire = elt.OnAcquire;
+        elt.TGOnWidthSet = elt.OnWidthSet;
         for method, func in pairs(methods) do
             elt[method] = func;
         end
