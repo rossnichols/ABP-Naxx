@@ -767,7 +767,7 @@ function ABP_4H:CreateMainWindow()
         window:SetUserData("role", role);
         window:SetUserData("tick", currentEncounter.started and currentEncounter.ticks or -1);
 
-        local mainLine = AceGUI:Create("SimpleGroup");
+        local mainLine = AceGUI:Create("ABPN_TransparentGroup");
         mainLine:SetFullWidth(true);
         mainLine:SetLayout("table");
         mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });
@@ -818,7 +818,7 @@ function ABP_4H:CreateMainWindow()
     end
 
     if not currentEncounter or currentEncounter.driving then
-        local mainLine = AceGUI:Create("SimpleGroup");
+        local mainLine = AceGUI:Create("ABPN_TransparentGroup");
         mainLine:SetFullWidth(true);
         mainLine:SetLayout("table");
         mainLine:SetUserData("table", { columns = { 1.0, 1.0 } });

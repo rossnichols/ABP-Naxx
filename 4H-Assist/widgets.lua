@@ -244,6 +244,9 @@ do
         if elt.frame.SetBackdropColor then
             elt.frame:SetBackdropColor(0, 0, 0, 0);
         end
+        if elt.frame.SetBackdropBorderColor then
+            elt.frame:SetBackdropBorderColor(0, 0, 0, 0);
+        end
 
         elt.type = Type;
         return elt;
