@@ -163,7 +163,7 @@ local function ChooseCategory(raider)
     local healers = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true };
     if raider.wowRole == "maintank" then return ABP_4H.Categories.tank; end
 
-    local nonHealersText = ABP_4H:Get("nonHealers");
+    local nonHealersText = ABP_4H:GetGlobal("nonHealers");
     local nonHealers = {};
     for nonHealer in nonHealersText:gmatch("%S+") do nonHealers[nonHealer:lower()] = true; end
     if raider.class and healers[raider.class] and not nonHealers[raider.name:lower()] then return ABP_4H.Categories.healer; end
@@ -967,9 +967,9 @@ function ABP_4H:CreateStartWindow()
     local nonHealers = AceGUI:Create("MultiLineEditBox");
     nonHealers:SetLabel("Non-Healer Overrides");
     nonHealers:SetFullHeight(true);
-    nonHealers:SetText(self:Get("nonHealers"));
+    nonHealers:SetText(self:GetGlobal("nonHealers"));
     nonHealers:SetCallback("OnEnterPressed", function(widget, event, value)
-        self:Set("nonHealers", value);
+        self:SetGlobal("nonHealers", value);
         Refresh();
     end);
     nonHealers:SetUserData("cell", { rowspan = 3, paddingBottom = 3, paddingH = 2 });

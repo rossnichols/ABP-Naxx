@@ -30,9 +30,16 @@ function ABP_4H:InitOptions()
             raidLayouts = {},
             previousRoles = {},
             fakeRaiders = "",
+            nonHealers = "",
         },
     };
     self.db = AceDB:New("ABP_4H_DB", defaults);
+
+    local oldNonHealers = self:Get("nonHealers");
+    local newNonHealers = self:GetGlobal("nonHealers");
+    if oldNonHealers ~= "" and newNonHealers == "" then
+        self:SetGlobal("nonHealers", oldNonHealers);
+    end
 
     local addonText = "4H Assist";
     local version = self:GetVersion();
