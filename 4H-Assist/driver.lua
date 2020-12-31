@@ -10,6 +10,7 @@ local GetTime = GetTime;
 local GetServerTime = GetServerTime;
 local UnitClass = UnitClass;
 local GetSpellInfo = GetSpellInfo;
+local UnitExists = UnitExists;
 local table = table;
 local pairs = pairs;
 local ipairs = ipairs;
@@ -94,6 +95,9 @@ function ABP_4H:GetRaiderSlots()
                 if guildInfo then
                     fakeRaider = guildInfo.player;
                     class = guildInfo[11];
+                elseif UnitExists(fakeRaider) then
+                    fakeRaider = UnitName(fakeRaider);
+                    class = select(2, UnitClass(fakeRaider));
                 end
                 table.insert(fakePlayers, { name = fakeRaider, class = class, fake = true } );
             end
