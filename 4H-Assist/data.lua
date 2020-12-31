@@ -187,32 +187,42 @@ local healerMap = {
         [roles.healer12] = roles.healerzccw12,
     },
 };
+local normalizedHealerMap = {};
+for _, map in pairs(healerMap) do
+    for normalized, role in pairs(map) do
+        normalizedHealerMap[role] = normalized;
+    end
+end
 
 local rolesSorted = {
-    roles.dps1,
-    roles.dps2,
-    roles.dps3,
-    roles.dps4,
     roles.tank1,
     roles.tank2,
-    roles.tank3,
-    roles.tank4,
-    roles.ot1,
-    roles.ot2,
-    roles.ot3,
-    roles.ot4,
     roles.healer1,
     roles.healer2,
     roles.healer3,
+    roles.dps1,
+    roles.dps3,
+
+    roles.tank3,
+    roles.tank4,
     roles.healer4,
     roles.healer5,
     roles.healer6,
+    roles.dps2,
+    roles.dps4,
+
+    roles.ot1,
+    roles.ot2,
     roles.healer7,
     roles.healer8,
     roles.healer9,
+
+    roles.ot3,
+    roles.ot4,
     roles.healer10,
     roles.healer11,
     roles.healer12,
+
     roles.independent,
 };
 
@@ -645,4 +655,5 @@ ABP_4H.MarkPositions = markPositions;
 ABP_4H.Bosses = bosses;
 ABP_4H.BossMarks = bossMarks;
 ABP_4H.HealerMap = healerMap;
+ABP_4H.NormalizedHealerMap = normalizedHealerMap;
 ABP_4H.TopRoles = topRoles;

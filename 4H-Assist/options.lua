@@ -73,6 +73,12 @@ function ABP_4H:InitOptions()
             validate = function() if not self:IsPrivileged() then return "|cffff0000not privileged|r"; end end,
             func = function() self:PerformVersionCheck(); end
         },
+        roles = {
+            name = "Roles",
+            desc = "lists the role of each player in the raid, if they've been assigned",
+            type = "execute",
+            func = function() self:DumpRoles(); end
+        }
     };
 
     local function setupAlias(existing, alias)

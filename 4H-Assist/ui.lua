@@ -25,6 +25,7 @@ local tostring = tostring;
 local tonumber = tonumber;
 local select = select;
 local next = next;
+local ipairs = ipairs;
 
 local activeWindow;
 local dbmPendingAlert, dbmMoveAlert, dbmTickAlert, dbmMarkAlert;
@@ -662,6 +663,29 @@ function ABP_4H:UIOnStateSync(data, distribution, sender, version)
 
     if currentEncounter then
         self:ShowMainWindow();
+    end
+end
+
+function ABP_4H:DumpRoles()
+    if not currentEncounter then
+        self:Notify("Try again when you've been assigned a role by someone in the raid!");
+        return;
+    end
+
+    local roles = {};
+    for player, role in pairs(currentEncounter.roles) do
+        role = self.NormalizedHealerMap[role] or role;
+        roles[role] = roles[role] or {};
+        table.insert(roles[role], player);
+    end
+
+    for _, role in ipairs(self.RolesSorted) do
+        if roles[role] then
+            table.sort(roles[role]);
+            for _, player in ipairs(roles[role]) do
+                self:Notify("%s => %s", self:ColorizeName(player), self.RoleNamesColored[role]);
+            end
+        end
     end
 end
 
