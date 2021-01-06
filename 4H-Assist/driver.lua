@@ -161,7 +161,7 @@ end
 
 local function ChooseCategory(raider)
     local healers = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true };
-    if raider.wowRole == "maintank" then return ABP_4H.Categories.tank; end
+    if raider.wowRole == "MAINTANK" then return ABP_4H.Categories.tank; end
 
     local nonHealersText = ABP_4H:GetGlobal("nonHealers");
     local nonHealers = {};
