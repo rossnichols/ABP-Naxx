@@ -69,7 +69,7 @@ function ABP_4H:GetRaiderSlots()
             local name, _, subgroup, _, _, class, _, _, _, wowRole = GetRaidRosterInfo(i);
             local slot = (5 * (subgroup - 1)) + 1;
             while slots[slot] do slot = slot + 1; end
-            slots[slot] = { name = name, wowRole = wowRole, class = class };
+            slots[slot] = { name = name, wowRole = wowRole and wowRole:upper(), class = class };
             map[name] = slot;
             count = count + 1;
         end
