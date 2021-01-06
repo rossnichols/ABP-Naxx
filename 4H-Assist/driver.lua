@@ -1030,7 +1030,7 @@ function ABP_4H:CreateStartWindow()
     loadLayout:SetCallback("OnValueChanged", function(widget, event, value)
         self:Set("selectedRaidLayout", value);
         assignedRoles = self:LoadCurrentLayout();
-        Refresh();
+        self:ShowStartWindow(true);
     end);
     options:AddChild(loadLayout);
     self:AddWidgetTooltip(loadLayout, "Load a saved layout of raid roles.");
@@ -1066,7 +1066,6 @@ function ABP_4H:CreateStartWindow()
     healerOptsElt:SetUserData("cell", { paddingH = 10 });
     healerOptsElt:SetMultiselect(true);
     healerOptsElt:SetList(healerOpts);
-    healerOptsElt:SetItemValue()
     for k in pairs(healerOpts) do
         healerOptsElt:SetItemValue(k, self:Get(k));
     end
