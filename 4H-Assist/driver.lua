@@ -318,7 +318,8 @@ function ABP_4H:DriverOnStateSyncAck(data, distribution, sender, version)
     local _, map = ABP_4H:GetRaiderSlots();
     if not map[sender] then return; end
 
-    if data.role == assignedRoles[map[sender]] then
+    local role = self.NormalizedHealerMap[data.role] or data.role;
+    if role == assignedRoles[map[sender]] then
         activeWindow:GetUserData("readyPlayers")[map[sender]] = sender;
     else
         activeWindow:GetUserData("readyPlayers")[map[sender]] = nil;
