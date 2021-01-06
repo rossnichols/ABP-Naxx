@@ -386,7 +386,7 @@ local function RefreshTanks(raiders, map)
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
                 local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
                 tank = ("%s|cffffa500%s%s|r\n"):format(
-                    icon and icon:format(0) or "",
+                    iconText and iconText:format(0) or "",
                     count and count:format("", " ") or "",
                     UnitName(bossTargets[mark]));
             end
@@ -427,7 +427,7 @@ local function RefreshTanks(raiders, map)
                 tank = ("|cffffa500%s%s|r%s\n"):format(
                     UnitName(bossTargets[mark]),
                     count and count:format(" ", "") or "",
-                    icon and icon:format(0) or "");
+                    iconText and iconText:format(0) or "");
             end
 
             if tankElts[ABP_4H.Marks.tr]:GetUserData("canvas") == "fill" then
@@ -464,7 +464,7 @@ local function RefreshTanks(raiders, map)
                 local iconText = icon and ("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%s.blp:0:0:0:%%s|t"):format(icon);
                 local count = ("%%s[%d]%%s"):format(GetMarkCount(bossTargets[mark], mark));
                 tank = ("\n%s|cffffa500%s%s|r"):format(
-                    icon and icon:format(-16) or "",
+                    iconText and iconText:format(-16) or "",
                     count and count:format("", " ") or "",
                     UnitName(bossTargets[mark]));
             end
@@ -505,7 +505,7 @@ local function RefreshTanks(raiders, map)
                 tank = ("\n|cffffa500%s%s|r%s"):format(
                     UnitName(bossTargets[mark]),
                     count and count:format(" ", "") or "",
-                    icon and icon:format(-16) or "");
+                    iconText and iconText:format(-16) or "");
             end
 
             if tankElts[ABP_4H.Marks.br]:GetUserData("canvas") == "fill" then
