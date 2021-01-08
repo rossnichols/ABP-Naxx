@@ -362,9 +362,16 @@ function ABP_4H:DriverOnEncounterStart(bossId, bossName)
     if bossId ~= 1121 then return; end
 
     local currentEncounter = self:GetCurrentEncounter();
-    if currentEncounter and currentEncounter.started and currentEncounter.mode == self.Modes.live then
+    if currentEncounter and currentEncounter.mode == self.Modes.live then
         currentEncounter.ticks = 0;
         currentEncounter.tickDuration = 20;
+
+        if not currentEncounter.started then
+            currentEncounter.started = true;
+            SendStateComm(true, "BROADCAST");
+            if activeWindow then activeWindow:Hide(); end
+        end
+
         self:RefreshCurrentEncounter();
     end
 
