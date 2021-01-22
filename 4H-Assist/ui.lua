@@ -95,7 +95,7 @@ local function GetNeighbors(window, raiders)
 end
 
 local function ShowingIconsForRole(role)
-    if role == ABP_4H.Roles.independent then return false; end
+    if role == ABP_4H.Roles.independent or UnitIsDeadOrGhost("player") then return false; end
 
     return not currentEncounter or
         ABP_4H.TopRoles[role] or
