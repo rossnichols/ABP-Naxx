@@ -576,7 +576,7 @@ local function Refresh()
             nextPos = nextDiffPos;
         end
 
-        if tick > 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
+        if tick >= 1 and currentEncounter and dbmMoveAlert and ABP_4H:Get("showMoveAlert") then
             local prevPos = GetPositions(role, tick - 1);
             if prevPos ~= currentPos and lastAlertedMove ~= tick then
                 lastAlertedMove = tick;
