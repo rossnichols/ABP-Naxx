@@ -22,6 +22,7 @@ local type = type;
 
 local activeWindow;
 
+local restrictedAssignments = true;
 local assignedRoles;
 local processedRoles;
 local fakePlayers;
@@ -296,7 +297,7 @@ local function Refresh()
         if raider and role and CategoryIsMismatched(raider, role) then
             roleText = ("|cffff0000%s|r"):format( ABP_4H.RoleNames[role]);
         end
-        dropdown:SetList(BuildDropdown(role, raiders, window:GetUserData("restrictedAssignments")));
+        dropdown:SetList(BuildDropdown(role, raiders, restrictedAssignments));
         dropdown:SetText(("%s     %s"):format(playerText, roleText));
 
         if raider and not role then allAssigned = false; end
@@ -1021,9 +1022,9 @@ function ABP_4H:CreateStartWindow()
     restricted:SetLabel("Capped Assignments");
     restricted:SetValue(true);
     restricted:SetUserData("cell", { paddingH = 10 });
-    window:SetUserData("restrictedAssignments", true);
+    restricted:SetValue(restrictedAssignments);
     restricted:SetCallback("OnValueChanged", function(widget, event, value)
-        window:SetUserData("restrictedAssignments", value);
+        restrictedAssignments = value;
         Refresh();
     end);
     options:AddChild(restricted);
