@@ -20,5 +20,5 @@ function ABP_4H:SetDebug(enable)
     self:SetGlobal("debug", enable);
 end
 
-ABP_4H.VersionOverride = "1.0.2";
-ABP_4H.VersionCmpOverride = "1.0.2";
+ABP_4H.VersionOverride = "1.0.3";
+ABP_4H.VersionCmpOverride = "1.0.3";
