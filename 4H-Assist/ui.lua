@@ -160,26 +160,15 @@ local function MakeFakeCount(tick, role, mark)
     if role == ABP_4H.Roles.independent then return 0; end
 
     local count = 0;
-    local oldest = tick - 7;
+    local last = 0;
     local positions = ABP_4H.MarkPositions[mark];
-    for checkedTick = oldest, tick - 1 do
-        if checkedTick >= 0 then
+    for checkedTick = 0, tick - 1 do
             local checkedPos = GetPositions(role, checkedTick);
             if positions[checkedPos] then
                 count = count + 1;
-            end
-        end
-    end
-    if count > 0 then
-        local checkedTick = oldest - 1;
-        while checkedTick >= 0 do
-            local checkedPos = GetPositions(role, checkedTick);
-            if positions[checkedPos] then
-                count = count + 1;
-                checkedTick = checkedTick - 1;
-            else
-                break;
-            end
+            last = checkedTick;
+        elseif checkedTick >= last + 7 then
+            count = 0;
         end
     end
 
